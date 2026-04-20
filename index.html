@@ -13,6 +13,10 @@
     <header class="site-header">
         <div class="container nav-wrap">
             <h1>AnyPrint</h1>
+            <div class="top-links">
+                <button id="homeNavButton" class="plain-btn">Home</button>
+                <button id="shopNavButton" class="plain-btn">Shop</button>
+            </div>
             <div class="top-actions">
                 <button id="authButton" class="auth-btn">Login/Register</button>
                 <button id="cartButton" class="cart-btn">Cart (<span id="cartCount">0</span>)</button>
@@ -23,12 +27,22 @@
     <main class="container">
         <section class="hero">
             <p class="eyebrow">Independent Frontend App</p>
-            <h2>Premium T-Shirts Ready to Ship</h2>
-            <p>Connected to a separate Django backend API for catalog, checkout, and payment redirects.</p>
+            <h2>Your Brand on Premium Shirts, Delivered Fast</h2>
+            <p>AnyPrint helps creators and businesses launch custom tee drops with trusted quality, secure checkout, and real-time inventory.</p>
+            <div class="hero-actions">
+                <button id="goShopButton" class="btn">Start Shopping</button>
+                <span class="meta">Rated 4.9/5 by local streetwear sellers</span>
+            </div>
+            <div class="trust-badges">
+                <span>Secure Payment</span>
+                <span>Fast Nationwide Delivery</span>
+                <span>Quality Print Guarantee</span>
+            </div>
         </section>
 
-        <section>
+        <section id="shopSection" class="shop-section hidden-shop">
             <div id="categoryChips" class="category-chips"></div>
+            <div id="productsStatus" class="products-status"></div>
             <div id="products" class="product-grid"></div>
         </section>
     </main>
@@ -39,6 +53,7 @@
             <button id="closeCart" class="plain-btn">Close</button>
         </div>
         <div id="cartItems"></div>
+        <a id="cartCheckoutButton" href="checkout.html" class="btn cart-checkout-btn">Go to Checkout</a>
     </aside>
 
     <aside id="authPanel" class="auth-panel hidden">
@@ -59,6 +74,7 @@
                 <h4>Login</h4>
                 <input name="username" placeholder="Username" required />
                 <input name="password" type="password" placeholder="Password" required />
+                <p id="loginError" class="inline-error"></p>
                 <button type="submit" class="btn">Login</button>
             </form>
 
@@ -67,7 +83,9 @@
                 <input name="username" placeholder="Username" required />
                 <input name="email" type="email" placeholder="Email (optional)" />
                 <input name="password" type="password" placeholder="Password" required />
+                <p id="passwordStrength" class="meta"></p>
                 <input name="confirm_password" type="password" placeholder="Confirm Password" required />
+                <p id="registerError" class="inline-error"></p>
                 <button type="submit" class="btn">Register</button>
             </form>
 
@@ -75,6 +93,19 @@
             <p id="authStatus" class="status"></p>
         </div>
     </aside>
+
+    <aside id="quickViewPanel" class="auth-panel hidden">
+        <div class="auth-dialog quick-view-dialog">
+            <div class="cart-head">
+                <h3>Quick View</h3>
+                <button id="closeQuickView" class="plain-btn">Close</button>
+            </div>
+            <div id="quickViewContent"></div>
+        </div>
+    </aside>
+
+    <button id="mobileCartCta" class="mobile-cart-cta">Open Cart (<span id="mobileCartCount">0</span>)</button>
+    <div id="toastStack" class="toast-stack"></div>
 
     <script src="app.js"></script>
 </body>

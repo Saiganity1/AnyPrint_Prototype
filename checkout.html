@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AnyPrint Checkout</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Sora:wght@400;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+    <header class="site-header">
+        <div class="container nav-wrap">
+            <h1>AnyPrint</h1>
+            <a class="plain-btn" href="index.html">Back to Shop</a>
+        </div>
+    </header>
+
+    <main class="container checkout-page">
+        <h2>Checkout</h2>
+        <div class="stepper">
+            <span id="stepLabel1" class="step active">1. Cart</span>
+            <span id="stepLabel2" class="step">2. Address</span>
+            <span id="stepLabel3" class="step">3. Payment</span>
+            <span id="stepLabel4" class="step">4. Review</span>
+        </div>
+
+        <section id="step1" class="checkout-card">
+            <h3>Cart Review</h3>
+            <div id="checkoutCartItems"></div>
+            <p id="checkoutEmpty" class="meta hidden">Your cart is empty. Add products first.</p>
+            <button id="toStep2" class="btn">Continue</button>
+        </section>
+
+        <section id="step2" class="checkout-card hidden">
+            <h3>Address</h3>
+            <form id="addressForm" class="checkout-form">
+                <input name="full_name" placeholder="Full Name" required />
+                <input name="email" type="email" placeholder="Email" required />
+                <input name="phone" placeholder="Phone" required />
+                <textarea name="address" rows="3" placeholder="Delivery Address" required></textarea>
+                <div class="step-actions">
+                    <button type="button" id="backTo1" class="plain-btn">Back</button>
+                    <button type="submit" class="btn">Continue</button>
+                </div>
+            </form>
+        </section>
+
+        <section id="step3" class="checkout-card hidden">
+            <h3>Payment Method</h3>
+            <form id="paymentForm" class="checkout-form">
+                <select name="payment_method" required>
+                    <option value="">Select payment method</option>
+                    <option value="COD">Cash on Delivery</option>
+                    <option value="PAYMONGO">GCash / QR PH via PayMongo</option>
+                    <option value="STRIPE">Card via Stripe</option>
+                    <option value="BANK">Bank Transfer</option>
+                </select>
+                <textarea name="notes" rows="2" placeholder="Order notes (optional)"></textarea>
+                <div class="step-actions">
+                    <button type="button" id="backTo2" class="plain-btn">Back</button>
+                    <button type="submit" class="btn">Continue</button>
+                </div>
+            </form>
+        </section>
+
+        <section id="step4" class="checkout-card hidden">
+            <h3>Review & Place Order</h3>
+            <div id="reviewBlock"></div>
+            <p id="checkoutMessage" class="status"></p>
+            <div class="step-actions">
+                <button type="button" id="backTo3" class="plain-btn">Back</button>
+                <button id="placeOrder" class="btn">Place Order</button>
+            </div>
+        </section>
+    </main>
+
+    <script src="checkout.js"></script>
+</body>
+</html>
