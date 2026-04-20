@@ -15,6 +15,7 @@ const closeCart = document.getElementById('closeCart');
 const authButton = document.getElementById('authButton');
 const authPanel = document.getElementById('authPanel');
 const closeAuth = document.getElementById('closeAuth');
+const authDialog = authPanel.querySelector('.auth-dialog');
 const authState = document.getElementById('authState');
 const authStatus = document.getElementById('authStatus');
 const showLoginTab = document.getElementById('showLoginTab');
@@ -179,8 +180,21 @@ async function refreshAuthState() {
 
 cartButton.addEventListener('click', () => cartPanel.classList.remove('hidden'));
 closeCart.addEventListener('click', () => cartPanel.classList.add('hidden'));
-authButton.addEventListener('click', () => authPanel.classList.remove('hidden'));
+authButton.addEventListener('click', () => {
+    setAuthTab(true);
+    authPanel.classList.remove('hidden');
+});
 closeAuth.addEventListener('click', () => authPanel.classList.add('hidden'));
+authPanel.addEventListener('click', (event) => {
+    if (!authDialog.contains(event.target)) {
+        authPanel.classList.add('hidden');
+    }
+});
+document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape') {
+        authPanel.classList.add('hidden');
+    }
+});
 showLoginTab.addEventListener('click', () => setAuthTab(true));
 showRegisterTab.addEventListener('click', () => setAuthTab(false));
 
