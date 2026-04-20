@@ -39,24 +39,6 @@
             <button id="closeCart" class="plain-btn">Close</button>
         </div>
         <div id="cartItems"></div>
-
-        <form id="checkoutForm" class="checkout-form">
-            <h4>Checkout</h4>
-            <input name="full_name" placeholder="Full Name" required />
-            <input name="email" type="email" placeholder="Email" required />
-            <input name="phone" placeholder="Phone" required />
-            <textarea name="address" placeholder="Address" rows="3" required></textarea>
-            <select name="payment_method" required>
-                <option value="">Select payment method</option>
-                <option value="COD">Cash on Delivery</option>
-                <option value="PAYMONGO">GCash / QR PH via PayMongo</option>
-                <option value="STRIPE">Card via Stripe</option>
-                <option value="BANK">Bank Transfer</option>
-            </select>
-            <textarea name="notes" placeholder="Order notes (optional)" rows="2"></textarea>
-            <button type="submit" class="btn">Place Order</button>
-            <p id="checkoutStatus" class="status"></p>
-        </form>
     </aside>
 
     <aside id="authPanel" class="auth-panel hidden">

@@ -12,8 +12,6 @@ const cartCountEl = document.getElementById('cartCount');
 const cartPanel = document.getElementById('cartPanel');
 const cartButton = document.getElementById('cartButton');
 const closeCart = document.getElementById('closeCart');
-const checkoutForm = document.getElementById('checkoutForm');
-const checkoutStatus = document.getElementById('checkoutStatus');
 const authButton = document.getElementById('authButton');
 const authPanel = document.getElementById('authPanel');
 const closeAuth = document.getElementById('closeAuth');
@@ -178,54 +176,6 @@ async function refreshAuthState() {
     currentUser = body.is_authenticated ? body.user : null;
     renderAuthState();
 }
-
-checkoutForm.addEventListener('submit', async (event) => {
-    event.preventDefault();
-    checkoutStatus.textContent = '';
-
-    const items = Object.entries(cart).map(([productId, quantity]) => ({
-        product_id: Number(productId),
-        quantity,
-    }));
-
-    if (!items.length) {
-        checkoutStatus.textContent = 'Your cart is empty.';
-        return;
-    }
-
-    const formData = new FormData(checkoutForm);
-    const payload = {
-        full_name: formData.get('full_name'),
-        email: formData.get('email'),
-        phone: formData.get('phone'),
-        address: formData.get('address'),
-        payment_method: formData.get('payment_method'),
-        notes: formData.get('notes') || '',
-        items,
-    };
-
-    const res = await apiFetch(`${API_BASE}/orders/`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-    });
-
-    const body = await res.json();
-    if (!res.ok) {
-        checkoutStatus.textContent = body.error || 'Checkout failed.';
-        return;
-    }
-
-    cart = {};
-    saveCart();
-
-    if (body.redirect_url) {
-        window.location.href = body.redirect_url;
-        return;
-    }
-
-    checkoutStatus.textContent = `Order #${body.order_id} created successfully.`;
-});
 
 cartButton.addEventListener('click', () => cartPanel.classList.remove('hidden'));
 closeCart.addEventListener('click', () => cartPanel.classList.add('hidden'));
