@@ -4,6 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>AnyPrint Checkout</title>
+    <link rel="icon" href="data:;base64,iVBORw0KGgo=" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Sora:wght@400;600;700&display=swap" rel="stylesheet" />
@@ -12,70 +13,107 @@
 <body>
     <header class="site-header">
         <div class="container nav-wrap">
-            <h1>AnyPrint</h1>
-            <a class="plain-btn" href="index.html">Back to Shop</a>
+            <div class="brand">
+                <h1 class="brand-title"><a class="brand-link" href="index.html">AnyPrint</a></h1>
+                <p class="brand-tag">Checkout</p>
+            </div>
+            <div class="top-actions">
+                <a class="plain-btn" href="tracking.html">Track Order</a>
+                <a class="plain-btn" href="index.html">Back to Shop</a>
+            </div>
         </div>
     </header>
 
-    <main class="container checkout-page">
-        <h2>Checkout</h2>
-        <div class="stepper">
-            <span id="stepLabel1" class="step active">1. Cart</span>
-            <span id="stepLabel2" class="step">2. Address</span>
-            <span id="stepLabel3" class="step">3. Payment</span>
-            <span id="stepLabel4" class="step">4. Review</span>
+    <main class="container page-shell checkout-page">
+        <div class="page-intro">
+            <p class="page-kicker">Secure checkout</p>
+            <h2 class="page-title">Checkout</h2>
+            <p class="page-lead">Review your shirt selection, enter delivery details, and complete payment in a clean step-by-step flow.</p>
         </div>
 
-        <section id="step1" class="checkout-card">
-            <h3>Cart Review</h3>
-            <div id="checkoutCartItems"></div>
-            <p id="checkoutEmpty" class="meta hidden">Your cart is empty. Add products first.</p>
-            <button id="toStep2" class="btn">Continue</button>
-        </section>
-
-        <section id="step2" class="checkout-card hidden">
-            <h3>Address</h3>
-            <form id="addressForm" class="checkout-form">
-                <input name="full_name" placeholder="Full Name" required />
-                <input name="email" type="email" placeholder="Email" required />
-                <input name="phone" placeholder="Phone" required />
-                <textarea name="address" rows="3" placeholder="Delivery Address" required></textarea>
-                <div class="step-actions">
-                    <button type="button" id="backTo1" class="plain-btn">Back</button>
-                    <button type="submit" class="btn">Continue</button>
+        <div class="page-grid checkout-layout">
+            <div class="page-stack">
+                <div class="stepper panel-card pad soft">
+                    <span id="stepLabel1" class="step active">1. Cart</span>
+                    <span id="stepLabel2" class="step">2. Address</span>
+                    <span id="stepLabel3" class="step">3. Payment</span>
+                    <span id="stepLabel4" class="step">4. Review</span>
                 </div>
-            </form>
-        </section>
 
-        <section id="step3" class="checkout-card hidden">
-            <h3>Payment Method</h3>
-            <form id="paymentForm" class="checkout-form">
-                <select name="payment_method" required>
-                    <option value="">Select payment method</option>
-                    <option value="COD">Cash on Delivery</option>
-                    <option value="PAYMONGO">GCash / QR PH via PayMongo</option>
-                    <option value="STRIPE">Card via Stripe</option>
-                    <option value="BANK">Bank Transfer</option>
-                </select>
-                <textarea name="notes" rows="2" placeholder="Order notes (optional)"></textarea>
-                <div class="step-actions">
-                    <button type="button" id="backTo2" class="plain-btn">Back</button>
-                    <button type="submit" class="btn">Continue</button>
-                </div>
-            </form>
-        </section>
+                <section id="step1" class="checkout-card panel-card pad">
+                    <h3>Cart Review</h3>
+                    <div id="checkoutCartItems"></div>
+                    <div id="checkoutEmpty" class="empty-state hidden"></div>
+                    <button id="toStep2" class="btn">Continue</button>
+                </section>
 
-        <section id="step4" class="checkout-card hidden">
-            <h3>Review & Place Order</h3>
-            <div id="reviewBlock"></div>
-            <p id="checkoutMessage" class="status"></p>
-            <div class="step-actions">
-                <button type="button" id="backTo3" class="plain-btn">Back</button>
-                <button id="placeOrder" class="btn">Place Order</button>
+                <section id="step2" class="checkout-card panel-card pad hidden">
+                    <h3>Address</h3>
+                    <form id="addressForm" class="checkout-form">
+                        <input name="full_name" placeholder="Full Name" required />
+                        <input name="email" type="email" placeholder="Email" required />
+                        <input name="phone" placeholder="Phone" required />
+                        <textarea name="address" rows="3" placeholder="Delivery Address" required></textarea>
+                        <div class="step-actions">
+                            <button type="button" id="backTo1" class="plain-btn">Back</button>
+                            <button type="submit" class="btn">Continue</button>
+                        </div>
+                    </form>
+                </section>
+
+                <section id="step3" class="checkout-card panel-card pad hidden">
+                    <h3>Payment Method</h3>
+                    <form id="paymentForm" class="checkout-form">
+                        <input id="promoCode" name="promo_code" placeholder="Promo code (optional)" />
+                        <select id="paymentMethod" name="payment_method" required>
+                            <option value="">Select payment method</option>
+                            <option value="COD">Cash on Delivery</option>
+                            <option value="PAYMONGO">GCash / QR PH via PayMongo</option>
+                            <option value="STRIPE">Card via Stripe</option>
+                            <option value="BANK">Bank Transfer</option>
+                        </select>
+                        <textarea name="notes" rows="2" placeholder="Order notes (optional)"></textarea>
+                        <div class="step-actions">
+                            <button type="button" id="backTo2" class="plain-btn">Back</button>
+                            <button type="submit" class="btn">Continue</button>
+                        </div>
+                    </form>
+                </section>
+
+                <section id="step4" class="checkout-card panel-card pad hidden">
+                    <h3>Review & Place Order</h3>
+                    <div id="reviewBlock"></div>
+                    <p id="checkoutMessage" class="status"></p>
+                    <div class="step-actions">
+                        <button type="button" id="backTo3" class="plain-btn">Back</button>
+                        <button id="placeOrder" class="btn">Place Order</button>
+                    </div>
+                </section>
             </div>
-        </section>
+
+            <aside class="panel-card pad soft checkout-aside">
+                <p class="page-kicker">Checkout notes</p>
+                <h3>What happens next</h3>
+                <ul class="info-list">
+                    <li>Your cart is locked to the items you selected.</li>
+                    <li>Shipping and contact details are collected before payment.</li>
+                    <li>You can finish with COD, bank transfer, or gateway payment.</li>
+                </ul>
+                <div class="aside-badge-row">
+                    <span class="badge-pill">Secure session</span>
+                    <span class="badge-pill">Stock checked</span>
+                    <span class="badge-pill">Fast checkout</span>
+                </div>
+                <div class="quote-card panel-card soft pad">
+                    <h4>Delivery quote</h4>
+                    <div id="checkoutQuote" class="quote-summary"></div>
+                    <p id="quoteStatus" class="status"></p>
+                </div>
+            </aside>
+        </div>
     </main>
 
-    <script src="checkout.js"></script>
+    <script src="common.js?v=2"></script>
+    <script src="checkout.js?v=2"></script>
 </body>
 </html>

@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AnyPrint Order Tracking</title>
+    <link rel="icon" href="data:;base64,iVBORw0KGgo=" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Sora:wght@400;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+    <header class="site-header">
+        <div class="topbar">
+            <div class="container topbar-inner">
+                <div class="topbar-left">
+                    <span class="topbar-item">Track live order updates and delivery progress</span>
+                </div>
+                <div class="topbar-right">
+                    <a class="topbar-link" href="shop.html">Shop</a>
+                    <a class="topbar-link" href="wishlist.html">Wishlist</a>
+                    <a class="topbar-link" href="admin.html">Admin</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="container nav-wrap">
+            <div class="brand">
+                <h1 class="brand-title"><a class="brand-link" href="index.html">AnyPrint</a></h1>
+                <p class="brand-tag">Track order</p>
+            </div>
+
+            <nav class="top-links" aria-label="Primary">
+                <a class="plain-btn" href="index.html">Home</a>
+                <a class="plain-btn" href="shop.html">All Products</a>
+                <a class="plain-btn" href="wishlist.html">Wishlist</a>
+            </nav>
+
+            <div class="top-actions">
+                <a id="authButton" class="auth-btn" href="login.html">Login/Register</a>
+                <button id="logoutButton" class="btn secondary small hidden" type="button">Logout</button>
+            </div>
+        </div>
+    </header>
+
+    <main class="container page-shell checkout-page">
+        <div class="page-intro">
+            <p class="page-kicker">Order tracking</p>
+            <h2 class="page-title">Where is my order?</h2>
+            <p class="page-lead">Enter your tracking number or order ID to see the current status, delivery estimate, and timeline updates.</p>
+        </div>
+
+        <div id="adminAccessNotice" class="products-error hidden"></div>
+        <section class="page-grid checkout-layout">
+            <div class="page-stack">
+                <section class="checkout-card panel-card pad">
+                    <h3>Look up your order</h3>
+                    <p id="trackingHint" class="meta"></p>
+                    <form id="trackForm" class="checkout-form">
+                        <input name="tracking_number" placeholder="Tracking number (example: AP-000123)" />
+                        <input name="order_id" placeholder="Order ID" />
+                        <input name="email" type="email" placeholder="Email used at checkout" />
+                        <button type="submit" class="btn">Track order</button>
+                    </form>
+                    <p id="trackingStatus" class="status"></p>
+                </section>
+
+                <section id="trackingResult" class="page-stack"></section>
+            </div>
+
+            <aside class="panel-card pad soft checkout-aside">
+                <p class="page-kicker">Helpful tips</p>
+                <h3>Use the details from checkout</h3>
+                <ul class="info-list">
+                    <li>Tracking numbers are generated after checkout.</li>
+                    <li>Payment gateway orders can take a few minutes to confirm.</li>
+                    <li>Owner and Admin accounts can view any order in the dashboard.</li>
+                </ul>
+                <div class="aside-badge-row">
+                    <span class="badge-pill">Live status</span>
+                    <span class="badge-pill">Delivery ETA</span>
+                    <span class="badge-pill">Timeline events</span>
+                </div>
+            </aside>
+        </section>
+    </main>
+
+    <div id="toastStack" class="toast-stack"></div>
+
+    <script src="common.js?v=2"></script>
+    <script src="tracking.js?v=2"></script>
+</body>
+</html>

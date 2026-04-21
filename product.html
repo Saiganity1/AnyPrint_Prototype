@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AnyPrint Product</title>
+    <link rel="icon" href="data:;base64,iVBORw0KGgo=" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Sora:wght@400;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+    <header class="site-header">
+        <div class="container nav-wrap">
+            <div class="brand">
+                <h1 class="brand-title"><a class="brand-link" href="index.html">AnyPrint</a></h1>
+                <p class="brand-tag">Product details</p>
+            </div>
+
+            <div class="top-actions">
+                <a id="trackOrderLink" class="plain-btn" href="tracking.html">Track Order</a>
+                <a id="authButton" class="auth-btn" href="login.html">Login</a>
+                <button id="logoutButton" class="btn secondary small hidden" type="button">Logout</button>
+                <a id="cartButton" class="cart-btn" href="checkout.html">Cart (<span id="cartCount">0</span>)</a>
+            </div>
+        </div>
+    </header>
+
+    <main class="container page-shell checkout-page">
+        <div class="page-intro">
+            <p class="page-kicker">Product detail</p>
+            <h2 class="page-title">Product view</h2>
+            <p class="page-lead">Browse product photos, check sizes and colors, then add to cart or buy now from one focused page.</p>
+        </div>
+
+        <a class="plain-btn" href="index.html#shop">← Back to shop</a>
+
+        <section class="checkout-card panel-card pad soft" style="margin-top: 0.6rem;">
+            <div id="productStatus" class="meta"></div>
+            <div id="productDetail"></div>
+        </section>
+    </main>
+
+    <div id="toastStack" class="toast-stack"></div>
+
+    <script src="common.js?v=2"></script>
+    <script src="product.js?v=2"></script>
+</body>
+</html>

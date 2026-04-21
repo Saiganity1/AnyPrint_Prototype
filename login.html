@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AnyPrint Login</title>
+    <link rel="icon" href="data:;base64,iVBORw0KGgo=" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Sora:wght@400;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+    <header class="site-header">
+        <div class="container nav-wrap">
+            <div class="brand">
+                <h1 class="brand-title"><a class="brand-link" href="index.html">AnyPrint</a></h1>
+                <p class="brand-tag">Account</p>
+            </div>
+            <div class="top-actions">
+                <a class="plain-btn" href="index.html">Back to Shop</a>
+            </div>
+        </div>
+    </header>
+
+    <main class="container page-shell checkout-page">
+        <div class="page-intro">
+            <p class="page-kicker">Account access</p>
+            <h2 class="page-title">Login</h2>
+            <p class="page-lead">Sign in to keep your order history, checkout faster, and resume shopping where you left off.</p>
+        </div>
+
+        <section class="checkout-card panel-card pad auth-card-shell">
+            <h2>Login</h2>
+            <div id="authState" class="auth-state"></div>
+
+            <form id="loginForm" class="checkout-form" novalidate>
+                <input name="username" placeholder="Username" autocomplete="username" required />
+                <p id="loginUsernameError" class="field-error"></p>
+                <input name="password" type="password" placeholder="Password" autocomplete="current-password" required />
+                <p id="loginPasswordError" class="field-error"></p>
+                <p id="loginError" class="inline-error"></p>
+                <button type="submit" class="btn">Login</button>
+            </form>
+
+            <div class="step-actions auth-actions">
+                <a class="plain-btn" href="register.html?v=3">Create an account</a>
+                <button id="logoutButton" class="btn secondary small hidden" type="button">Logout</button>
+            </div>
+
+            <p id="authStatus" class="status"></p>
+        </section>
+    </main>
+
+    <div id="toastStack" class="toast-stack"></div>
+
+    <script src="auth.js?v=3"></script>
+</body>
+</html>

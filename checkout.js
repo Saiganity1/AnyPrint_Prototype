@@ -1,15 +1,25 @@
-const API_BASE = window.API_BASE || 'http://127.0.0.1:8000/api';
-const CART_KEY = 'tt_cart_v2';
+const {
+    API_BASE,
+    apiFetch,
+    escapeHtml,
+    formatPrice,
+    loadCart,
+    saveCart,
+    showToast,
+} = window.AnyPrint;
 
-let cart = [];
-let products = [];
+let cart = loadCart();
+let quoteData = null;
+let productsById = new Map();
 let currentStep = 1;
+
 const checkoutData = {
     full_name: '',
     email: '',
     phone: '',
     address: '',
     payment_method: '',
+    promo_code: '',
     notes: '',
 };
 
@@ -31,170 +41,349 @@ const checkoutCartItems = document.getElementById('checkoutCartItems');
 const checkoutEmpty = document.getElementById('checkoutEmpty');
 const reviewBlock = document.getElementById('reviewBlock');
 const checkoutMessage = document.getElementById('checkoutMessage');
+const checkoutQuote = document.getElementById('checkoutQuote');
+const quoteStatus = document.getElementById('quoteStatus');
+const promoCodeInput = document.getElementById('promoCode');
+const paymentMethodInput = document.getElementById('paymentMethod');
+const addressForm = document.getElementById('addressForm');
+const paymentForm = document.getElementById('paymentForm');
 
-function track(eventName, payload = {}) {
-    if (!window.dataLayer) window.dataLayer = [];
-    window.dataLayer.push({ event: eventName, ...payload });
-    console.info('[analytics]', eventName, payload);
+function getCookie(name) {
+    const cookieValue = document.cookie
+        .split('; ')
+        .find((row) => row.startsWith(`${name}=`));
+    return cookieValue ? decodeURIComponent(cookieValue.split('=').slice(1).join('=')) : '';
 }
 
-async function apiFetch(url, options = {}) {
-    return fetch(url, { credentials: 'include', ...options });
-}
-
-function loadCart() {
-    try {
-        const parsed = JSON.parse(localStorage.getItem(CART_KEY) || '[]');
-        return Array.isArray(parsed) ? parsed : [];
-    } catch (_error) {
-        return [];
+async function apiFetchWithCsrf(url, options = {}) {
+    const config = { credentials: 'include', ...options };
+    const method = String(config.method || 'GET').toUpperCase();
+    if (!['GET', 'HEAD', 'OPTIONS', 'TRACE'].includes(method)) {
+        const headers = new Headers(config.headers || {});
+        const csrfToken = getCookie('csrftoken');
+        if (csrfToken && !headers.has('X-CSRFToken')) {
+            headers.set('X-CSRFToken', csrfToken);
+        }
+        config.headers = headers;
     }
+    return fetch(url, config);
 }
 
 function setStep(step) {
     currentStep = step;
     for (const [index, node] of Object.entries(stepMap)) {
-        node.classList.toggle('hidden', Number(index) !== step);
+        if (node) {
+            node.classList.toggle('hidden', Number(index) !== step);
+        }
     }
     for (const [index, node] of Object.entries(labelMap)) {
-        node.classList.toggle('active', Number(index) === step);
+        if (node) {
+            node.classList.toggle('active', Number(index) === step);
+        }
     }
 }
 
-function getProductById(productId) {
-    return products.find((item) => item.id === productId);
+function getCartItemName(item) {
+    const product = productsById.get(item.product_id);
+    return item.product_name || (product ? product.name : `Product #${item.product_id}`);
+}
+
+function getCartItemPrice(item) {
+    const product = productsById.get(item.product_id);
+    return item.unit_price || (product ? product.price : '0.00');
+}
+
+function buildOrderItems() {
+    return cart.map((item) => ({
+        product_id: item.product_id,
+        variant_id: item.variant_id || null,
+        size: item.size || '',
+        color: item.color || '',
+        quantity: Number(item.quantity || 1),
+    }));
 }
 
 function renderCartStep() {
+    if (!checkoutCartItems || !checkoutEmpty) return;
+
     checkoutCartItems.innerHTML = '';
     if (!cart.length) {
         checkoutEmpty.classList.remove('hidden');
+        checkoutEmpty.innerHTML = `
+            <div class="empty-state">
+                <h4>Your cart is empty.</h4>
+                <p class="meta">Browse shirts first, then return here to complete your order.</p>
+                <a class="btn secondary" href="shop.html">Browse shirts</a>
+            </div>
+        `;
         return;
     }
 
     checkoutEmpty.classList.add('hidden');
+    checkoutEmpty.innerHTML = '';
+
     for (const item of cart) {
-        const product = getProductById(item.product_id);
         const row = document.createElement('div');
-        row.className = 'cart-item';
+        row.className = 'cart-item checkout-cart-item';
         row.innerHTML = `
-            <p><strong>${product ? product.name : `Product #${item.product_id}`}</strong></p>
-            <p class="meta">${item.size} | ${item.color} | Qty: ${item.quantity} | PHP ${product ? product.price : '0.00'}</p>
+            <div>
+                <p><strong>${escapeHtml(getCartItemName(item))}</strong></p>
+                <p class="meta">${escapeHtml(item.size || 'M')} | ${escapeHtml(item.color || 'Black')} | Qty: ${item.quantity}</p>
+                <p class="meta">${formatPrice(getCartItemPrice(item))}</p>
+            </div>
+            <button class="plain-btn">Remove</button>
         `;
+        row.querySelector('button').addEventListener('click', () => {
+            cart = cart.filter((cartItem) => cartItem.key !== item.key);
+            saveCart(cart);
+            renderCartStep();
+            updateQuote();
+        });
         checkoutCartItems.appendChild(row);
     }
 }
 
-function buildOrderItems() {
-    const combined = new Map();
-    for (const item of cart) {
-        const existing = combined.get(item.product_id) || 0;
-        combined.set(item.product_id, existing + item.quantity);
+function renderQuote() {
+    if (!checkoutQuote) return;
+
+    if (!cart.length) {
+        checkoutQuote.innerHTML = '<p class="meta">Add items to your cart to see shipping and delivery estimates.</p>';
+        if (quoteStatus) quoteStatus.textContent = '';
+        return;
     }
-    return Array.from(combined.entries()).map(([product_id, quantity]) => ({ product_id, quantity }));
+
+    if (!quoteData) {
+        checkoutQuote.innerHTML = `
+            <div class="quote-row">
+                <span>Subtotal</span>
+                <strong>${formatPrice(cart.reduce((sum, item) => sum + (Number(item.unit_price || 0) * Number(item.quantity || 0)), 0))}</strong>
+            </div>
+            <p class="meta">Enter your address to estimate delivery fee and ETA.</p>
+        `;
+        if (quoteStatus) quoteStatus.textContent = 'Fill in your address to calculate delivery.';
+        return;
+    }
+
+    checkoutQuote.innerHTML = `
+        <div class="quote-row"><span>Subtotal</span><strong>${formatPrice(quoteData.subtotal_amount)}</strong></div>
+        <div class="quote-row"><span>Bundle discount</span><strong>-${formatPrice(quoteData.bundle_discount_amount)}</strong></div>
+        <div class="quote-row"><span>Promo discount</span><strong>-${formatPrice(quoteData.promo_discount_amount)}</strong></div>
+        <div class="quote-row"><span>Shipping fee</span><strong>${formatPrice(quoteData.shipping_fee)}</strong></div>
+        <div class="quote-row quote-total"><span>Total</span><strong>${formatPrice(quoteData.total_amount)}</strong></div>
+        <p class="meta">Estimated delivery: ${escapeHtml(quoteData.delivery_eta_text || `${quoteData.estimated_delivery_days} days`)}</p>
+        <p class="meta">Delivery date: ${escapeHtml(quoteData.estimated_delivery_date || '')}</p>
+    `;
+    if (quoteStatus) {
+        quoteStatus.textContent = quoteData.delivery_eta_text
+            ? `Delivery estimate: ${quoteData.delivery_eta_text}`
+            : 'Delivery estimate ready.';
+    }
+}
+
+async function updateQuote() {
+    if (!cart.length) {
+        quoteData = null;
+        renderQuote();
+        return;
+    }
+
+    try {
+        const response = await apiFetchWithCsrf(`${API_BASE}/checkout/quote/`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                items: buildOrderItems(),
+                address: checkoutData.address,
+                promo_code: checkoutData.promo_code,
+            }),
+        });
+        const body = await response.json();
+        if (!response.ok) {
+            throw new Error(body.error || 'Could not calculate quote.');
+        }
+        quoteData = body.quote;
+        renderQuote();
+        renderReviewStep();
+    } catch (error) {
+        quoteData = null;
+        renderQuote();
+        if (quoteStatus) {
+            quoteStatus.textContent = error.message || 'Could not calculate quote right now.';
+        }
+    }
 }
 
 function renderReviewStep() {
-    const items = buildOrderItems();
-    const rows = [];
-    let total = 0;
-    for (const item of items) {
-        const product = getProductById(item.product_id);
-        const price = Number(product ? product.price : 0);
-        const subtotal = price * item.quantity;
-        total += subtotal;
-        rows.push(`<p>${product ? product.name : item.product_id} x ${item.quantity} - PHP ${subtotal.toFixed(2)}</p>`);
+    if (!reviewBlock) return;
+
+    if (!cart.length) {
+        reviewBlock.innerHTML = '<p class="meta">Your cart is empty.</p>';
+        return;
     }
 
+    const orderRows = cart.map((item) => {
+        const lineTotal = Number(item.unit_price || 0) * Number(item.quantity || 0);
+        return `<p>${escapeHtml(getCartItemName(item))} x ${item.quantity} - ${escapeHtml(item.size || 'M')} / ${escapeHtml(item.color || 'Black')} - ${formatPrice(lineTotal)}</p>`;
+    });
+
     reviewBlock.innerHTML = `
-        <p><strong>Name:</strong> ${checkoutData.full_name}</p>
-        <p><strong>Email:</strong> ${checkoutData.email}</p>
-        <p><strong>Phone:</strong> ${checkoutData.phone}</p>
-        <p><strong>Address:</strong> ${checkoutData.address}</p>
-        <p><strong>Payment:</strong> ${checkoutData.payment_method}</p>
-        ${rows.join('')}
-        <p><strong>Total:</strong> PHP ${total.toFixed(2)}</p>
+        <div class="review-summary">
+            <p><strong>Name:</strong> ${escapeHtml(checkoutData.full_name)}</p>
+            <p><strong>Email:</strong> ${escapeHtml(checkoutData.email)}</p>
+            <p><strong>Phone:</strong> ${escapeHtml(checkoutData.phone)}</p>
+            <p><strong>Address:</strong> ${escapeHtml(checkoutData.address)}</p>
+            <p><strong>Payment:</strong> ${escapeHtml(checkoutData.payment_method || 'Not set')}</p>
+            <p><strong>Promo:</strong> ${escapeHtml(checkoutData.promo_code || 'None')}</p>
+        </div>
+        <div class="review-lines">
+            ${orderRows.join('')}
+        </div>
+        ${quoteData ? `
+            <div class="review-total-box">
+                <p><strong>Shipping:</strong> ${formatPrice(quoteData.shipping_fee)}</p>
+                <p><strong>Discounts:</strong> -${formatPrice(Number(quoteData.bundle_discount_amount || 0) + Number(quoteData.promo_discount_amount || 0))}</p>
+                <p><strong>Total:</strong> ${formatPrice(quoteData.total_amount)}</p>
+            </div>
+        ` : ''}
     `;
 }
 
-async function loadProducts() {
-    const res = await apiFetch(`${API_BASE}/products/`);
-    if (!res.ok) {
-        throw new Error('Failed to load products');
+function setProductsFromCart() {
+    productsById = new Map();
+    for (const item of cart) {
+        productsById.set(item.product_id, {
+            id: item.product_id,
+            name: item.product_name || `Product #${item.product_id}`,
+            price: item.unit_price || '0.00',
+        });
     }
-    const body = await res.json();
-    products = body.products || [];
 }
 
-document.getElementById('toStep2').addEventListener('click', () => {
-    if (!cart.length) return;
-    setStep(2);
-});
-
-document.getElementById('backTo1').addEventListener('click', () => setStep(1));
-document.getElementById('backTo2').addEventListener('click', () => setStep(2));
-document.getElementById('backTo3').addEventListener('click', () => setStep(3));
-
-document.getElementById('addressForm').addEventListener('submit', (event) => {
-    event.preventDefault();
-    const formData = new FormData(event.target);
+function validateAddressForm(formData) {
     checkoutData.full_name = String(formData.get('full_name') || '').trim();
     checkoutData.email = String(formData.get('email') || '').trim();
     checkoutData.phone = String(formData.get('phone') || '').trim();
     checkoutData.address = String(formData.get('address') || '').trim();
-    setStep(3);
-});
 
-document.getElementById('paymentForm').addEventListener('submit', (event) => {
-    event.preventDefault();
-    const formData = new FormData(event.target);
+    if (!checkoutData.full_name || !checkoutData.email || !checkoutData.phone || !checkoutData.address) {
+        showToast('Please complete the address details first.', 'error');
+        return false;
+    }
+
+    return true;
+}
+
+function validatePaymentForm(formData) {
     checkoutData.payment_method = String(formData.get('payment_method') || '').trim();
+    checkoutData.promo_code = String(formData.get('promo_code') || '').trim();
     checkoutData.notes = String(formData.get('notes') || '').trim();
-    renderReviewStep();
-    setStep(4);
-});
 
-document.getElementById('placeOrder').addEventListener('click', async () => {
-    checkoutMessage.textContent = '';
+    if (!checkoutData.payment_method) {
+        showToast('Please choose a payment method.', 'error');
+        return false;
+    }
+
+    return true;
+}
+
+async function placeOrder() {
+    if (!cart.length) {
+        checkoutMessage.textContent = 'Your cart is empty.';
+        return;
+    }
+
+    if (!quoteData) {
+        checkoutMessage.textContent = 'Calculate the delivery quote first.';
+        return;
+    }
+
     const payload = {
         ...checkoutData,
         items: buildOrderItems(),
     };
 
-    if (!payload.items.length) {
-        checkoutMessage.textContent = 'Your cart is empty.';
-        return;
+    try {
+        const response = await apiFetchWithCsrf(`${API_BASE}/orders/`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload),
+        });
+        const body = await response.json();
+        if (!response.ok) {
+            throw new Error(body.error || 'Failed to place order.');
+        }
+
+        saveCart([]);
+        cart = [];
+        renderCartStep();
+        renderQuote();
+        checkoutMessage.textContent = `Order #${body.order_id} created successfully. Tracking number: ${body.tracking_number}.`;
+        if (body.redirect_url) {
+            window.location.href = body.redirect_url;
+            return;
+        }
+
+        setTimeout(() => {
+            window.location.href = 'tracking.html?order_id=' + encodeURIComponent(String(body.order_id));
+        }, 1400);
+    } catch (error) {
+        checkoutMessage.textContent = error.message || 'Could not place order right now.';
     }
+}
 
-    track('purchase_attempt', { items: payload.items.length, payment_method: payload.payment_method });
-
-    const res = await apiFetch(`${API_BASE}/orders/`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
+function bindEvents() {
+    document.getElementById('toStep2').addEventListener('click', () => {
+        if (!cart.length) return;
+        setStep(2);
     });
 
-    const body = await res.json();
-    if (!res.ok) {
-        checkoutMessage.textContent = body.error || 'Failed to place order.';
-        return;
+    document.getElementById('backTo1').addEventListener('click', () => setStep(1));
+    document.getElementById('backTo2').addEventListener('click', () => setStep(2));
+    document.getElementById('backTo3').addEventListener('click', () => setStep(3));
+
+    addressForm.addEventListener('submit', async (event) => {
+        event.preventDefault();
+        const formData = new FormData(addressForm);
+        if (!validateAddressForm(formData)) return;
+        setStep(3);
+        await updateQuote();
+    });
+
+    paymentForm.addEventListener('submit', async (event) => {
+        event.preventDefault();
+        const formData = new FormData(paymentForm);
+        if (!validatePaymentForm(formData)) return;
+        await updateQuote();
+        renderReviewStep();
+        setStep(4);
+    });
+
+    if (promoCodeInput) {
+        promoCodeInput.addEventListener('input', () => {
+            checkoutData.promo_code = String(promoCodeInput.value || '').trim();
+            updateQuote();
+        });
     }
 
-    localStorage.setItem(CART_KEY, JSON.stringify([]));
-
-    if (body.redirect_url) {
-        window.location.href = body.redirect_url;
-        return;
+    if (paymentMethodInput) {
+        paymentMethodInput.addEventListener('change', () => {
+            checkoutData.payment_method = String(paymentMethodInput.value || '').trim();
+            renderReviewStep();
+        });
     }
 
-    checkoutMessage.textContent = `Order #${body.order_id} created successfully.`;
-    setTimeout(() => {
-        window.location.href = 'index.html';
-    }, 1100);
-});
+    document.getElementById('placeOrder').addEventListener('click', placeOrder);
+}
 
 (async function init() {
     cart = loadCart();
-    await loadProducts();
+    setProductsFromCart();
     renderCartStep();
+    renderQuote();
+    renderReviewStep();
+    bindEvents();
+    setStep(1);
+    if (cart.length) {
+        updateQuote();
+    }
 })();

@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AnyPrint Shop</title>
+    <link rel="icon" href="data:;base64,iVBORw0KGgo=" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Sora:wght@400;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+    <header class="site-header">
+        <div class="topbar">
+            <div class="container topbar-inner">
+                <div class="topbar-left">
+                    <span class="topbar-item">All products • Search, sort, and compare faster</span>
+                </div>
+                <div class="topbar-right">
+                    <a class="topbar-link" href="index.html#how">How it works</a>
+                    <a class="topbar-link" href="index.html#why">Why choose us</a>
+                    <a class="topbar-link" href="index.html#contact">Contact</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="container nav-wrap">
+            <div class="brand">
+                <h1 class="brand-title">AnyPrint</h1>
+                <p class="brand-tag">T-shirt Store</p>
+            </div>
+
+            <nav class="top-links" aria-label="Primary">
+                <button id="homeNavButton" class="plain-btn">Home</button>
+                <button id="shopNavButton" class="plain-btn">All Products</button>
+                <a class="plain-btn" href="index.html#why">Why Choose Us</a>
+                <a class="plain-btn" href="index.html#clients">Clients</a>
+                <a id="trackOrderLink" class="plain-btn" href="tracking.html">Track Order</a>
+            </nav>
+
+            <div class="top-actions">
+                <a id="authButton" class="auth-btn" href="login.html">Login</a>
+                <button id="logoutButton" class="btn secondary small hidden" type="button">Logout</button>
+                <button id="cartButton" class="cart-btn">Cart (<span id="cartCount">0</span>)</button>
+            </div>
+        </div>
+    </header>
+
+    <main class="page-shell">
+        <section class="container page-intro shop-page-intro">
+            <p class="page-kicker">All Products</p>
+            <h2 class="page-title">Find the right tee faster.</h2>
+            <p class="page-lead">Search the full catalog in one place, sort by what matters most, and compare shirts without the homepage distractions. This is the page buyers should land on when they are ready to shop.</p>
+            <div class="shop-highlights">
+                <article class="shop-highlight-card">
+                    <h3>Best sellers</h3>
+                    <p class="meta">Show the strongest sellers first and keep the catalog moving.</p>
+                </article>
+                <article class="shop-highlight-card">
+                    <h3>Easy filtering</h3>
+                    <p class="meta">Search by shirt name, category, or description in seconds.</p>
+                </article>
+                <article class="shop-highlight-card">
+                    <h3>Fast checkout</h3>
+                    <p class="meta">Clear product cards lead buyers straight into cart and checkout.</p>
+                </article>
+            </div>
+        </section>
+
+        <section class="container">
+            <section id="shopSection" class="shop-section panel-card pad">
+                <div class="shop-toolbar">
+                    <label class="control-field">
+                        <span>Search shirts</span>
+                        <input id="productSearch" type="search" placeholder="Search by name, description, or category" autocomplete="off" />
+                    </label>
+                    <label class="control-field">
+                        <span>Sort by</span>
+                        <select id="sortSelect">
+                            <option value="featured">Featured</option>
+                            <option value="name">Name A to Z</option>
+                            <option value="-price">Price: High to Low</option>
+                            <option value="price">Price: Low to High</option>
+                            <option value="newest">Newest</option>
+                            <option value="-stock">Stock: Highest First</option>
+                        </select>
+                    </label>
+                </div>
+                <div class="shop-filter-grid">
+                    <label class="control-field">
+                        <span>Size</span>
+                        <select id="sizeFilter">
+                            <option value="">All sizes</option>
+                            <option value="S">S</option>
+                            <option value="M">M</option>
+                            <option value="L">L</option>
+                            <option value="XL">XL</option>
+                            <option value="2XL">2XL</option>
+                        </select>
+                    </label>
+                    <label class="control-field">
+                        <span>Color</span>
+                        <select id="colorFilter">
+                            <option value="">All colors</option>
+                            <option value="Black">Black</option>
+                            <option value="White">White</option>
+                            <option value="Sand">Sand</option>
+                            <option value="Olive">Olive</option>
+                            <option value="Cream">Cream</option>
+                            <option value="Navy">Navy</option>
+                            <option value="Sky">Sky</option>
+                            <option value="Mint">Mint</option>
+                        </select>
+                    </label>
+                    <label class="control-field">
+                        <span>Print style</span>
+                        <select id="printStyleFilter">
+                            <option value="">All styles</option>
+                            <option value="Classic">Classic</option>
+                            <option value="Minimal">Minimal</option>
+                            <option value="Graphic">Graphic</option>
+                            <option value="Street">Street</option>
+                            <option value="Kids">Kids</option>
+                        </select>
+                    </label>
+                    <label class="control-field">
+                        <span>Min price</span>
+                        <input id="minPriceFilter" type="number" min="0" step="0.01" placeholder="0.00" />
+                    </label>
+                    <label class="control-field">
+                        <span>Max price</span>
+                        <input id="maxPriceFilter" type="number" min="0" step="0.01" placeholder="1000.00" />
+                    </label>
+                    <div class="filter-actions">
+                        <button id="clearFiltersButton" class="btn secondary" type="button">Clear filters</button>
+                    </div>
+                </div>
+                <div id="shopSummary" class="shop-summary meta"></div>
+                <div id="categoryChips" class="category-chips"></div>
+                <div id="productsStatus" class="products-status"></div>
+                <div id="products" class="product-grid"></div>
+                <div id="paginationControls" class="pagination-controls"></div>
+            </section>
+        </section>
+    </main>
+
+    <footer class="site-footer" id="contact">
+        <div class="container footer-grid">
+            <div>
+                <h4 class="footer-title">AnyPrint</h4>
+                <p class="meta">T-shirt store inspired by modern online shops.</p>
+                <p class="meta">Email: hello@anyprint.local</p>
+            </div>
+            <div>
+                <h4 class="footer-title">Getting Started</h4>
+                <a class="footer-link" href="index.html#how">How to order</a>
+                <a class="footer-link" href="index.html">Home</a>
+                <a class="footer-link" href="index.html#why">Why choose us</a>
+            </div>
+            <div>
+                <h4 class="footer-title">Support</h4>
+                <a class="footer-link" href="#">FAQ</a>
+                <a class="footer-link" href="#">Ways to pay</a>
+                <a class="footer-link" href="#">Delivery info</a>
+            </div>
+        </div>
+        <div class="container footer-bottom">
+            <p class="meta">© 2026 AnyPrint.</p>
+        </div>
+    </footer>
+
+    <aside id="cartPanel" class="cart-panel hidden">
+        <div class="cart-head">
+            <h3>Your Cart</h3>
+            <button id="closeCart" class="plain-btn">Close</button>
+        </div>
+        <div id="cartItems"></div>
+        <a id="cartCheckoutButton" href="checkout.html" class="btn cart-checkout-btn">Go to Checkout</a>
+    </aside>
+
+    <aside id="quickViewPanel" class="auth-panel hidden">
+        <div class="auth-dialog quick-view-dialog">
+            <div class="cart-head">
+                <h3>Quick View</h3>
+                <button id="closeQuickView" class="plain-btn">Close</button>
+            </div>
+            <div id="quickViewContent"></div>
+        </div>
+    </aside>
+
+    <button id="mobileCartCta" class="mobile-cart-cta">Open Cart (<span id="mobileCartCount">0</span>)</button>
+    <div id="toastStack" class="toast-stack"></div>
+
+    <script src="common.js?v=2"></script>
+    <script src="app.js?v=2"></script>
+</body>
+</html>

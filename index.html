@@ -4,6 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>AnyPrint Store</title>
+    <link rel="icon" href="data:;base64,iVBORw0KGgo=" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Sora:wght@400;600;700&display=swap" rel="stylesheet" />
@@ -11,41 +12,297 @@
 </head>
 <body>
     <header class="site-header">
-        <div class="container nav-wrap">
-            <h1>AnyPrint</h1>
-            <div class="top-links">
-                <button id="homeNavButton" class="plain-btn">Home</button>
-                <button id="shopNavButton" class="plain-btn">Shop</button>
+        <div class="topbar">
+            <div class="container topbar-inner">
+                <div class="topbar-left">
+                    <span class="topbar-item">T-shirt store • Metro Manila → Nationwide delivery</span>
+                </div>
+                <div class="topbar-right">
+                    <a class="topbar-link" href="#how">How it works</a>
+                    <a class="topbar-link" href="#why">Why choose us</a>
+                    <a class="topbar-link" href="#contact">Contact</a>
+                </div>
             </div>
+        </div>
+
+        <div class="container nav-wrap">
+            <div class="brand">
+                <h1 class="brand-title">AnyPrint</h1>
+                <p class="brand-tag">T-shirt Store</p>
+            </div>
+
+            <nav class="top-links" aria-label="Primary">
+                <button id="homeNavButton" class="plain-btn">Home</button>
+                <button id="shopNavButton" class="plain-btn">All Products</button>
+                <a class="plain-btn" href="#why">Why Choose Us</a>
+                <a class="plain-btn" href="#clients">Clients</a>
+                <a id="trackOrderLink" class="plain-btn" href="tracking.html">Track Order</a>
+            </nav>
+
             <div class="top-actions">
-                <button id="authButton" class="auth-btn">Login/Register</button>
+                <a id="authButton" class="auth-btn" href="login.html">Login</a>
+                <button id="logoutButton" class="btn secondary small hidden" type="button">Logout</button>
                 <button id="cartButton" class="cart-btn">Cart (<span id="cartCount">0</span>)</button>
             </div>
         </div>
     </header>
 
-    <main class="container">
+    <main>
         <section class="hero">
-            <p class="eyebrow">Independent Frontend App</p>
-            <h2>Your Brand on Premium Shirts, Delivered Fast</h2>
-            <p>AnyPrint helps creators and businesses launch custom tee drops with trusted quality, secure checkout, and real-time inventory.</p>
-            <div class="hero-actions">
-                <button id="goShopButton" class="btn">Start Shopping</button>
-                <span class="meta">Rated 4.9/5 by local streetwear sellers</span>
-            </div>
-            <div class="trust-badges">
-                <span>Secure Payment</span>
-                <span>Fast Nationwide Delivery</span>
-                <span>Quality Print Guarantee</span>
+            <div class="container hero-grid">
+                <div class="hero-copy">
+                    <p class="eyebrow">Order online • Sizes & colors • Fast checkout</p>
+                    <h2>Premium T-shirts, ordered in minutes.</h2>
+                    <p class="hero-lede">A clean, MetroPrint-inspired layout adapted for a T-shirt storefront. Browse tees, add to cart, and checkout with your Django backend.</p>
+                    <div class="hero-actions">
+                        <button id="goShopButton" class="btn">Get Started</button>
+                        <a class="btn secondary" href="#how">How to Order</a>
+                        <span class="meta">Transparent workflow • Clear pricing</span>
+                    </div>
+                    <div class="trust-badges">
+                        <span>Multiple sizes</span>
+                        <span>Everyday comfort</span>
+                        <span>Nationwide delivery-ready</span>
+                    </div>
+                </div>
+                <div class="hero-panel" aria-label="Featured products">
+                    <div class="banner">
+                        <p class="banner-kicker">Featured</p>
+                        <h3 class="banner-title">Top T-shirt Picks</h3>
+                        <div class="banner-cards" role="list">
+                            <article class="mini-card" role="listitem">
+                                <div class="mini-thumb" aria-hidden="true"></div>
+                                <div>
+                                    <p class="mini-title">Unisex - Light Weight</p>
+                                    <p class="mini-meta">Soft feel • Daily wear</p>
+                                    <button class="mini-cta" type="button" data-open-shop>Get Started</button>
+                                </div>
+                            </article>
+                            <article class="mini-card" role="listitem">
+                                <div class="mini-thumb" aria-hidden="true"></div>
+                                <div>
+                                    <p class="mini-title">Unisex - Heavy Weight</p>
+                                    <p class="mini-meta">Thicker fabric • Premium look</p>
+                                    <button class="mini-cta" type="button" data-open-shop>Get Started</button>
+                                </div>
+                            </article>
+                            <article class="mini-card" role="listitem">
+                                <div class="mini-thumb" aria-hidden="true"></div>
+                                <div>
+                                    <p class="mini-title">Graphic Tees</p>
+                                    <p class="mini-meta">Streetwear • Limited drops</p>
+                                    <button class="mini-cta" type="button" data-open-shop>Get Started</button>
+                                </div>
+                            </article>
+                        </div>
+                    </div>
+                </div>
             </div>
         </section>
 
-        <section id="shopSection" class="shop-section hidden-shop">
-            <div id="categoryChips" class="category-chips"></div>
-            <div id="productsStatus" class="products-status"></div>
-            <div id="products" class="product-grid"></div>
+        <section class="section" id="top">
+            <div class="container">
+                <div class="section-head">
+                    <h3>Top T-shirts</h3>
+                    <button class="plain-btn" type="button" data-open-shop>View All</button>
+                </div>
+                <div class="scroll-row" aria-label="Top t-shirt products">
+                    <article class="feature-card">
+                        <div class="feature-thumb" aria-hidden="true"></div>
+                        <h4>Unisex Light Weight Tee</h4>
+                        <p class="meta">Breathable feel • Everyday fit</p>
+                        <button class="btn small" type="button" data-open-shop>Get Started</button>
+                    </article>
+                    <article class="feature-card">
+                        <div class="feature-thumb" aria-hidden="true"></div>
+                        <h4>Unisex Heavy Weight Tee</h4>
+                        <p class="meta">Structured look • Premium drape</p>
+                        <button class="btn small" type="button" data-open-shop>Get Started</button>
+                    </article>
+                    <article class="feature-card">
+                        <div class="feature-thumb" aria-hidden="true"></div>
+                        <h4>Oversized Street Tee</h4>
+                        <p class="meta">Relaxed fit • Trend-ready</p>
+                        <button class="btn small" type="button" data-open-shop>Get Started</button>
+                    </article>
+                    <article class="feature-card">
+                        <div class="feature-thumb" aria-hidden="true"></div>
+                        <h4>Graphic Tee</h4>
+                        <p class="meta">Bold prints • Drop-style releases</p>
+                        <button class="btn small" type="button" data-open-shop>Get Started</button>
+                    </article>
+                    <article class="feature-card">
+                        <div class="feature-thumb" aria-hidden="true"></div>
+                        <h4>Kids Tee</h4>
+                        <p class="meta">Comfy fit • School-ready</p>
+                        <button class="btn small" type="button" data-open-shop>Get Started</button>
+                    </article>
+                </div>
+            </div>
+        </section>
+
+        <section class="section" id="recentlyViewedSection">
+            <div class="container">
+                <div class="section-head">
+                    <h3>Recently Viewed</h3>
+                    <span class="meta">Jump back into shirts you already explored</span>
+                </div>
+                <p id="recentlyViewedEmpty" class="meta"></p>
+                <div id="recentlyViewedGrid" class="scroll-row recent-grid"></div>
+            </div>
+        </section>
+
+        <section class="section" id="how">
+            <div class="container">
+                <div class="section-head">
+                    <h3>How to Order Online</h3>
+                    <span class="meta">Simple, predictable steps</span>
+                </div>
+                <div class="steps">
+                    <article class="step-card">
+                        <p class="step-num">1</p>
+                        <h4>Pick a tee</h4>
+                        <p class="meta">Browse categories and choose your style.</p>
+                    </article>
+                    <article class="step-card">
+                        <p class="step-num">2</p>
+                        <h4>Add to cart</h4>
+                        <p class="meta">Choose size/color variants and quantities.</p>
+                    </article>
+                    <article class="step-card">
+                        <p class="step-num">3</p>
+                        <h4>Checkout</h4>
+                        <p class="meta">Enter delivery details and payment method.</p>
+                    </article>
+                    <article class="step-card">
+                        <p class="step-num">4</p>
+                        <h4>Track updates</h4>
+                        <p class="meta">Add delivery/order statuses for tracking.</p>
+                    </article>
+                </div>
+            </div>
+        </section>
+
+        <section class="section" id="why">
+            <div class="container">
+                <div class="section-head">
+                    <h3>Why Choose AnyPrint</h3>
+                    <span class="meta">A clear, online-first experience</span>
+                </div>
+
+                <div class="why-grid">
+                    <article class="why-card">
+                        <h4>Size & color options</h4>
+                        <p class="meta">Variant-style shopping (sizes/colors) in a simple flow.</p>
+                    </article>
+                    <article class="why-card">
+                        <h4>Live stock checks</h4>
+                        <p class="meta">Prevent overselling by validating stock during checkout.</p>
+                    </article>
+                    <article class="why-card">
+                        <h4>Fast browsing</h4>
+                        <p class="meta">Designed for quick discovery and easy checkout.</p>
+                    </article>
+                    <article class="why-card">
+                        <h4>Flexible payment</h4>
+                        <p class="meta">COD, bank transfer, and gateway-ready integrations.</p>
+                    </article>
+                </div>
+
+                <div class="compare">
+                    <table class="compare-table">
+                        <thead>
+                            <tr>
+                                <th>Feature</th>
+                                <th>AnyPrint Online Store</th>
+                                <th>Typical Offline Flow</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Sizes & colors</td>
+                                <td>Yes</td>
+                                <td>Varies</td>
+                            </tr>
+                            <tr>
+                                <td>Instant cart + checkout</td>
+                                <td>Yes</td>
+                                <td>Message-based orders</td>
+                            </tr>
+                            <tr>
+                                <td>Login + order history</td>
+                                <td>Ready to extend</td>
+                                <td>Varies</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <section class="section" id="clients">
+            <div class="container">
+                <div class="section-head">
+                    <h3>Trusted by Teams</h3>
+                    <span class="meta">Brands, teams, and organizations</span>
+                </div>
+                <div class="logo-row" aria-label="Client logos">
+                    <div class="logo-pill">Client A</div>
+                    <div class="logo-pill">Client B</div>
+                    <div class="logo-pill">Client C</div>
+                    <div class="logo-pill">Client D</div>
+                    <div class="logo-pill">Client E</div>
+                    <div class="logo-pill">Client F</div>
+                </div>
+            </div>
+        </section>
+
+        <section class="section">
+            <div class="container">
+                <div class="shop-cta panel-card">
+                    <div>
+                        <p class="page-kicker">Dedicated catalog</p>
+                        <h3 class="shop-cta-title">Put the full collection in its own shop page.</h3>
+                        <p class="shop-cta-copy">This keeps the homepage focused on selling the story while buyers get a cleaner place to search, sort, and compare products.</p>
+                    </div>
+                    <div class="shop-cta-actions">
+                        <button class="btn" type="button" data-open-shop>Open All Products</button>
+                        <a class="btn secondary" href="#top">See Best Picks</a>
+                    </div>
+                    <div class="shop-cta-points">
+                        <span>Cleaner browsing</span>
+                        <span>Better conversion</span>
+                        <span>Faster product discovery</span>
+                    </div>
+                </div>
+            </div>
         </section>
     </main>
+
+    <footer class="site-footer" id="contact">
+        <div class="container footer-grid">
+            <div>
+                <h4 class="footer-title">AnyPrint</h4>
+                <p class="meta">T-shirt store inspired by modern online shops.</p>
+                <p class="meta">Email: hello@anyprint.local</p>
+            </div>
+            <div>
+                <h4 class="footer-title">Getting Started</h4>
+                <a class="footer-link" href="#how">How to order</a>
+                <button class="footer-link as-button" type="button" data-open-shop>Browse catalog</button>
+                <a class="footer-link" href="#why">Why choose us</a>
+            </div>
+            <div>
+                <h4 class="footer-title">Support</h4>
+                <a class="footer-link" href="#">FAQ</a>
+                <a class="footer-link" href="#">Ways to pay</a>
+                <a class="footer-link" href="#">Delivery info</a>
+            </div>
+        </div>
+        <div class="container footer-bottom">
+            <p class="meta">© 2026 AnyPrint.</p>
+        </div>
+    </footer>
 
     <aside id="cartPanel" class="cart-panel hidden">
         <div class="cart-head">
@@ -54,44 +311,6 @@
         </div>
         <div id="cartItems"></div>
         <a id="cartCheckoutButton" href="checkout.html" class="btn cart-checkout-btn">Go to Checkout</a>
-    </aside>
-
-    <aside id="authPanel" class="auth-panel hidden">
-        <div class="auth-dialog">
-            <div class="cart-head">
-                <h3>Account</h3>
-                <button id="closeAuth" class="plain-btn">Close</button>
-            </div>
-
-            <div id="authState" class="auth-state"></div>
-
-            <div class="auth-tabs">
-                <button id="showLoginTab" class="chip active">Login</button>
-                <button id="showRegisterTab" class="chip">Register</button>
-            </div>
-
-            <form id="loginForm" class="checkout-form">
-                <h4>Login</h4>
-                <input name="username" placeholder="Username" required />
-                <input name="password" type="password" placeholder="Password" required />
-                <p id="loginError" class="inline-error"></p>
-                <button type="submit" class="btn">Login</button>
-            </form>
-
-            <form id="registerForm" class="checkout-form hidden">
-                <h4>Register</h4>
-                <input name="username" placeholder="Username" required />
-                <input name="email" type="email" placeholder="Email (optional)" />
-                <input name="password" type="password" placeholder="Password" required />
-                <p id="passwordStrength" class="meta"></p>
-                <input name="confirm_password" type="password" placeholder="Confirm Password" required />
-                <p id="registerError" class="inline-error"></p>
-                <button type="submit" class="btn">Register</button>
-            </form>
-
-            <button id="logoutButton" class="plain-btn hidden">Logout</button>
-            <p id="authStatus" class="status"></p>
-        </div>
     </aside>
 
     <aside id="quickViewPanel" class="auth-panel hidden">
@@ -107,6 +326,7 @@
     <button id="mobileCartCta" class="mobile-cart-cta">Open Cart (<span id="mobileCartCount">0</span>)</button>
     <div id="toastStack" class="toast-stack"></div>
 
-    <script src="app.js"></script>
+    <script src="common.js?v=2"></script>
+    <script src="app.js?v=2"></script>
 </body>
 </html>

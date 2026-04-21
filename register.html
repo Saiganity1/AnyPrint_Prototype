@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AnyPrint Register</title>
+    <link rel="icon" href="data:;base64,iVBORw0KGgo=" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Sora:wght@400;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+    <header class="site-header">
+        <div class="container nav-wrap">
+            <div class="brand">
+                <h1 class="brand-title"><a class="brand-link" href="index.html">AnyPrint</a></h1>
+                <p class="brand-tag">Account</p>
+            </div>
+            <div class="top-actions">
+                <a class="plain-btn" href="index.html">Back to Shop</a>
+            </div>
+        </div>
+    </header>
+
+    <main class="container page-shell checkout-page">
+        <div class="page-intro">
+            <p class="page-kicker">Create account</p>
+            <h2 class="page-title">Register</h2>
+            <p class="page-lead">Create an account to save your details, track orders, and checkout with less friction.</p>
+        </div>
+
+        <section class="checkout-card panel-card pad auth-card-shell">
+            <h2>Register</h2>
+            <div id="authState" class="auth-state"></div>
+
+            <form id="registerForm" class="checkout-form" novalidate>
+                <input name="username" placeholder="Username" autocomplete="username" required />
+                <p id="registerUsernameError" class="field-error"></p>
+                <input name="email" type="email" placeholder="Email (optional)" autocomplete="email" />
+                <p id="registerEmailError" class="field-error"></p>
+                <input name="password" type="password" placeholder="Password" autocomplete="new-password" required />
+                <p id="registerPasswordError" class="field-error"></p>
+                <p id="passwordStrength" class="meta"></p>
+                <input name="confirm_password" type="password" placeholder="Confirm Password" autocomplete="new-password" required />
+                <p id="registerConfirmError" class="field-error"></p>
+                <p id="registerError" class="inline-error"></p>
+                <button type="submit" class="btn">Create Account</button>
+            </form>
+
+            <div class="step-actions auth-actions">
+                <a class="plain-btn" href="login.html?v=3">I already have an account</a>
+                <button id="logoutButton" class="btn secondary small hidden" type="button">Logout</button>
+            </div>
+
+            <p id="authStatus" class="status"></p>
+        </section>
+    </main>
+
+    <div id="toastStack" class="toast-stack"></div>
+
+    <script src="auth.js?v=3"></script>
+    <script>
+        const registerAuthState = document.getElementById('authState');
+        const registerFormElement = document.getElementById('registerForm');
+        const loginFormElement = document.getElementById('loginForm');
+        if (registerAuthState && registerFormElement && !loginFormElement) {
+            const applyRegisterPrompt = () => {
+                if (registerAuthState.textContent.includes('Sign in to continue.')) {
+                    registerAuthState.innerHTML = '<p class="meta">Create an account to continue.</p>';
+                }
+            };
+
+            applyRegisterPrompt();
+
+            const observer = new MutationObserver(applyRegisterPrompt);
+            observer.observe(registerAuthState, { childList: true, subtree: true, characterData: true });
+
+            window.addEventListener('load', applyRegisterPrompt);
+        }
+    </script>
+</body>
+</html>
