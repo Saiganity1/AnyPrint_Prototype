@@ -50,10 +50,14 @@
                 <section id="step2" class="checkout-card panel-card pad hidden">
                     <h3>Address</h3>
                     <form id="addressForm" class="checkout-form">
-                        <input name="full_name" placeholder="Full Name" required />
-                        <input name="email" type="email" placeholder="Email" required />
-                        <input name="phone" placeholder="Phone" required />
-                        <textarea name="address" rows="3" placeholder="Delivery Address" required></textarea>
+                        <label for="checkoutFullName">Full Name</label>
+                        <input id="checkoutFullName" name="full_name" placeholder="Full Name" required />
+                        <label for="checkoutEmail">Email</label>
+                        <input id="checkoutEmail" name="email" type="email" placeholder="Email" required />
+                        <label for="checkoutPhone">Phone</label>
+                        <input id="checkoutPhone" name="phone" placeholder="Phone" required />
+                        <label for="checkoutAddress">Delivery Address</label>
+                        <textarea id="checkoutAddress" name="address" rows="3" placeholder="Delivery Address" required></textarea>
                         <div class="step-actions">
                             <button type="button" id="backTo1" class="plain-btn">Back</button>
                             <button type="submit" class="btn">Continue</button>
@@ -83,7 +87,7 @@
                 <section id="step4" class="checkout-card panel-card pad hidden">
                     <h3>Review & Place Order</h3>
                     <div id="reviewBlock"></div>
-                    <p id="checkoutMessage" class="status"></p>
+                    <p id="checkoutMessage" class="status" role="status" aria-live="polite"></p>
                     <div class="step-actions">
                         <button type="button" id="backTo3" class="plain-btn">Back</button>
                         <button id="placeOrder" class="btn">Place Order</button>
@@ -107,13 +111,14 @@
                 <div class="quote-card panel-card soft pad">
                     <h4>Delivery quote</h4>
                     <div id="checkoutQuote" class="quote-summary"></div>
-                    <p id="quoteStatus" class="status"></p>
+                    <p id="quoteStatus" class="status" role="status" aria-live="polite"></p>
                 </div>
             </aside>
         </div>
     </main>
 
-    <script src="common.js?v=2"></script>
-    <script src="checkout.js?v=2"></script>
+    <script src="api.js?v=4"></script>
+    <script src="common.js?v=4"></script>
+    <script src="checkout.js?v=4"></script>
 </body>
 </html>

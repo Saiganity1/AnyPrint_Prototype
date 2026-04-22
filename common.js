@@ -1,27 +1,30 @@
 (() => {
-const API_BASE = window.API_BASE || 'http://127.0.0.1:8000/api';
+const core = window.AnyPrintCore || {};
+const API_BASE = core.API_BASE || window.API_BASE || 'http://127.0.0.1:8000/api';
 const CART_KEY = 'tt_cart_v2';
 const RECENT_KEY = 'tt_recently_viewed_v1';
 
 function getCookie(name) {
-    const cookieValue = document.cookie
-        .split('; ')
-        .find((row) => row.startsWith(`${name}=`));
+    if (core.getCookie) return core.getCookie(name);
+    const cookieValue = document.cookie.split('; ').find((row) => row.startsWith(`${name}=`));
     return cookieValue ? decodeURIComponent(cookieValue.split('=').slice(1).join('=')) : '';
 }
 
 async function apiFetch(url, options = {}) {
-    const config = { credentials: 'include', ...options };
-    const method = String(config.method || 'GET').toUpperCase();
-    if (!['GET', 'HEAD', 'OPTIONS', 'TRACE'].includes(method)) {
-        const headers = new Headers(config.headers || {});
-        const csrfToken = getCookie('csrftoken');
-        if (csrfToken && !headers.has('X-CSRFToken')) {
-            headers.set('X-CSRFToken', csrfToken);
-        }
-        config.headers = headers;
+    if (core.request) {
+        return core.request(url, options);
     }
-    return fetch(url, config);
+    return fetch(url, { credentials: 'include', ...options });
+}
+
+function trackEvent(eventName, payload = {}) {
+    if (core.trackEvent) {
+        core.trackEvent(eventName, payload);
+        return;
+    }
+    // Fallback in case api.js was not loaded yet.
+    window.dataLayer = window.dataLayer || [];
+    window.dataLayer.push({ event: eventName, timestamp: new Date().toISOString(), ...payload });
 }
 
 function showToast(message, tone = 'default') {
@@ -221,6 +224,12 @@ function roleCanManage(role) {
     return value === 'OWNER' || value === 'ADMIN';
 }
 
+function requireAuth(currentUser, nextUrl = window.location.pathname + window.location.search + window.location.hash) {
+    if (currentUser) return true;
+    window.location.href = `login.html?next=${encodeURIComponent(nextUrl)}`;
+    return false;
+}
+
 window.AnyPrint = {
     API_BASE,
     CART_KEY,
@@ -239,11 +248,13 @@ window.AnyPrint = {
     getVariantForSelection,
     loadCart,
     loadRecentlyViewed,
+    requireAuth,
     roleCanManage,
     roleLabel,
     renderStars,
     saveCart,
     saveRecentlyViewed,
     showToast,
+    trackEvent,
 };
 })();

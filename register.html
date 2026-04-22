@@ -35,16 +35,20 @@
             <div id="authState" class="auth-state"></div>
 
             <form id="registerForm" class="checkout-form" novalidate>
-                <input name="username" placeholder="Username" autocomplete="username" required />
+                <label for="registerUsername">Username</label>
+                <input id="registerUsername" name="username" placeholder="Username" autocomplete="username" required />
                 <p id="registerUsernameError" class="field-error"></p>
-                <input name="email" type="email" placeholder="Email (optional)" autocomplete="email" />
+                <label for="registerEmail">Email</label>
+                <input id="registerEmail" name="email" type="email" placeholder="Email (optional)" autocomplete="email" />
                 <p id="registerEmailError" class="field-error"></p>
-                <input name="password" type="password" placeholder="Password" autocomplete="new-password" required />
+                <label for="registerPassword">Password</label>
+                <input id="registerPassword" name="password" type="password" placeholder="Password" autocomplete="new-password" required />
                 <p id="registerPasswordError" class="field-error"></p>
                 <p id="passwordStrength" class="meta"></p>
-                <input name="confirm_password" type="password" placeholder="Confirm Password" autocomplete="new-password" required />
+                <label for="registerConfirmPassword">Confirm Password</label>
+                <input id="registerConfirmPassword" name="confirm_password" type="password" placeholder="Confirm Password" autocomplete="new-password" required />
                 <p id="registerConfirmError" class="field-error"></p>
-                <p id="registerError" class="inline-error"></p>
+                <p id="registerError" class="inline-error" role="alert" aria-live="assertive"></p>
                 <button type="submit" class="btn">Create Account</button>
             </form>
 
@@ -59,7 +63,8 @@
 
     <div id="toastStack" class="toast-stack"></div>
 
-    <script src="auth.js?v=3"></script>
+    <script src="api.js?v=4"></script>
+    <script src="auth.js?v=4"></script>
     <script>
         const registerAuthState = document.getElementById('authState');
         const registerFormElement = document.getElementById('registerForm');

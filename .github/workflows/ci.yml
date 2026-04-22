@@ -1,0 +1,23 @@
+name: Frontend CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Serve static files
+        run: |
+          python3 -m http.server 8080 >/tmp/http.log 2>&1 &
+          sleep 2
+          curl -f http://127.0.0.1:8080/index.html >/dev/null
+          curl -f http://127.0.0.1:8080/shop.html >/dev/null
+          curl -f http://127.0.0.1:8080/product.html >/dev/null
+          curl -f http://127.0.0.1:8080/checkout.html >/dev/null
+          curl -f http://127.0.0.1:8080/tracking.html >/dev/null
+          curl -f http://127.0.0.1:8080/login.html >/dev/null
+          curl -f http://127.0.0.1:8080/register.html >/dev/null

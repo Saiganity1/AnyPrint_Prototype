@@ -18,6 +18,7 @@ const {
     saveCart,
     saveRecentlyViewed,
     showToast,
+    trackEvent,
     addRecentlyViewed,
 } = window.AnyPrint;
 
@@ -355,7 +356,7 @@ function renderProducts() {
         const sizes = getSizeOptions(product);
         const colors = getColorOptions(product);
         const imageHtml = product.image_url
-            ? `<img src="${product.image_url}" alt="${escapeHtml(product.name)}">`
+            ? `<img src="${product.image_url}" alt="${escapeHtml(product.name)}" loading="lazy" decoding="async">`
             : '<div class="placeholder">No image</div>';
         const stockLabel = Number(product.stock_quantity || 0) <= 3 && Number(product.stock_quantity || 0) > 0
             ? `<p class="low-stock">Only ${product.stock_quantity} left</p>`
@@ -465,6 +466,13 @@ function addToCart(product, variant, size, color) {
 
     saveCurrentCart();
     showToast(`${product.name} added to cart.`, 'success');
+    trackEvent('add_to_cart', {
+        productId: product.id,
+        productName: product.name,
+        size,
+        color,
+        hasVariant: Boolean(variant && variant.id),
+    });
 }
 
 function removeFromCart(itemKey) {

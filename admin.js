@@ -3,6 +3,7 @@ const {
     apiFetch,
     escapeHtml,
     formatPrice,
+    requireAuth,
     roleCanManage,
     roleLabel,
     showToast,
@@ -327,6 +328,10 @@ if (logoutButton) {
 
 (async function init() {
     await refreshAuthState();
+    if (!currentUser) {
+        requireAuth(currentUser, 'admin.html');
+        return;
+    }
     if (!requireDashboardAccess()) return;
     await loadDashboard();
     await loadUsers();

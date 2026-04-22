@@ -16,6 +16,7 @@ const {
     renderStars,
     saveCart,
     showToast,
+    trackEvent,
     addRecentlyViewed,
 } = window.AnyPrint;
 
@@ -182,7 +183,7 @@ function buildReviewCard(review) {
 
 function buildProductCard(product) {
     const imageHtml = product.image_url
-        ? `<img src="${product.image_url}" alt="${escapeHtml(product.name)}">`
+        ? `<img src="${product.image_url}" alt="${escapeHtml(product.name)}" loading="lazy" decoding="async">`
         : '<div class="placeholder">No image</div>';
     return `
         <article class="mini-product-card">
@@ -250,6 +251,14 @@ function addToCart(product, variant, size, color) {
 
     saveCurrentCart();
     showLocalToast(`${product.name} added to cart.`, 'success');
+    trackEvent('add_to_cart', {
+        source: 'product_detail',
+        productId: product.id,
+        productName: product.name,
+        size,
+        color,
+        hasVariant: Boolean(variant && variant.id),
+    });
 }
 
 async function toggleWishlist(product) {
@@ -323,7 +332,7 @@ function renderProduct(product) {
     const selectedSize = primaryVariant ? primaryVariant.size : getSizeOptions(product)[0];
     const selectedColor = primaryVariant ? primaryVariant.color : getColorOptions(product)[0];
     const imageHtml = product.image_url
-        ? `<img src="${product.image_url}" alt="${escapeHtml(product.name)}">`
+        ? `<img src="${product.image_url}" alt="${escapeHtml(product.name)}" loading="lazy" decoding="async">`
         : '<div class="placeholder">No image</div>';
     const stockClass = Number(product.stock_quantity || 0) <= 3 && Number(product.stock_quantity || 0) > 0 ? 'low-stock' : '';
     const stockText = Number(product.stock_quantity || 0) <= 0

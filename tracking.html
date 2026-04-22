@@ -58,12 +58,15 @@
                     <h3>Look up your order</h3>
                     <p id="trackingHint" class="meta"></p>
                     <form id="trackForm" class="checkout-form">
-                        <input name="tracking_number" placeholder="Tracking number (example: AP-000123)" />
-                        <input name="order_id" placeholder="Order ID" />
-                        <input name="email" type="email" placeholder="Email used at checkout" />
+                        <label for="trackingNumberInput">Tracking number</label>
+                        <input id="trackingNumberInput" name="tracking_number" placeholder="Tracking number (example: AP-000123)" />
+                        <label for="orderIdInput">Order ID</label>
+                        <input id="orderIdInput" name="order_id" placeholder="Order ID" />
+                        <label for="trackingEmailInput">Email used at checkout</label>
+                        <input id="trackingEmailInput" name="email" type="email" placeholder="Email used at checkout" />
                         <button type="submit" class="btn">Track order</button>
                     </form>
-                    <p id="trackingStatus" class="status"></p>
+                    <p id="trackingStatus" class="status" role="status" aria-live="polite"></p>
                 </section>
 
                 <section id="trackingResult" class="page-stack"></section>
@@ -88,7 +91,8 @@
 
     <div id="toastStack" class="toast-stack"></div>
 
-    <script src="common.js?v=2"></script>
-    <script src="tracking.js?v=2"></script>
+    <script src="api.js?v=4"></script>
+    <script src="common.js?v=4"></script>
+    <script src="tracking.js?v=4"></script>
 </body>
 </html>

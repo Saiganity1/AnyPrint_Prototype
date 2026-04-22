@@ -1,4 +1,5 @@
-const API_BASE = window.API_BASE || 'http://127.0.0.1:8000/api';
+const core = window.AnyPrintCore || {};
+const API_BASE = core.API_BASE || window.API_BASE || 'http://127.0.0.1:8000/api';
 
 const loginForm = document.getElementById('loginForm');
 const registerForm = document.getElementById('registerForm');
@@ -28,17 +29,10 @@ const registerConfirmError = document.getElementById('registerConfirmError');
 let currentUser = null;
 
 async function apiFetch(url, options = {}) {
-    const config = { credentials: 'include', ...options };
-    const method = String(config.method || 'GET').toUpperCase();
-    if (!['GET', 'HEAD', 'OPTIONS', 'TRACE'].includes(method)) {
-        const headers = new Headers(config.headers || {});
-        const csrfToken = getCookie('csrftoken');
-        if (csrfToken && !headers.has('X-CSRFToken')) {
-            headers.set('X-CSRFToken', csrfToken);
-        }
-        config.headers = headers;
+    if (core.request) {
+        return core.request(url, options);
     }
-    return fetch(url, config);
+    return fetch(url, { credentials: 'include', ...options });
 }
 
 function getCookie(name) {
@@ -264,10 +258,13 @@ if (loginForm) {
         }
 
         if (!res.ok) {
-            if (loginError) loginError.textContent = body.error || 'Login failed.';
+            if (loginError) loginError.textContent = (core.normalizeError ? core.normalizeError(body, 'Login failed.') : body.error || 'Login failed.');
             return;
         }
 
+        if (body.tokens && core.setTokens) {
+            core.setTokens(body.tokens);
+        }
         currentUser = body.user;
         renderAuthState();
         showToast('Welcome back!', 'success');
@@ -316,10 +313,13 @@ if (registerForm) {
         }
 
         if (!res.ok) {
-            if (registerError) registerError.textContent = body.error || 'Registration failed.';
+            if (registerError) registerError.textContent = (core.normalizeError ? core.normalizeError(body, 'Registration failed.') : body.error || 'Registration failed.');
             return;
         }
 
+        if (body.tokens && core.setTokens) {
+            core.setTokens(body.tokens);
+        }
         currentUser = body.user;
         renderAuthState();
         showToast('Account created successfully.', 'success');
@@ -346,6 +346,9 @@ if (logoutButton) {
             return;
         }
 
+        if (core.clearTokens) {
+            core.clearTokens();
+        }
         currentUser = null;
         renderAuthState();
         showToast('Logged out.', 'default');

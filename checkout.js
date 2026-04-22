@@ -4,8 +4,10 @@ const {
     escapeHtml,
     formatPrice,
     loadCart,
+    requireAuth,
     saveCart,
     showToast,
+    trackEvent,
 } = window.AnyPrint;
 
 let cart = loadCart();
@@ -270,6 +272,23 @@ function validateAddressForm(formData) {
         return false;
     }
 
+    const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailPattern.test(checkoutData.email)) {
+        showToast('Please enter a valid email address.', 'error');
+        return false;
+    }
+
+    const phoneDigits = checkoutData.phone.replace(/\D/g, '');
+    if (phoneDigits.length < 10 || phoneDigits.length > 13) {
+        showToast('Please enter a valid phone number.', 'error');
+        return false;
+    }
+
+    if (checkoutData.address.length < 10) {
+        showToast('Please provide a more complete delivery address.', 'error');
+        return false;
+    }
+
     return true;
 }
 
@@ -315,6 +334,7 @@ async function placeOrder() {
 
         saveCart([]);
         cart = [];
+        trackEvent('checkout_success', { orderId: body.order_id, paymentMethod: checkoutData.payment_method });
         renderCartStep();
         renderQuote();
         checkoutMessage.textContent = `Order #${body.order_id} created successfully. Tracking number: ${body.tracking_number}.`;
@@ -329,6 +349,19 @@ async function placeOrder() {
     } catch (error) {
         checkoutMessage.textContent = error.message || 'Could not place order right now.';
     }
+}
+
+async function ensureCheckoutAuth() {
+    try {
+        const response = await apiFetch(`${API_BASE}/auth/me/`);
+        const body = await response.json();
+        if (body && body.is_authenticated) {
+            return true;
+        }
+    } catch (_error) {
+        // Fall through to guard redirect.
+    }
+    return requireAuth(null, 'checkout.html');
 }
 
 function bindEvents() {
@@ -376,7 +409,13 @@ function bindEvents() {
 }
 
 (async function init() {
+    const allowed = await ensureCheckoutAuth();
+    if (!allowed) return;
+
     cart = loadCart();
+    if (cart.length) {
+        trackEvent('checkout_start', { items: cart.length });
+    }
     setProductsFromCart();
     renderCartStep();
     renderQuote();

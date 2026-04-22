@@ -4,6 +4,7 @@ const {
     escapeHtml,
     formatPrice,
     loadRecentlyViewed,
+    requireAuth,
     roleCanManage,
     roleLabel,
     renderStars,
@@ -161,6 +162,10 @@ if (logoutButton) {
 
 (async function init() {
     await refreshAuthState();
+    if (!currentUser) {
+        requireAuth(currentUser, 'wishlist.html');
+        return;
+    }
     renderRecentlyViewed();
     await loadWishlist();
 })();
