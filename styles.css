@@ -255,6 +255,69 @@ main.checkout-page .status {
     color: var(--muted);
 }
 
+.social-auth-shell {
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--line);
+}
+
+.social-auth-divider {
+    margin: 0 0 0.7rem;
+    text-align: center;
+    color: var(--muted);
+    font-size: 0.88rem;
+}
+
+.social-auth-divider span {
+    padding: 0 0.5rem;
+    background: rgba(255, 255, 255, 0.9);
+}
+
+.social-auth-actions {
+    display: grid;
+    gap: 0.55rem;
+}
+
+.btn.social {
+    width: 100%;
+    box-shadow: none;
+}
+
+.btn.social.google {
+    background: #ffffff;
+    color: #1f2937;
+    border: 1px solid #d1d5db;
+}
+
+.btn.social.facebook {
+    background: #1877f2;
+    color: #ffffff;
+    border: 1px solid #166fe5;
+}
+
+.phone-auth-form {
+    margin-top: 0.95rem;
+    padding-top: 0.9rem;
+    border-top: 1px solid var(--line);
+}
+
+.phone-auth-form h3 {
+    margin: 0;
+    font-size: 1rem;
+}
+
+.phone-auth-actions {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.6rem;
+}
+
+@media (max-width: 640px) {
+    .phone-auth-actions {
+        grid-template-columns: 1fr;
+    }
+}
+
 .site-header {
     position: sticky;
     top: 0;

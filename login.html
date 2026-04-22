@@ -45,6 +45,29 @@
                 <button type="submit" class="btn">Login</button>
             </form>
 
+            <div class="social-auth-shell">
+                <p class="social-auth-divider"><span>or sign in with</span></p>
+                <div class="social-auth-actions">
+                    <button id="googleLoginButton" class="btn social google" type="button">Continue with Google</button>
+                    <button id="facebookLoginButton" class="btn social facebook" type="button">Continue with Facebook</button>
+                </div>
+                <p id="socialAuthError" class="inline-error" role="alert" aria-live="assertive"></p>
+            </div>
+
+            <form id="phoneLoginForm" class="checkout-form phone-auth-form" novalidate>
+                <h3>Sign in with phone number</h3>
+                <label for="phoneNumber">Phone Number</label>
+                <input id="phoneNumber" name="phone_number" placeholder="+639171234567" autocomplete="tel" />
+                <label for="phoneCode">OTP Code</label>
+                <input id="phoneCode" name="code" placeholder="6-digit code" inputmode="numeric" autocomplete="one-time-code" />
+                <div class="phone-auth-actions">
+                    <button id="requestPhoneCodeButton" class="btn secondary" type="button">Send Code</button>
+                    <button id="verifyPhoneCodeButton" class="btn" type="submit">Verify & Sign In</button>
+                </div>
+                <p id="phoneAuthHint" class="meta"></p>
+                <p id="phoneAuthError" class="inline-error" role="alert" aria-live="assertive"></p>
+            </form>
+
             <div class="step-actions auth-actions">
                 <a class="plain-btn" href="register.html?v=3">Create an account</a>
                 <button id="logoutButton" class="btn secondary small hidden" type="button">Logout</button>
@@ -57,6 +80,9 @@
     <div id="toastStack" class="toast-stack"></div>
 
     <script src="api.js?v=4"></script>
-    <script src="auth.js?v=4"></script>
+    <script src="auth-config.js?v=1"></script>
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <script async defer crossorigin="anonymous" src="https://connect.facebook.net/en_US/sdk.js"></script>
+    <script src="auth.js?v=6"></script>
 </body>
 </html>

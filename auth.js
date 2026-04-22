@@ -1,5 +1,6 @@
 const core = window.AnyPrintCore || {};
 const API_BASE = core.API_BASE || window.API_BASE || 'http://127.0.0.1:8000/api';
+const authConfig = window.AnyPrintAuthConfig || {};
 
 const loginForm = document.getElementById('loginForm');
 const registerForm = document.getElementById('registerForm');
@@ -9,8 +10,15 @@ const authState = document.getElementById('authState');
 const authStatus = document.getElementById('authStatus');
 const loginError = document.getElementById('loginError');
 const registerError = document.getElementById('registerError');
+const socialAuthError = document.getElementById('socialAuthError');
+const phoneAuthError = document.getElementById('phoneAuthError');
+const phoneAuthHint = document.getElementById('phoneAuthHint');
 const passwordStrength = document.getElementById('passwordStrength');
 const toastStack = document.getElementById('toastStack');
+const phoneLoginForm = document.getElementById('phoneLoginForm');
+const requestPhoneCodeButton = document.getElementById('requestPhoneCodeButton');
+const googleLoginButton = document.getElementById('googleLoginButton');
+const facebookLoginButton = document.getElementById('facebookLoginButton');
 
 const loginUsernameInput = loginForm ? loginForm.querySelector('[name="username"]') : null;
 const loginPasswordInput = loginForm ? loginForm.querySelector('[name="password"]') : null;
@@ -80,6 +88,9 @@ function clearAuthMessages() {
     if (authStatus) authStatus.textContent = '';
     if (loginError) loginError.textContent = '';
     if (registerError) registerError.textContent = '';
+    if (socialAuthError) socialAuthError.textContent = '';
+    if (phoneAuthError) phoneAuthError.textContent = '';
+    if (phoneAuthHint) phoneAuthHint.textContent = '';
     if (loginUsernameError) loginUsernameError.textContent = '';
     if (loginPasswordError) loginPasswordError.textContent = '';
     if (registerUsernameError) registerUsernameError.textContent = '';
@@ -92,6 +103,233 @@ function clearAuthMessages() {
     if (registerEmailInput) registerEmailInput.removeAttribute('aria-invalid');
     if (registerPasswordInput) registerPasswordInput.removeAttribute('aria-invalid');
     if (registerConfirmInput) registerConfirmInput.removeAttribute('aria-invalid');
+}
+
+function parseApiEnvelope(body) {
+    if (!body || typeof body !== 'object') return body;
+    if (body.ok && body.data && typeof body.data === 'object') {
+        return body.data;
+    }
+    return body;
+}
+
+async function completeLoginWithPayload(payload, fallbackErrorMessage) {
+    clearAuthMessages();
+
+    let res;
+    let body;
+    try {
+        res = await apiFetch(`${API_BASE}/auth/social/`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload),
+        });
+        body = await res.json();
+    } catch (_error) {
+        showToast('Could not reach the server. Please try again.', 'error');
+        return false;
+    }
+
+    if (!res.ok) {
+        if (socialAuthError) {
+            socialAuthError.textContent = core.normalizeError ? core.normalizeError(body, fallbackErrorMessage) : fallbackErrorMessage;
+        }
+        return false;
+    }
+
+    const data = parseApiEnvelope(body);
+    if (data.tokens && core.setTokens) {
+        core.setTokens(data.tokens);
+    }
+    currentUser = data.user;
+    renderAuthState();
+    const successText = registerForm && !loginForm
+        ? 'Account created successfully.'
+        : 'Signed in successfully.';
+    showToast(successText, 'success');
+    window.location.href = getSafeNextUrl();
+    return true;
+}
+
+function getGoogleClientId() {
+    return String(authConfig.googleClientId || window.ANYPRINT_GOOGLE_CLIENT_ID || '').trim();
+}
+
+function getFacebookAppId() {
+    return String(authConfig.facebookAppId || window.ANYPRINT_FACEBOOK_APP_ID || '').trim();
+}
+
+function parseGoogleCredentialResponse(response) {
+    if (response && response.credential) {
+        return String(response.credential);
+    }
+    return '';
+}
+
+async function startGoogleLogin() {
+    clearAuthMessages();
+    const googleClientId = getGoogleClientId();
+    if (!window.google || !window.google.accounts || !googleClientId) {
+        if (socialAuthError) {
+            socialAuthError.textContent = 'Google sign-in is not configured yet. Set ANYPRINT_GOOGLE_CLIENT_ID first.';
+        }
+        return;
+    }
+
+    window.google.accounts.id.initialize({
+        client_id: googleClientId,
+        callback: async (response) => {
+            const token = parseGoogleCredentialResponse(response);
+            if (!token) {
+                if (socialAuthError) socialAuthError.textContent = 'Google did not return a valid token.';
+                return;
+            }
+            await completeLoginWithPayload({ provider: 'google', token }, 'Google login failed.');
+        },
+    });
+
+    window.google.accounts.id.prompt();
+}
+
+function ensureFacebookSdkInitialized() {
+    const appId = getFacebookAppId();
+    if (!window.FB || !appId) {
+        return false;
+    }
+
+    if (!window.__anyprintFacebookInitialized) {
+        window.FB.init({
+            appId,
+            cookie: true,
+            xfbml: false,
+            version: 'v20.0',
+        });
+        window.__anyprintFacebookInitialized = true;
+    }
+
+    return true;
+}
+
+function startFacebookLogin() {
+    clearAuthMessages();
+
+    if (!ensureFacebookSdkInitialized()) {
+        if (socialAuthError) {
+            socialAuthError.textContent = 'Facebook sign-in is not configured yet. Set ANYPRINT_FACEBOOK_APP_ID first.';
+        }
+        return;
+    }
+
+    window.FB.login(async (response) => {
+        if (!response || !response.authResponse || !response.authResponse.accessToken) {
+            if (socialAuthError) socialAuthError.textContent = 'Facebook login was cancelled.';
+            return;
+        }
+
+        await completeLoginWithPayload(
+            { provider: 'facebook', token: response.authResponse.accessToken },
+            'Facebook login failed.',
+        );
+    }, { scope: 'public_profile,email' });
+}
+
+async function requestPhoneOtpCode() {
+    clearAuthMessages();
+    if (!phoneLoginForm) return;
+
+    const formData = new FormData(phoneLoginForm);
+    const phoneNumber = String(formData.get('phone_number') || '').trim();
+
+    if (!phoneNumber) {
+        if (phoneAuthError) phoneAuthError.textContent = 'Phone number is required.';
+        return;
+    }
+
+    let res;
+    let body;
+    try {
+        res = await apiFetch(`${API_BASE}/auth/phone/request/`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ phone_number: phoneNumber }),
+        });
+        body = await res.json();
+    } catch (_error) {
+        if (phoneAuthError) phoneAuthError.textContent = 'Could not reach the server. Please try again.';
+        return;
+    }
+
+    if (!res.ok) {
+        if (phoneAuthError) phoneAuthError.textContent = core.normalizeError ? core.normalizeError(body, 'Could not send OTP code.') : 'Could not send OTP code.';
+        return;
+    }
+
+    const data = parseApiEnvelope(body);
+    if (phoneAuthHint) {
+        let hint = `Code sent. It expires in ${data.expires_in_seconds || 300} seconds.`;
+        if (data.debug_code) {
+            hint += ` Dev code: ${data.debug_code}`;
+        }
+        phoneAuthHint.textContent = hint;
+    }
+    showToast('OTP code sent.', 'success');
+}
+
+async function verifyPhoneOtpCode(event) {
+    event.preventDefault();
+    clearAuthMessages();
+    if (!phoneLoginForm) return;
+
+    const formData = new FormData(phoneLoginForm);
+    const phoneNumber = String(formData.get('phone_number') || '').trim();
+    const code = String(formData.get('code') || '').trim();
+    const intent = registerForm && !loginForm ? 'register' : 'login';
+    const registerUsername = String((registerForm ? new FormData(registerForm).get('username') : '') || '').trim();
+    const registerEmail = String((registerForm ? new FormData(registerForm).get('email') : '') || '').trim();
+
+    if (!phoneNumber || !code) {
+        if (phoneAuthError) phoneAuthError.textContent = 'Phone number and code are required.';
+        return;
+    }
+
+    if (intent === 'register' && !registerUsername) {
+        if (phoneAuthError) phoneAuthError.textContent = 'Enter a username first to create a phone account.';
+        return;
+    }
+
+    let res;
+    let body;
+    try {
+        res = await apiFetch(`${API_BASE}/auth/phone/verify/`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                phone_number: phoneNumber,
+                code,
+                intent,
+                username: registerUsername,
+                email: registerEmail,
+            }),
+        });
+        body = await res.json();
+    } catch (_error) {
+        if (phoneAuthError) phoneAuthError.textContent = 'Could not reach the server. Please try again.';
+        return;
+    }
+
+    if (!res.ok) {
+        if (phoneAuthError) phoneAuthError.textContent = core.normalizeError ? core.normalizeError(body, 'Phone login failed.') : 'Phone login failed.';
+        return;
+    }
+
+    const data = parseApiEnvelope(body);
+    if (data.tokens && core.setTokens) {
+        core.setTokens(data.tokens);
+    }
+    currentUser = data.user;
+    renderAuthState();
+    showToast('Signed in with phone number.', 'success');
+    window.location.href = getSafeNextUrl();
 }
 
 function setInlineError(input, errorNode, message) {
@@ -195,11 +433,17 @@ function renderAuthState() {
         logoutButton.classList.remove('hidden');
         if (loginForm) loginForm.classList.add('hidden');
         if (registerForm) registerForm.classList.add('hidden');
+        if (phoneLoginForm) phoneLoginForm.classList.add('hidden');
+        if (googleLoginButton) googleLoginButton.classList.add('hidden');
+        if (facebookLoginButton) facebookLoginButton.classList.add('hidden');
     } else {
         authState.innerHTML = `<p class="meta">${getLoggedOutMessage()}</p>`;
         logoutButton.classList.add('hidden');
         if (loginForm) loginForm.classList.remove('hidden');
         if (registerForm) registerForm.classList.remove('hidden');
+        if (phoneLoginForm) phoneLoginForm.classList.remove('hidden');
+        if (googleLoginButton) googleLoginButton.classList.remove('hidden');
+        if (facebookLoginButton) facebookLoginButton.classList.remove('hidden');
     }
 }
 
@@ -357,6 +601,22 @@ if (logoutButton) {
         if (loginForm) loginForm.reset();
         if (registerForm) registerForm.reset();
     });
+}
+
+if (googleLoginButton) {
+    googleLoginButton.addEventListener('click', startGoogleLogin);
+}
+
+if (facebookLoginButton) {
+    facebookLoginButton.addEventListener('click', startFacebookLogin);
+}
+
+if (requestPhoneCodeButton) {
+    requestPhoneCodeButton.addEventListener('click', requestPhoneOtpCode);
+}
+
+if (phoneLoginForm) {
+    phoneLoginForm.addEventListener('submit', verifyPhoneOtpCode);
 }
 
 refreshAuthState();
