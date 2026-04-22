@@ -9,7 +9,7 @@ jobs:
   smoke:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Serve static files
         run: |
           python3 -m http.server 8080 >/tmp/http.log 2>&1 &
