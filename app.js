@@ -25,6 +25,43 @@ const {
 const currentPage = getCurrentPageName();
 const isShopPage = currentPage === 'shop.html';
 const isHomePage = currentPage === 'index.html';
+// --- Homepage Category Rail Logic ---
+function bindCategoryRail() {
+    const rail = document.getElementById('category-rail');
+    if (!rail) return;
+    rail.querySelectorAll('.category-card').forEach((btn) => {
+        btn.addEventListener('click', (e) => {
+            const cat = btn.getAttribute('data-category');
+            if (cat) {
+                window.location.href = `shop.html?category=${encodeURIComponent(cat)}`;
+            }
+        });
+    });
+}
+
+// --- Recently Viewed Row Logic ---
+function renderRecentlyViewedRow() {
+    const row = document.getElementById('recently-viewed-list');
+    if (!row) return;
+    const items = loadRecentlyViewed();
+    row.innerHTML = '';
+    if (!items.length) {
+        row.innerHTML = '<div class="meta">No recently viewed yet.</div>';
+        return;
+    }
+    for (const item of items.slice(0, 8)) {
+        const card = document.createElement('div');
+        card.className = 'recently-viewed-card';
+        card.innerHTML = `
+            <a href="${item.slug ? `product.html?slug=${encodeURIComponent(item.slug)}` : 'shop.html'}">
+                ${item.image_url ? `<img src="${item.image_url}" alt="${escapeHtml(item.name || 'Recently viewed product')}">` : '<div class="feature-thumb"></div>'}
+                <div class="rv-name">${escapeHtml(item.name || 'Recently viewed product')}</div>
+                <div class="rv-meta">${formatPrice(item.price || 0)}</div>
+            </a>
+        `;
+        row.appendChild(card);
+    }
+}
 
 const state = {
     currentUser: null,
@@ -358,9 +395,13 @@ function renderProducts() {
         const imageHtml = product.image_url
             ? `<img src="${product.image_url}" alt="${escapeHtml(product.name)}" loading="lazy" decoding="async">`
             : '<div class="placeholder">No image</div>';
-        const stockLabel = Number(product.stock_quantity || 0) <= 3 && Number(product.stock_quantity || 0) > 0
-            ? `<p class="low-stock">Only ${product.stock_quantity} left</p>`
-            : '';
+
+        // --- Product Badges ---
+        let badges = '';
+        if (product.is_best_seller) badges += '<span class="product-badge best-seller">Best Seller</span>';
+        if (product.is_new_drop) badges += '<span class="product-badge new-drop">New Drop</span>';
+        if (Number(product.stock_quantity || 0) > 0 && Number(product.stock_quantity || 0) <= 3) badges += '<span class="product-badge low-stock">Low Stock</span>';
+
         const ratingHtml = product.review_count
             ? `<div class="rating-row">${renderStars(product.average_rating || 0)}<span class="meta">${product.review_count} review${product.review_count === 1 ? '' : 's'}</span></div>`
             : '<p class="meta">No ratings yet</p>';
@@ -370,10 +411,10 @@ function renderProducts() {
                 ${imageHtml}
                 <h3>${escapeHtml(product.name)}</h3>
             </a>
+            <div class="badge-row">${badges}</div>
             <p class="meta">${escapeHtml(product.category || 'Uncategorized')} | ${escapeHtml(product.print_style || 'Classic')}</p>
             ${ratingHtml}
             <p class="price-line"><strong>${formatPrice(product.price)}</strong></p>
-            ${stockLabel}
             <div class="variant-row">
                 <select class="size-select">${sizes.map((size) => `<option value="${escapeHtml(size)}">${escapeHtml(size)}</option>`).join('')}</select>
                 <select class="color-select">${colors.map((color) => `<option value="${escapeHtml(color)}">${escapeHtml(color)}</option>`).join('')}</select>
@@ -633,7 +674,8 @@ async function loadAuthAndPageData() {
         await loadCategories();
         await loadProducts();
     } else if (isHomePage) {
-        await renderRecentlyViewedSection();
+        bindCategoryRail();
+        renderRecentlyViewedRow();
     }
 }
 

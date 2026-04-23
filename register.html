@@ -55,14 +55,20 @@
             <div class="social-auth-shell">
                 <p class="social-auth-divider"><span>or create account with</span></p>
                 <div class="social-auth-actions">
-                    <button id="googleLoginButton" class="btn social google" type="button">Continue with Google</button>
-                    <button id="facebookLoginButton" class="btn social facebook" type="button">Continue with Facebook</button>
+                    <button id="googleLoginButton" class="btn social google provider-btn" type="button">
+                        <span class="auth-logo google-logo" aria-hidden="true">G</span>
+                        <span>Continue with Google</span>
+                    </button>
+                    <button id="facebookLoginButton" class="btn social facebook provider-btn" type="button">
+                        <span class="auth-logo facebook-logo" aria-hidden="true">f</span>
+                        <span>Continue with Facebook</span>
+                    </button>
                 </div>
                 <p id="socialAuthError" class="inline-error" role="alert" aria-live="assertive"></p>
             </div>
 
             <form id="phoneLoginForm" class="checkout-form phone-auth-form" novalidate>
-                <h3>Create account with phone number</h3>
+                <h3 class="phone-auth-title"><span class="auth-logo phone-logo" aria-hidden="true">+63</span><span>Continue with Phone Number</span></h3>
                 <label for="phoneNumber">Phone Number</label>
                 <input id="phoneNumber" name="phone_number" placeholder="+639171234567" autocomplete="tel" />
                 <label for="phoneCode">OTP Code</label>

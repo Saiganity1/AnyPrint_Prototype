@@ -48,15 +48,15 @@
     </header>
 
     <main>
-        <section class="hero">
+        <section class="hero premium-hero">
             <div class="container hero-grid">
                 <div class="hero-copy">
                     <p class="eyebrow">Order online • Sizes & colors • Fast checkout</p>
-                    <h2>Premium T-shirts, ordered in minutes.</h2>
-                    <p class="hero-lede">A clean, MetroPrint-inspired layout adapted for a T-shirt storefront. Browse tees, add to cart, and checkout with your Django backend.</p>
-                    <div class="hero-actions">
-                        <button id="goShopButton" class="btn">Get Started</button>
-                        <a class="btn secondary" href="#how">How to Order</a>
+                    <h1 class="display-heading">Prints that Speak. Quality that Lasts.</h1>
+                    <p class="hero-sub">Stand out with custom and curated tees. Express yourself, delivered fast.</p>
+                    <div class="hero-cta-row">
+                        <button id="goShopButton" class="btn main-cta">Get Started</button>
+                        <a class="btn secondary secondary-cta" href="#how">How to Order</a>
                         <span class="meta">Transparent workflow • Clear pricing</span>
                     </div>
                     <div class="trust-badges">
@@ -64,6 +64,44 @@
                         <span>Everyday comfort</span>
                         <span>Nationwide delivery-ready</span>
                     </div>
+                </div>
+            </div>
+        </section>
+
+                <!-- Category Rail -->
+                <nav id="category-rail" class="category-rail">
+                    <button class="category-card" data-category="Minimal">
+                        <span class="cat-icon minimal"></span>
+                        <span>Minimal</span>
+                    </button>
+                    <button class="category-card" data-category="Graphic">
+                        <span class="cat-icon graphic"></span>
+                        <span>Graphic</span>
+                    </button>
+                    <button class="category-card" data-category="Street">
+                        <span class="cat-icon street"></span>
+                        <span>Street</span>
+                    </button>
+                    <button class="category-card" data-category="Kids">
+                        <span class="cat-icon kids"></span>
+                        <span>Kids</span>
+                    </button>
+                </nav>
+
+                <!-- Trust Strip -->
+                <section class="trust-strip">
+                    <div class="trust-item"><span class="trust-icon shipping"></span>Fast Shipping</div>
+                    <div class="trust-item"><span class="trust-icon secure"></span>Secure Checkout</div>
+                    <div class="trust-item"><span class="trust-icon returns"></span>Easy Returns</div>
+                </section>
+
+                <!-- Recently Viewed Row -->
+                <section class="recently-viewed-row" id="recently-viewed-row">
+                    <h2>Recently Viewed</h2>
+                    <div class="recently-viewed-list" id="recently-viewed-list">
+                        <!-- JS will populate -->
+                    </div>
+                </section>
                 </div>
                 <div class="hero-panel" aria-label="Featured products">
                     <div class="banner">
@@ -107,32 +145,42 @@
                     <button class="plain-btn" type="button" data-open-shop>View All</button>
                 </div>
                 <div class="scroll-row" aria-label="Top t-shirt products">
-                    <article class="feature-card">
+                    <article class="feature-card premium-card">
                         <div class="feature-thumb" aria-hidden="true"></div>
                         <h4>Unisex Light Weight Tee</h4>
                         <p class="meta">Breathable feel • Everyday fit</p>
-                        <button class="btn small" type="button" data-open-shop>Get Started</button>
+                        <div class="card-actions">
+                            <button class="btn small" type="button" data-open-shop>Get Started</button>
+                            <button class="btn quick-preview" type="button" title="Quick Preview">👁️</button>
+                        </div>
                     </article>
-                    <article class="feature-card">
+                    <article class="feature-card premium-card">
                         <div class="feature-thumb" aria-hidden="true"></div>
                         <h4>Unisex Heavy Weight Tee</h4>
                         <p class="meta">Structured look • Premium drape</p>
-                        <button class="btn small" type="button" data-open-shop>Get Started</button>
+                        <div class="card-actions">
+                            <button class="btn small" type="button" data-open-shop>Get Started</button>
+                            <button class="btn quick-preview" type="button" title="Quick Preview">👁️</button>
+                        </div>
                     </article>
-                    <article class="feature-card">
+                    <article class="feature-card premium-card">
                         <div class="feature-thumb" aria-hidden="true"></div>
                         <h4>Oversized Street Tee</h4>
                         <p class="meta">Relaxed fit • Trend-ready</p>
-                        <button class="btn small" type="button" data-open-shop>Get Started</button>
+                        <div class="card-actions">
+                            <button class="btn small" type="button" data-open-shop>Get Started</button>
+                            <button class="btn quick-preview" type="button" title="Quick Preview">👁️</button>
+                        </div>
                     </article>
-                    <article class="feature-card">
+                    <article class="feature-card premium-card">
                         <div class="feature-thumb" aria-hidden="true"></div>
                         <h4>Graphic Tee</h4>
                         <p class="meta">Bold prints • Drop-style releases</p>
-                        <button class="btn small" type="button" data-open-shop>Get Started</button>
+                        <div class="card-actions">
+                            <button class="btn small" type="button" data-open-shop>Get Started</button>
+                            <button class="btn quick-preview" type="button" title="Quick Preview">👁️</button>
+                        </div>
                     </article>
-                    <article class="feature-card">
-                        <div class="feature-thumb" aria-hidden="true"></div>
                         <h4>Kids Tee</h4>
                         <p class="meta">Comfy fit • School-ready</p>
                         <button class="btn small" type="button" data-open-shop>Get Started</button>
@@ -278,7 +326,7 @@
             </div>
         </section>
     </main>
-
+        <section class="product-grid premium-grid" id="product-grid">
     <footer class="site-footer" id="contact">
         <div class="container footer-grid">
             <div>
