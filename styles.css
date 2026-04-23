@@ -1,3 +1,87 @@
+/* --- Upgraded Footer Styles --- */
+.upgraded-footer {
+    display: flex;
+    gap: 3.5rem;
+    padding: 2.5rem 0 1.2rem 0;
+    align-items: flex-start;
+    border-top: 1.5px solid var(--line);
+    position: relative;
+}
+.footer-col {
+    display: flex;
+    flex-direction: column;
+    gap: 1.1rem;
+    min-width: 180px;
+}
+.footer-title.section-title {
+    font-size: 1.08rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    color: var(--brand);
+    text-transform: uppercase;
+    margin-bottom: 0.7rem;
+}
+.brand-accent {
+    color: var(--brand-dark);
+    font-size: 1.18rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+}
+.footer-link {
+    color: #374151;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 1.01rem;
+    padding: 0.5rem 0.2rem 0.5rem 0;
+    border-radius: 6px;
+    transition: color 0.18s, background 0.18s;
+    position: relative;
+    display: inline-block;
+}
+.footer-link:after {
+    content: '';
+    display: block;
+    position: absolute;
+    left: 0; right: 0; bottom: 0.18rem;
+    height: 2px;
+    background: var(--brand);
+    transform: scaleX(0);
+    transition: transform 0.22s cubic-bezier(.4,0,.2,1);
+}
+.footer-link:hover, .footer-link:focus {
+    color: var(--brand);
+    background: #f3f6ff;
+}
+.footer-link:hover:after, .footer-link:focus:after {
+    transform: scaleX(1);
+}
+.footer-link:hover:before, .footer-link:focus:before {
+    content: '→';
+    color: var(--brand);
+    font-size: 1.1em;
+    margin-right: 0.4em;
+    position: relative;
+    left: -0.2em;
+    transition: left 0.18s;
+}
+.footer-divider {
+    width: 1.5px;
+    background: var(--line);
+    height: 100px;
+    margin: 0 2.2rem;
+    align-self: stretch;
+    border-radius: 2px;
+    display: block;
+}
+@media (max-width: 900px) {
+    .upgraded-footer {
+        flex-direction: column;
+        gap: 2.2rem;
+    }
+    .footer-divider {
+        display: none;
+    }
+}
 /* --- Premium Homepage & Card Styles --- */
 .premium-hero {
     background: linear-gradient(120deg, #f8fafc 60%, #e0e7ef 100%);
