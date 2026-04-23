@@ -63,11 +63,15 @@
                         <span class="auth-logo facebook-logo" aria-hidden="true">f</span>
                         <span>Continue with Facebook</span>
                     </button>
+                    <button id="phoneDropdownButton" class="btn social phone provider-btn" type="button" aria-expanded="false" aria-controls="phoneLoginForm">
+                        <span class="auth-logo phone-logo" aria-hidden="true">+63</span>
+                        <span>Continue Using Phone Number</span>
+                    </button>
                 </div>
                 <p id="socialAuthError" class="inline-error" role="alert" aria-live="assertive"></p>
             </div>
 
-            <form id="phoneLoginForm" class="checkout-form phone-auth-form" novalidate>
+            <form id="phoneLoginForm" class="checkout-form phone-auth-form" novalidate style="display:none;">
                 <h3 class="phone-auth-title"><span class="auth-logo phone-logo" aria-hidden="true">+63</span><span>Continue with Phone Number</span></h3>
                 <label for="phoneNumber">Phone Number</label>
                 <input id="phoneNumber" name="phone_number" placeholder="+639171234567" autocomplete="tel" />
@@ -114,6 +118,20 @@
             observer.observe(registerAuthState, { childList: true, subtree: true, characterData: true });
 
             window.addEventListener('load', applyRegisterPrompt);
+        }
+
+        // Phone dropdown logic
+        const phoneDropdownButton = document.getElementById('phoneDropdownButton');
+        const phoneLoginForm = document.getElementById('phoneLoginForm');
+        if (phoneDropdownButton && phoneLoginForm) {
+            phoneDropdownButton.addEventListener('click', function() {
+                const expanded = phoneDropdownButton.getAttribute('aria-expanded') === 'true';
+                phoneLoginForm.style.display = expanded ? 'none' : 'block';
+                phoneDropdownButton.setAttribute('aria-expanded', expanded ? 'false' : 'true');
+                if (!expanded) {
+                    phoneLoginForm.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+            });
         }
     </script>
 </body>
