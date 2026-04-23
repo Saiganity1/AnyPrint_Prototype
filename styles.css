@@ -108,9 +108,12 @@
 }
 .hero-cta-row {
     display: flex;
-    gap: 1.2rem;
-    margin-bottom: 1.2rem;
+    flex-direction: row;
+    justify-content: flex-start;
     align-items: center;
+    gap: 1.4rem;
+    margin-bottom: 1.6rem;
+    margin-top: 1.2rem;
 }
 .main-cta {
     background: #1a2233;
@@ -121,6 +124,7 @@
     box-shadow: 0 4px 16px 0 rgba(30,40,60,0.13);
     transition: background 0.2s, box-shadow 0.2s;
     font-size: 1.1rem;
+    margin-right: 0.2rem;
 }
 .main-cta:hover {
     background: #2d3748;
@@ -258,9 +262,11 @@
 }
 .card-actions {
     display: flex;
-    gap: 0.7rem;
-    margin-top: 0.7rem;
+    flex-direction: row;
+    justify-content: flex-start;
     align-items: center;
+    gap: 1.1rem;
+    margin-top: 1.1rem;
 }
 .quick-preview {
     background: #f1f5f9;
@@ -835,21 +841,23 @@ main.checkout-page .status {
     background: #fbfcff;
 }
 
-.mini-thumb {
-    border-radius: 12px;
-    background:
-        linear-gradient(135deg, rgba(29, 78, 216, 0.18), rgba(29, 78, 216, 0.04)),
-        #eef2ff;
+.mini-cta {
+    background: #1a2233;
+    color: #fff;
+    font-weight: 600;
+    border-radius: 2rem;
+    padding: 0.7rem 1.7rem;
+    font-size: 1rem;
+    border: none;
+    cursor: pointer;
+    margin-top: 0.7rem;
+    margin-right: 0.2rem;
+    transition: background 0.2s;
+    display: inline-block;
 }
-
-.mini-title {
-    margin: 0;
-    font-weight: 700;
+.mini-cta:hover {
+    background: #2d3748;
 }
-
-.mini-meta {
-    margin: 0.15rem 0 0.45rem;
-    color: var(--muted);
     font-size: 0.9rem;
 }
 
