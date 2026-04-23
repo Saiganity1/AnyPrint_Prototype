@@ -1,5 +1,5 @@
 (() => {
-const API_BASE = window.API_BASE || 'http://127.0.0.1:8000/api';
+const API_BASE = window.API_BASE || 'https://anyprint-prototype-backend.onrender.com/api';
 const ACCESS_TOKEN_KEY = 'ap_access_token';
 const REFRESH_TOKEN_KEY = 'ap_refresh_token';
 

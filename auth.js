@@ -1,5 +1,5 @@
 const core = window.AnyPrintCore || {};
-const API_BASE = core.API_BASE || window.API_BASE || 'http://127.0.0.1:8000/api';
+const API_BASE = core.API_BASE || window.API_BASE || 'https://anyprint-prototype-backend.onrender.com/api';
 const authConfig = window.AnyPrintAuthConfig || {};
 
 const loginForm = document.getElementById('loginForm');

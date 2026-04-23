@@ -1,6 +1,6 @@
 (() => {
 const core = window.AnyPrintCore || {};
-const API_BASE = core.API_BASE || window.API_BASE || 'http://127.0.0.1:8000/api';
+const API_BASE = core.API_BASE || window.API_BASE || 'https://anyprint-prototype-backend.onrender.com/api';
 const CART_KEY = 'tt_cart_v2';
 const RECENT_KEY = 'tt_recently_viewed_v1';
 
