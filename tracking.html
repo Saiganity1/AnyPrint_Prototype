@@ -9,6 +9,435 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Sora:wght@400;600;700&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="styles.css" />
+    <style>
+        .track-page {
+            --shopee-orange: #ee4d2d;
+            --shopee-orange-deep: #d83f21;
+            --shopee-surface: #fff;
+            --shopee-soft: #fff7f4;
+            --shopee-line: #f0d8d1;
+            --shopee-text: #1f2937;
+            --shopee-muted: #6b7280;
+            font-family: "Helvetica Neue", Arial, sans-serif;
+            padding-bottom: 3rem;
+        }
+
+        .track-hero {
+            margin-top: 1.2rem;
+            border-radius: 20px;
+            padding: 1.4rem;
+            color: #fff;
+            background:
+                radial-gradient(circle at 12% 24%, rgba(255, 255, 255, 0.18), transparent 28%),
+                radial-gradient(circle at 84% 72%, rgba(255, 255, 255, 0.14), transparent 32%),
+                linear-gradient(120deg, #ff6a40 0%, var(--shopee-orange) 52%, var(--shopee-orange-deep) 100%);
+            box-shadow: 0 20px 45px rgba(238, 77, 45, 0.22);
+        }
+
+        .track-hero h2 {
+            margin: 0;
+            font-size: clamp(1.5rem, 3.4vw, 2rem);
+            letter-spacing: -0.02em;
+        }
+
+        .track-hero p {
+            margin: 0.45rem 0 0;
+            max-width: 64ch;
+            color: rgba(255, 255, 255, 0.95);
+        }
+
+        .track-layout {
+            display: grid;
+            grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .track-card {
+            border: 1px solid var(--shopee-line);
+            border-radius: 4px;
+            background: var(--shopee-surface);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+        }
+
+        .track-card.pad {
+            padding: 0.95rem 1rem;
+        }
+
+        .lookup-title {
+            margin: 0;
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--shopee-text);
+        }
+
+        .lookup-sub {
+            margin: 0.2rem 0 0;
+            color: var(--shopee-muted);
+            font-size: 0.84rem;
+        }
+
+        .track-form-grid {
+            margin-top: 0.7rem;
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 0.45rem;
+        }
+
+        .track-form-grid input {
+            min-height: 40px;
+            border: 1px solid #dfdfdf;
+            border-radius: 2px;
+            padding: 0 0.8rem;
+            font-family: "Helvetica Neue", Arial, sans-serif;
+            font-size: 0.87rem;
+        }
+
+        .track-form-grid input:focus {
+            border-color: var(--shopee-orange);
+            box-shadow: 0 0 0 3px rgba(238, 77, 45, 0.14);
+            outline: none;
+        }
+
+        .track-submit {
+            margin-top: 0.55rem;
+            border: none;
+            border-radius: 2px;
+            min-height: 40px;
+            padding: 0 1.1rem;
+            font-weight: 600;
+            font-family: "Helvetica Neue", Arial, sans-serif;
+            font-size: 0.88rem;
+            color: #fff;
+            background: linear-gradient(140deg, #ff6b43, var(--shopee-orange));
+            box-shadow: none;
+            cursor: pointer;
+        }
+
+        .track-status {
+            margin: 0.45rem 0 0;
+            min-height: 1.2rem;
+            color: var(--shopee-muted);
+            font-size: 0.82rem;
+        }
+
+        .track-help {
+            background: linear-gradient(180deg, #fff, var(--shopee-soft));
+        }
+
+        .track-help h3 {
+            margin: 0;
+            font-size: 0.95rem;
+            color: var(--shopee-text);
+        }
+
+        .track-help ul {
+            margin: 0.55rem 0 0;
+            padding-left: 1.1rem;
+            color: var(--shopee-muted);
+            display: grid;
+            gap: 0.3rem;
+            font-size: 0.82rem;
+        }
+
+        #trackingResult {
+            margin-top: 1rem;
+        }
+
+        .tracking-result-stack + .tracking-result-stack {
+            margin-top: 0.7rem;
+        }
+
+        .shopee-result-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            padding-bottom: 0.55rem;
+            border-bottom: 1px dashed var(--shopee-line);
+        }
+
+        .shopee-result-head h3 {
+            margin: 0;
+            font-size: 0.98rem;
+            font-weight: 600;
+            color: var(--shopee-text);
+        }
+
+        .shopee-result-head .meta {
+            margin: 0.15rem 0 0;
+            font-size: 0.79rem;
+        }
+
+        .shopee-status-badge {
+            border-radius: 999px;
+            padding: 0.25rem 0.6rem;
+            font-size: 0.68rem;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            font-weight: 700;
+            background: #ffe9e3;
+            color: var(--shopee-orange-deep);
+        }
+
+        .shopee-status-badge.delivered {
+            background: #ecfdf3;
+            color: #047857;
+        }
+
+        .shopee-status-badge.cancelled {
+            background: #fef2f2;
+            color: #b91c1c;
+        }
+
+        .shopee-progress-wrap {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 0.4rem;
+            padding-top: 0.75rem;
+        }
+
+        .shopee-step {
+            display: grid;
+            justify-items: center;
+            gap: 0.25rem;
+            position: relative;
+        }
+
+        .shopee-step:not(:last-child)::after {
+            content: '';
+            position: absolute;
+            top: 7px;
+            left: 56%;
+            width: 88%;
+            height: 2px;
+            background: #e5e7eb;
+            z-index: 0;
+        }
+
+        .shopee-step-dot {
+            width: 14px;
+            height: 14px;
+            border-radius: 999px;
+            border: 2px solid #d1d5db;
+            background: #fff;
+            position: relative;
+            z-index: 1;
+        }
+
+        .shopee-step-label {
+            font-size: 0.71rem;
+            color: #6b7280;
+            text-align: center;
+        }
+
+        .shopee-action-row {
+            margin-top: 0.75rem;
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+            padding-top: 0.65rem;
+            border-top: 1px solid #f5d8d0;
+        }
+
+        .shopee-action-btn {
+            min-height: 32px;
+            padding: 0 0.75rem;
+            border-radius: 2px;
+            border: 1px solid #d9d9d9;
+            color: #4b5563;
+            text-decoration: none;
+            font-size: 0.78rem;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: #fff;
+        }
+
+        .shopee-action-btn.primary {
+            border-color: var(--shopee-orange);
+            color: var(--shopee-orange);
+            background: #fff7f4;
+        }
+
+        .shopee-step.done::after,
+        .shopee-step.active::after {
+            background: var(--shopee-orange);
+        }
+
+        .shopee-step.done .shopee-step-dot,
+        .shopee-step.active .shopee-step-dot {
+            border-color: var(--shopee-orange);
+            background: var(--shopee-orange);
+        }
+
+        .shopee-step.done .shopee-step-label,
+        .shopee-step.active .shopee-step-label {
+            color: #1f2937;
+            font-weight: 700;
+        }
+
+        .shopee-cancelled-state {
+            margin-top: 0.9rem;
+            padding: 0.75rem 0.85rem;
+            border-radius: 12px;
+            border: 1px solid #fecaca;
+            background: #fff1f2;
+            color: #b91c1c;
+        }
+
+        .shopee-cancelled-state strong {
+            display: block;
+            margin-bottom: 0.2rem;
+        }
+
+        .shopee-info-grid {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 0.5rem;
+        }
+
+        .shopee-info-card {
+            border: 1px solid var(--shopee-line);
+            border-radius: 2px;
+            padding: 0.55rem;
+            background: #fff;
+        }
+
+        .shopee-info-card p {
+            margin: 0;
+            font-size: 0.7rem;
+            color: var(--shopee-muted);
+        }
+
+        .shopee-info-card strong {
+            display: block;
+            margin-top: 0.15rem;
+            color: var(--shopee-text);
+            font-size: 0.83rem;
+        }
+
+        .shopee-total-wrap {
+            margin-top: 0.55rem;
+            display: grid;
+            gap: 0.35rem;
+        }
+
+        .shopee-section-head h3 {
+            margin: 0;
+        }
+
+        .shopee-order-line {
+            display: grid;
+            grid-template-columns: 46px minmax(0, 1fr) auto;
+            gap: 0.65rem;
+            align-items: center;
+            padding: 0.6rem 0;
+            border-bottom: 1px solid var(--shopee-line);
+        }
+
+        .shopee-item-thumb {
+            width: 44px;
+            height: 44px;
+            border-radius: 2px;
+            border: 1px solid #f4b8a9;
+            background: linear-gradient(155deg, #ffedd5, #fed7aa);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .shopee-item-thumb span {
+            font-size: 0.72rem;
+            letter-spacing: 0.06em;
+            font-weight: 700;
+            color: #c2410c;
+        }
+
+        .shopee-item-main strong {
+            color: var(--shopee-text);
+            font-size: 0.87rem;
+            font-weight: 600;
+        }
+
+        .shopee-item-main .meta {
+            margin: 0.08rem 0 0;
+            font-size: 0.76rem;
+        }
+
+        .shopee-item-price {
+            color: var(--shopee-orange-deep);
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .shopee-timeline {
+            gap: 0.75rem;
+        }
+
+        .shopee-timeline-item {
+            grid-template-columns: 14px minmax(0, 1fr);
+            gap: 0.55rem;
+            align-items: start;
+        }
+
+        .shopee-timeline-dot {
+            margin-top: 0.32rem;
+            background: var(--shopee-orange);
+            box-shadow: 0 0 0 4px rgba(238, 77, 45, 0.14);
+        }
+
+        .shopee-timeline-copy strong {
+            color: var(--shopee-text);
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .shopee-timeline-copy .meta {
+            margin: 0.12rem 0 0;
+            font-size: 0.76rem;
+            line-height: 1.35;
+        }
+
+        @media (max-width: 980px) {
+            .track-layout {
+                grid-template-columns: 1fr;
+            }
+
+            .track-form-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .shopee-info-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .shopee-order-line {
+                grid-template-columns: 40px minmax(0, 1fr);
+                row-gap: 0.25rem;
+            }
+
+            .shopee-item-price {
+                grid-column: 2;
+            }
+
+            .shopee-progress-wrap {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+                row-gap: 0.85rem;
+            }
+
+            .shopee-step:nth-child(2)::after,
+            .shopee-step:nth-child(4)::after {
+                display: none;
+            }
+
+            .shopee-step:not(:last-child)::after {
+                left: 58%;
+                width: 84%;
+            }
+        }
+    </style>
 </head>
 <body>
     <header class="site-header">
@@ -44,49 +473,40 @@
         </div>
     </header>
 
-    <main class="container page-shell checkout-page">
-        <div class="page-intro">
-            <p class="page-kicker">Order tracking</p>
-            <h2 class="page-title">Where is my order?</h2>
-            <p class="page-lead">Enter your tracking number or order ID to see the current status, delivery estimate, and timeline updates.</p>
-        </div>
+    <main class="container page-shell checkout-page track-page">
+        <section class="track-hero">
+            <h2>Track your AnyPrint order</h2>
+            <p>Get live delivery updates with a Shopee-style progress view. Search using your tracking number or order ID from your confirmation email.</p>
+        </section>
 
         <div id="adminAccessNotice" class="products-error hidden"></div>
-        <section class="page-grid checkout-layout">
-            <div class="page-stack">
-                <section class="checkout-card panel-card pad">
-                    <h3>Look up your order</h3>
-                    <p id="trackingHint" class="meta"></p>
-                    <form id="trackForm" class="checkout-form">
-                        <label for="trackingNumberInput">Tracking number</label>
-                        <input id="trackingNumberInput" name="tracking_number" placeholder="Tracking number (example: AP-000123)" />
-                        <label for="orderIdInput">Order ID</label>
+
+        <section class="track-layout">
+            <section class="track-card pad">
+                <h3 class="lookup-title">Order Lookup</h3>
+                <p id="trackingHint" class="lookup-sub"></p>
+                <form id="trackForm" novalidate>
+                    <div class="track-form-grid">
+                        <input id="trackingNumberInput" name="tracking_number" placeholder="Tracking number (AP-000123)" />
                         <input id="orderIdInput" name="order_id" placeholder="Order ID" />
-                        <label for="trackingEmailInput">Email used at checkout</label>
-                        <input id="trackingEmailInput" name="email" type="email" placeholder="Email used at checkout" />
-                        <button type="submit" class="btn">Track order</button>
-                    </form>
-                    <p id="trackingStatus" class="status" role="status" aria-live="polite"></p>
-                </section>
+                        <input id="trackingEmailInput" name="email" type="email" placeholder="Checkout email (optional if logged in)" />
+                    </div>
+                    <button type="submit" class="track-submit">Track Order</button>
+                </form>
+                <p id="trackingStatus" class="track-status" role="status" aria-live="polite"></p>
+            </section>
 
-                <section id="trackingResult" class="page-stack"></section>
-            </div>
-
-            <aside class="panel-card pad soft checkout-aside">
-                <p class="page-kicker">Helpful tips</p>
-                <h3>Use the details from checkout</h3>
-                <ul class="info-list">
-                    <li>Tracking numbers are generated after checkout.</li>
-                    <li>Payment gateway orders can take a few minutes to confirm.</li>
-                    <li>Owner and Admin accounts can view any order in the dashboard.</li>
+            <aside class="track-card pad track-help">
+                <h3>Before you search</h3>
+                <ul>
+                    <li>Tracking details appear after checkout confirmation.</li>
+                    <li>Some payment methods need a few minutes to verify.</li>
+                    <li>Use the same email from checkout for guest order access.</li>
                 </ul>
-                <div class="aside-badge-row">
-                    <span class="badge-pill">Live status</span>
-                    <span class="badge-pill">Delivery ETA</span>
-                    <span class="badge-pill">Timeline events</span>
-                </div>
             </aside>
         </section>
+
+        <section id="trackingResult" class="page-stack"></section>
     </main>
 
     <div id="toastStack" class="toast-stack"></div>
