@@ -3,6 +3,8 @@ const core = window.AnyPrintCore || {};
 const API_BASE = core.API_BASE || window.API_BASE || 'https://anyprint-prototype-backend.onrender.com/api';
 const CART_KEY = 'tt_cart_v2';
 const RECENT_KEY = 'tt_recently_viewed_v1';
+const AUTH_KEY = 'anyprint_auth_v1';
+const USER_KEY = 'anyprint_user_v1';
 
 function getCookie(name) {
     if (core.getCookie) return core.getCookie(name);
@@ -10,11 +12,60 @@ function getCookie(name) {
     return cookieValue ? decodeURIComponent(cookieValue.split('=').slice(1).join('=')) : '';
 }
 
+function getAuthToken() {
+    try {
+        const auth = JSON.parse(localStorage.getItem(AUTH_KEY) || '{}');
+        return auth.access || '';
+    } catch {
+        return '';
+    }
+}
+
+function setAuthToken(tokens) {
+    if (tokens && tokens.access) {
+        localStorage.setItem(AUTH_KEY, JSON.stringify(tokens));
+    }
+}
+
+function clearAuthToken() {
+    localStorage.removeItem(AUTH_KEY);
+    localStorage.removeItem(USER_KEY);
+}
+
+function getCurrentUser() {
+    try {
+        return JSON.parse(localStorage.getItem(USER_KEY) || 'null');
+    } catch {
+        return null;
+    }
+}
+
+function setCurrentUser(user) {
+    if (user) {
+        localStorage.setItem(USER_KEY, JSON.stringify(user));
+    }
+}
+
 async function apiFetch(url, options = {}) {
     if (core.request) {
         return core.request(url, options);
     }
-    return fetch(url, { credentials: 'include', ...options });
+    
+    const token = getAuthToken();
+    const headers = {
+        ...options.headers,
+        'Content-Type': 'application/json',
+    };
+    
+    if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+    }
+    
+    return fetch(url, {
+        credentials: 'include',
+        ...options,
+        headers,
+    });
 }
 
 function trackEvent(eventName, payload = {}) {
@@ -234,14 +285,19 @@ window.AnyPrint = {
     API_BASE,
     CART_KEY,
     RECENT_KEY,
+    AUTH_KEY,
+    USER_KEY,
     apiFetch,
     addRecentlyViewed,
     buildVariantKey,
+    clearAuthToken,
     ensureAuthForCart,
     escapeHtml,
     formatPrice,
+    getAuthToken,
     getColorOptions,
     getCurrentPageName,
+    getCurrentUser,
     getCookie,
     getLoginRedirectUrl,
     getSizeOptions,
@@ -254,6 +310,8 @@ window.AnyPrint = {
     renderStars,
     saveCart,
     saveRecentlyViewed,
+    setAuthToken,
+    setCurrentUser,
     showToast,
     trackEvent,
 };

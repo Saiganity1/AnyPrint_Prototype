@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Checkout - AnyPrint</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .checkout-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+        .checkout-steps {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+        .step {
+            text-align: center;
+            padding: 20px;
+            background: #f5f5f5;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .step.active {
+            background: #000;
+            color: #fff;
+        }
+        .checkout-content {
+            display: grid;
+            grid-template-columns: 1fr 350px;
+            gap: 30px;
+        }
+        .checkout-form {
+            background: #fff;
+            padding: 30px;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+        .form-group input, .form-group select, .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-family: inherit;
+            font-size: 14px;
+        }
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+        .order-summary {
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+            height: fit-content;
+            position: sticky;
+            top: 20px;
+        }
+        .order-summary h3 {
+            margin-top: 0;
+            border-bottom: 2px solid #f0f0f0;
+            padding-bottom: 15px;
+        }
+        .summary-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid #f0f0f0;
+            font-size: 14px;
+        }
+        .summary-item strong {
+            font-weight: 600;
+        }
+        .summary-total {
+            display: flex;
+            justify-content: space-between;
+            padding: 15px 0;
+            font-size: 18px;
+            font-weight: 700;
+            border-top: 2px solid #000;
+            margin-top: 10px;
+        }
+        .step-content {
+            display: none;
+        }
+        .step-content.active {
+            display: block;
+        }
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="header-content">
+            <a href="index.html" class="logo">AnyPrint</a>
+            <nav class="nav">
+                <a href="index.html">Home</a>
+                <a href="shop.html">Shop</a>
+                <a href="checkout.html" class="active">Checkout</a>
+                <button class="btn-icon" onclick="toggleCart()">🛒 Cart</button>
+            </nav>
+        </div>
+    </header>
+
+    <div class="checkout-container">
+        <h1>Checkout</h1>
+        
+        <div class="checkout-steps">
+            <div class="step active" onclick="goToStep(1)">
+                <div style="font-weight: 600;">1. Cart Review</div>
+            </div>
+            <div class="step" onclick="goToStep(2)">
+                <div style="font-weight: 600;">2. Shipping Address</div>
+            </div>
+            <div class="step" onclick="goToStep(3)">
+                <div style="font-weight: 600;">3. Payment Method</div>
+            </div>
+            <div class="step" onclick="goToStep(4)">
+                <div style="font-weight: 600;">4. Confirmation</div>
+            </div>
+        </div>
+
+        <div class="checkout-content">
+            <div>
+                <!-- Step 1: Cart Review -->
+                <div id="step1" class="step-content active">
+                    <div class="checkout-form">
+                        <h2>Review Your Cart</h2>
+                        <div id="cartItems"></div>
+                        <button class="btn" onclick="goToStep(2)" style="width: 100%; margin-top: 20px;">Continue to Shipping</button>
+                    </div>
+                </div>
+
+                <!-- Step 2: Shipping Address -->
+                <div id="step2" class="step-content">
+                    <div class="checkout-form">
+                        <h2>Shipping Address</h2>
+                        <form id="addressForm">
+                            <div class="form-group">
+                                <label>Full Name</label>
+                                <input type="text" name="full_name" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Email</label>
+                                <input type="email" name="email" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Phone</label>
+                                <input type="tel" name="phone" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Delivery Address</label>
+                                <textarea name="address" rows="4" required></textarea>
+                            </div>
+                            <div class="form-row">
+                                <button type="button" class="btn" onclick="goToStep(1)">Back</button>
+                                <button type="button" class="btn" onclick="goToStep(3)">Continue to Payment</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Step 3: Payment Method -->
+                <div id="step3" class="step-content">
+                    <div class="checkout-form">
+                        <h2>Payment Method</h2>
+                        <form id="paymentForm">
+                            <div class="form-group">
+                                <label>Select Payment Method</label>
+                                <select name="payment_method" required onchange="updatePaymentDisplay()">
+                                    <option value="">Choose a payment method</option>
+                                    <option value="COD">Cash on Delivery</option>
+                                    <option value="PAYMONGO">GCash / QR Code (PayMongo)</option>
+                                    <option value="PAYMAYA">Card / PayMaya</option>
+                                    <option value="STRIPE">Card (Stripe)</option>
+                                    <option value="BANK">Bank Transfer</option>
+                                </select>
+                            </div>
+                            <div id="paymentInfo"></div>
+                            <div class="form-group">
+                                <label>Order Notes (Optional)</label>
+                                <textarea name="notes" rows="3"></textarea>
+                            </div>
+                            <div class="form-row">
+                                <button type="button" class="btn" onclick="goToStep(2)">Back</button>
+                                <button type="button" class="btn" onclick="goToStep(4)">Review Order</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Step 4: Confirmation -->
+                <div id="step4" class="step-content">
+                    <div class="checkout-form">
+                        <h2>Order Confirmation</h2>
+                        <div id="confirmationContent"></div>
+                        <div class="form-row">
+                            <button type="button" class="btn" onclick="goToStep(3)">Back</button>
+                            <button type="button" class="btn" onclick="placeOrder()">Place Order</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Order Summary Sidebar -->
+            <div class="order-summary">
+                <h3>Order Summary</h3>
+                <div id="summaryContent"></div>
+                <div class="form-group" style="margin-top: 15px;">
+                    <label>Promo Code</label>
+                    <input type="text" id="promoCode" placeholder="Enter code">
+                    <button type="button" class="btn btn-small" onclick="applyPromo()" style="width: 100%; margin-top: 8px;">Apply</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="common.js"></script>
+    <script src="checkout.js"></script>
+</body>
+</html>
