@@ -169,9 +169,20 @@ function setAuthButton() {
     if (!authButton) return;
 
     if (state.currentUser) {
-        authButton.textContent = `Saved (${roleLabel(state.currentUser.role)})`;
-        authButton.href = 'wishlist.html';
-        authButton.title = 'Open wishlist';
+        const role = String(state.currentUser.role || '').toUpperCase();
+        if (role === 'OWNER') {
+            authButton.textContent = 'Owner Dashboard';
+            authButton.href = 'owner-dashboard.html';
+            authButton.title = 'Open owner dashboard';
+        } else if (role === 'ADMIN') {
+            authButton.textContent = 'Admin Dashboard';
+            authButton.href = 'admin.html';
+            authButton.title = 'Open admin dashboard';
+        } else {
+            authButton.textContent = `Saved (${roleLabel(state.currentUser.role)})`;
+            authButton.href = 'wishlist.html';
+            authButton.title = 'Open wishlist';
+        }
     } else {
         authButton.textContent = 'Login/Register';
         authButton.href = 'login.html';
@@ -202,8 +213,13 @@ function setExtraNavLinks() {
             const adminLink = document.createElement('a');
             adminLink.id = 'adminDashboardLink';
             adminLink.className = 'plain-btn';
-            adminLink.href = 'admin.html';
-            adminLink.textContent = 'Admin';
+            if (String(state.currentUser.role || '').toUpperCase() === 'OWNER') {
+                adminLink.href = 'owner-dashboard.html';
+                adminLink.textContent = 'Owner';
+            } else {
+                adminLink.href = 'admin.html';
+                adminLink.textContent = 'Admin';
+            }
             nav.appendChild(adminLink);
         }
     } else if (existingAdminLink) {

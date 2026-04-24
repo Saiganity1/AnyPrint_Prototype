@@ -77,6 +77,18 @@ function getSafeNextUrl() {
     return next;
 }
 
+function getPostAuthRedirect(user) {
+    const next = getSafeNextUrl();
+    if (next !== 'index.html') {
+        return next;
+    }
+
+    const role = String((user && user.role) || '').toUpperCase();
+    if (role === 'OWNER') return 'owner-dashboard.html';
+    if (role === 'ADMIN') return 'admin.html';
+    return 'index.html';
+}
+
 function getLoggedOutMessage() {
     if (registerForm && !loginForm) {
         return 'Create an account to continue.';
@@ -170,7 +182,7 @@ async function completeLoginWithPayload(payload, fallbackErrorMessage) {
         ? 'Account created successfully.'
         : 'Signed in successfully.';
     showToast(successText, 'success');
-    window.location.href = getSafeNextUrl();
+    window.location.href = getPostAuthRedirect(currentUser);
     return true;
 }
 
@@ -353,7 +365,7 @@ async function verifyPhoneOtpCode(event) {
     persistCurrentUser(currentUser);
     renderAuthState();
     showToast('Signed in with phone number.', 'success');
-    window.location.href = getSafeNextUrl();
+    window.location.href = getPostAuthRedirect(currentUser);
 }
 
 function setInlineError(input, errorNode, message) {
@@ -537,7 +549,7 @@ if (loginForm) {
         persistCurrentUser(currentUser);
         renderAuthState();
         showToast('Welcome back!', 'success');
-        window.location.href = getSafeNextUrl();
+        window.location.href = getPostAuthRedirect(currentUser);
     });
 }
 
@@ -593,7 +605,7 @@ if (registerForm) {
         persistCurrentUser(currentUser);
         renderAuthState();
         showToast('Account created successfully.', 'success');
-        window.location.href = getSafeNextUrl();
+        window.location.href = getPostAuthRedirect(currentUser);
     });
 }
 

@@ -1,305 +1,234 @@
-const { API_BASE, apiFetch, showToast, getCurrentUser, formatPrice } = window.AnyPrint;
+const { API_BASE, apiFetch, escapeHtml, formatPrice, showToast } = window.AnyPrint;
+
+const ownerKpis = document.getElementById('ownerKpis');
+const ownerStatus = document.getElementById('ownerStatus');
+const ownerAnalyticsSummary = document.getElementById('ownerAnalyticsSummary');
+const ownerProductsTable = document.getElementById('ownerProductsTable');
+const ownerCreateProductForm = document.getElementById('ownerCreateProductForm');
+const ownerLogoutButton = document.getElementById('ownerLogoutButton');
 
 let currentUser = null;
+let products = [];
 
-async function initDashboard() {
-    currentUser = window.AnyPrint.getCurrentUser();
-    
-    if (!currentUser || !['OWNER', 'ADMIN'].includes(currentUser.role)) {
-        window.location.href = 'login.html';
-        return;
-    }
-
-    loadDashboardStats();
-    setupMenuListeners();
-}
-
-function setupMenuListeners() {
-    document.querySelectorAll('.menu-link').forEach(link => {
-        link.addEventListener('click', (e) => {
-            e.preventDefault();
-            const section = link.dataset.section;
-            switchSection(section);
-        });
-    });
-}
-
-function switchSection(sectionId) {
-    // Hide all sections
-    document.querySelectorAll('.content-section').forEach(sec => sec.classList.remove('active'));
-    document.querySelectorAll('.menu-link').forEach(link => link.classList.remove('active'));
-    
-    // Show selected section
-    const section = document.getElementById(sectionId);
-    if (section) {
-        section.classList.add('active');
-    }
-    
-    // Mark menu item as active
-    document.querySelector(`[data-section="${sectionId}"]`).classList.add('active');
-    
-    // Load section content
-    if (sectionId === 'dashboard') {
-        loadDashboardStats();
-    } else if (sectionId === 'products') {
-        loadProductsTable();
-    } else if (sectionId === 'orders') {
-        loadOrdersTable();
-    } else if (sectionId === 'users') {
-        loadUsersTable();
-    } else if (sectionId === 'analytics') {
-        loadAnalytics();
-    }
-}
-
-async function loadDashboardStats() {
+async function readJsonSafe(res) {
     try {
-        const response = await apiFetch(`${API_BASE}/admin/dashboard/`, {
-            method: 'GET',
-        });
-        
-        if (response.ok) {
-            const data = await response.json();
-            document.getElementById('totalSales').textContent = formatPrice(data.total_sales || 0);
-            document.getElementById('totalOrders').textContent = data.total_orders || 0;
-            document.getElementById('totalProducts').textContent = data.total_products || 0;
-            document.getElementById('totalUsers').textContent = data.total_users || 0;
-        }
-    } catch (error) {
-        console.error('Failed to load dashboard stats:', error);
+        return await res.json();
+    } catch (_error) {
+        return {};
     }
 }
 
-async function loadProductsTable() {
+async function refreshOwnerUser() {
     try {
-        const response = await apiFetch(`${API_BASE}/products/?page_size=100`, {
-            method: 'GET',
-        });
-        
-        if (response.ok) {
-            const data = await response.json();
-            const products = data.products || [];
-            
-            let html = '<table><thead><tr><th>Name</th><th>Category</th><th>Price</th><th>Stock</th><th>Actions</th></tr></thead><tbody>';
-            
-            products.forEach(product => {
-                html += `
-                    <tr>
-                        <td>${product.name}</td>
-                        <td>${product.category || 'N/A'}</td>
-                        <td>${formatPrice(product.price)}</td>
-                        <td>${product.stock_quantity}</td>
-                        <td>
-                            <div class="action-buttons">
-                                <button class="btn-small" onclick="editProduct(${product.id})">Edit</button>
-                                <button class="btn-small danger" onclick="deleteProduct(${product.id})">Delete</button>
-                            </div>
-                        </td>
-                    </tr>
-                `;
-            });
-            
-            html += '</tbody></table>';
-            document.getElementById('productsTable').innerHTML = html;
-        }
-    } catch (error) {
-        console.error('Failed to load products:', error);
-        showToast('Failed to load products', 'error');
+        const response = await apiFetch(`${API_BASE}/auth/me/`);
+        const body = await readJsonSafe(response);
+        currentUser = body && body.is_authenticated ? body.user : null;
+    } catch (_error) {
+        currentUser = null;
     }
+
+    if (!currentUser || currentUser.role !== 'OWNER') {
+        window.location.href = 'login.html?next=owner-dashboard.html';
+        return false;
+    }
+    return true;
 }
 
-async function loadOrdersTable() {
-    try {
-        const response = await apiFetch(`${API_BASE}/admin/orders/?page_size=50`, {
-            method: 'GET',
-        });
-        
-        if (response.ok) {
-            const data = await response.json();
-            const orders = data.orders || [];
-            
-            let html = '<table><thead><tr><th>Order #</th><th>Customer</th><th>Total</th><th>Status</th><th>Payment</th><th>Actions</th></tr></thead><tbody>';
-            
-            orders.forEach(order => {
-                html += `
-                    <tr>
-                        <td>${order.tracking_number}</td>
-                        <td>${order.full_name}</td>
-                        <td>${formatPrice(order.total_amount)}</td>
-                        <td>${order.status}</td>
-                        <td>${order.payment_status}</td>
-                        <td>
-                            <div class="action-buttons">
-                                <button class="btn-small" onclick="updateOrderStatus(${order.id})">Update</button>
-                            </div>
-                        </td>
-                    </tr>
-                `;
-            });
-            
-            html += '</tbody></table>';
-            document.getElementById('ordersTable').innerHTML = html;
-        }
-    } catch (error) {
-        console.error('Failed to load orders:', error);
-        showToast('Failed to load orders', 'error');
-    }
-}
-
-async function loadUsersTable() {
-    try {
-        const response = await apiFetch(`${API_BASE}/admin/users/`, {
-            method: 'GET',
-        });
-        
-        if (response.ok) {
-            const data = await response.json();
-            const users = data.users || [];
-            
-            let html = '<table><thead><tr><th>Username</th><th>Email</th><th>Role</th><th>Actions</th></tr></thead><tbody>';
-            
-            users.forEach(user => {
-                html += `
-                    <tr>
-                        <td>${user.username}</td>
-                        <td>${user.email}</td>
-                        <td>${user.role}</td>
-                        <td>
-                            <div class="action-buttons">
-                                <button class="btn-small" onclick="updateUserRole(${user.id})">Change Role</button>
-                            </div>
-                        </td>
-                    </tr>
-                `;
-            });
-            
-            html += '</tbody></table>';
-            document.getElementById('usersTable').innerHTML = html;
-        }
-    } catch (error) {
-        console.error('Failed to load users:', error);
-        showToast('Failed to load users', 'error');
-    }
-}
-
-async function loadAnalytics() {
-    const content = document.getElementById('analyticsContent');
-    content.innerHTML = `
-        <div style="background: #fff; padding: 20px; border-radius: 8px;">
-            <h3>Sales Analytics</h3>
-            <canvas id="analyticsChart" width="400" height="100"></canvas>
-            <div style="margin-top: 20px;">
-                <h4>Top Selling Products</h4>
-                <div id="topProducts"></div>
-            </div>
-        </div>
+function renderKpis(dashboardMetrics = {}, analyticsMetrics = {}) {
+    if (!ownerKpis) return;
+    ownerKpis.innerHTML = `
+        <article class="owner-card"><h3>Total Revenue</h3><div class="owner-kpi">${formatPrice(analyticsMetrics.total_revenue || 0)}</div></article>
+        <article class="owner-card"><h3>Total Orders</h3><div class="owner-kpi">${analyticsMetrics.total_orders || 0}</div></article>
+        <article class="owner-card"><h3>Completed Orders</h3><div class="owner-kpi">${analyticsMetrics.completed_orders || 0}</div></article>
+        <article class="owner-card"><h3>Average Order Value</h3><div class="owner-kpi">${formatPrice(analyticsMetrics.average_order_value || 0)}</div></article>
+        <article class="owner-card"><h3>Low Stock Products</h3><div class="owner-kpi">${dashboardMetrics.low_stock_products || 0}</div></article>
+        <article class="owner-card"><h3>Low Stock Variants</h3><div class="owner-kpi">${dashboardMetrics.low_stock_variants || 0}</div></article>
     `;
 }
 
-async function uploadCSV() {
-    const file = document.getElementById('csvFile').files[0];
-    if (!file) {
-        showToast('Please select a file', 'error');
+function renderAnalyticsSummary(payload = {}) {
+    if (!ownerAnalyticsSummary) return;
+    const topProducts = payload.top_products || [];
+    ownerAnalyticsSummary.innerHTML = topProducts.length
+        ? topProducts.slice(0, 6).map((item, index) => `
+            <article class="table-row">
+                <span class="rank-pill">#${index + 1}</span>
+                <strong>${escapeHtml(item.product_name || item.product__name || 'Product')}</strong>
+                <span>${item.quantity_sold || 0} sold</span>
+            </article>
+        `).join('')
+        : '<p class="meta">No top products yet.</p>';
+}
+
+function renderProductsTable() {
+    if (!ownerProductsTable) return;
+
+    if (!products.length) {
+        ownerProductsTable.innerHTML = '<p class="meta">No products found.</p>';
         return;
     }
 
-    const formData = new FormData();
-    formData.append('file', file);
+    ownerProductsTable.innerHTML = `
+        <table class="owner-table">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Category</th>
+                    <th>Price</th>
+                    <th>Stock</th>
+                    <th>Restock</th>
+                </tr>
+            </thead>
+            <tbody>
+                ${products.map((product) => `
+                    <tr>
+                        <td>${escapeHtml(product.name)}</td>
+                        <td>${escapeHtml(product.category || 'Uncategorized')}</td>
+                        <td>${formatPrice(product.price)}</td>
+                        <td><strong>${product.stock_quantity}</strong></td>
+                        <td>
+                            <div class="owner-stock-actions">
+                                <input type="number" min="0" step="1" class="restock-qty" data-product-id="${product.id}" placeholder="Qty" />
+                                <select class="restock-mode" data-product-id="${product.id}">
+                                    <option value="increment">Add</option>
+                                    <option value="set">Set</option>
+                                </select>
+                                <button class="btn small owner-restock-btn" data-product-id="${product.id}" type="button">Save</button>
+                            </div>
+                        </td>
+                    </tr>
+                `).join('')}
+            </tbody>
+        </table>
+    `;
 
-    try {
-        const response = await apiFetch(`${API_BASE}/admin/products/bulk-upload/`, {
-            method: 'POST',
-            body: formData,
-            headers: {
-                'Authorization': `Bearer ${window.AnyPrint.getAuthToken()}`,
-            },
+    ownerProductsTable.querySelectorAll('.owner-restock-btn').forEach((button) => {
+        button.addEventListener('click', async () => {
+            const productId = Number(button.getAttribute('data-product-id'));
+            const qtyEl = ownerProductsTable.querySelector(`.restock-qty[data-product-id="${productId}"]`);
+            const modeEl = ownerProductsTable.querySelector(`.restock-mode[data-product-id="${productId}"]`);
+            if (!qtyEl || !modeEl) return;
+
+            const quantity = Number(qtyEl.value || 0);
+            if (!Number.isInteger(quantity) || quantity < 0) {
+                showToast('Enter a valid restock quantity.', 'error');
+                return;
+            }
+
+            await restockProduct(productId, quantity, modeEl.value);
+            qtyEl.value = '';
         });
+    });
+}
 
-        if (response.ok) {
-            const data = await response.json();
-            document.getElementById('uploadStatus').innerHTML = `
-                <div style="background: #e8f5e9; padding: 10px; border-radius: 4px; color: #2e7d32;">
-                    ✓ Successfully uploaded ${data.count} products
-                </div>
-            `;
-            showToast('Products uploaded successfully', 'success');
-        } else {
-            showToast('Failed to upload products', 'error');
-        }
-    } catch (error) {
-        console.error('Upload failed:', error);
-        showToast('Upload failed: ' + error.message, 'error');
+async function loadProducts() {
+    const response = await apiFetch(`${API_BASE}/admin/products/?page_size=200`);
+    const body = await readJsonSafe(response);
+    if (!response.ok) {
+        throw new Error(body.error || 'Could not load products.');
     }
+    products = body.products || [];
+    renderProductsTable();
 }
 
-function showProductForm() {
-    alert('Product form functionality to be implemented');
-}
+async function loadOwnerHomepage() {
+    const [dashboardResponse, analyticsResponse] = await Promise.all([
+        apiFetch(`${API_BASE}/admin/dashboard/`),
+        apiFetch(`${API_BASE}/admin/analytics/`),
+    ]);
 
-function editProduct(id) {
-    alert(`Edit product ${id} functionality to be implemented`);
-}
+    const dashboardBody = await readJsonSafe(dashboardResponse);
+    const analyticsBody = await readJsonSafe(analyticsResponse);
 
-async function deleteProduct(id) {
-    if (!confirm('Are you sure you want to delete this product?')) return;
-    
-    try {
-        const response = await apiFetch(`${API_BASE}/admin/products/${id}/`, {
-            method: 'DELETE',
-        });
-        
-        if (response.ok) {
-            showToast('Product deleted', 'success');
-            loadProductsTable();
-        } else {
-            showToast('Failed to delete product', 'error');
-        }
-    } catch (error) {
-        console.error('Delete failed:', error);
-        showToast('Delete failed', 'error');
+    if (!dashboardResponse.ok) {
+        throw new Error(dashboardBody.error || 'Could not load owner dashboard.');
     }
+    if (!analyticsResponse.ok) {
+        throw new Error(analyticsBody.error || 'Could not load analytics.');
+    }
+
+    renderKpis(dashboardBody.metrics || {}, analyticsBody.metrics || {});
+    renderAnalyticsSummary(analyticsBody);
 }
 
-function updateOrderStatus(id) {
-    const newStatus = prompt('Enter new status (PENDING, CONFIRMED, PACKED, SHIPPED, OUT_FOR_DELIVERY, DELIVERED, CANCELLED):');
-    if (!newStatus) return;
-    
-    apiFetch(`${API_BASE}/admin/orders/${id}/status/`, {
+async function createProduct(payload) {
+    const response = await apiFetch(`${API_BASE}/admin/products/create/`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status: newStatus }),
-    }).then(res => {
-        if (res.ok) {
-            showToast('Order status updated', 'success');
-            loadOrdersTable();
-        } else {
-            showToast('Failed to update order', 'error');
+        body: JSON.stringify(payload),
+    });
+    const body = await readJsonSafe(response);
+    if (!response.ok) {
+        throw new Error(body.error || 'Could not create product.');
+    }
+}
+
+async function restockProduct(productId, quantity, mode) {
+    const response = await apiFetch(`${API_BASE}/admin/products/${productId}/restock/`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ quantity, mode }),
+    });
+    const body = await readJsonSafe(response);
+    if (!response.ok) {
+        throw new Error(body.error || 'Could not restock product.');
+    }
+    showToast('Stock updated.', 'success');
+    await loadProducts();
+}
+
+if (ownerCreateProductForm) {
+    ownerCreateProductForm.addEventListener('submit', async (event) => {
+        event.preventDefault();
+        const formData = new FormData(ownerCreateProductForm);
+        const payload = {
+            name: String(formData.get('name') || '').trim(),
+            category: String(formData.get('category') || '').trim(),
+            price: Number(formData.get('price') || 0),
+            stock_quantity: Number(formData.get('stock_quantity') || 0),
+            print_style: String(formData.get('print_style') || 'Classic').trim(),
+            description: String(formData.get('description') || '').trim(),
+            is_featured: !!formData.get('is_featured'),
+            is_active: true,
+        };
+
+        try {
+            await createProduct(payload);
+            showToast('Product created.', 'success');
+            ownerCreateProductForm.reset();
+            await Promise.all([loadProducts(), loadOwnerHomepage()]);
+        } catch (error) {
+            showToast(error.message || 'Could not create product.', 'error');
         }
     });
 }
 
-function updateUserRole(id) {
-    const newRole = prompt('Enter new role (USER, ADMIN, OWNER):');
-    if (!newRole) return;
-    
-    apiFetch(`${API_BASE}/admin/users/${id}/role/`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ role: newRole }),
-    }).then(res => {
-        if (res.ok) {
-            showToast('User role updated', 'success');
-            loadUsersTable();
-        } else {
-            showToast('Failed to update user role', 'error');
+if (ownerLogoutButton) {
+    ownerLogoutButton.addEventListener('click', async () => {
+        try {
+            await apiFetch(`${API_BASE}/auth/logout/`, { method: 'POST' });
+        } catch (_error) {
+            // Best effort logout.
         }
+        if (window.AnyPrintCore && window.AnyPrintCore.clearTokens) {
+            window.AnyPrintCore.clearTokens();
+        }
+        window.AnyPrint.clearAuthToken();
+        window.location.href = 'index.html';
     });
 }
 
-async function logout() {
-    window.AnyPrint.clearAuthToken();
-    window.location.href = 'index.html';
+async function initOwnerDashboard() {
+    const allowed = await refreshOwnerUser();
+    if (!allowed) return;
+
+    try {
+        if (ownerStatus) ownerStatus.textContent = 'Loading owner homepage...';
+        await Promise.all([loadOwnerHomepage(), loadProducts()]);
+        if (ownerStatus) ownerStatus.textContent = 'Owner homepage ready.';
+    } catch (error) {
+        if (ownerStatus) ownerStatus.textContent = error.message || 'Could not load owner homepage.';
+    }
 }
 
-// Initialize on page load
-document.addEventListener('DOMContentLoaded', initDashboard);
+document.addEventListener('DOMContentLoaded', initOwnerDashboard);
