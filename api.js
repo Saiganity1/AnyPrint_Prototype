@@ -2,6 +2,7 @@
 const API_BASE = window.API_BASE || 'https://anyprint-prototype-backend.onrender.com/api';
 const ACCESS_TOKEN_KEY = 'ap_access_token';
 const REFRESH_TOKEN_KEY = 'ap_refresh_token';
+const AUTH_KEY = 'anyprint_auth_v1';
 
 function getCookie(name) {
     const cookieValue = document.cookie
@@ -11,25 +12,51 @@ function getCookie(name) {
 }
 
 function getAccessToken() {
-    return localStorage.getItem(ACCESS_TOKEN_KEY) || '';
+    const legacy = localStorage.getItem(ACCESS_TOKEN_KEY) || '';
+    if (legacy) return legacy;
+
+    try {
+        const auth = JSON.parse(localStorage.getItem(AUTH_KEY) || '{}');
+        return String(auth.access || '');
+    } catch (_error) {
+        return '';
+    }
 }
 
 function getRefreshToken() {
-    return localStorage.getItem(REFRESH_TOKEN_KEY) || '';
+    const legacy = localStorage.getItem(REFRESH_TOKEN_KEY) || '';
+    if (legacy) return legacy;
+
+    try {
+        const auth = JSON.parse(localStorage.getItem(AUTH_KEY) || '{}');
+        return String(auth.refresh || '');
+    } catch (_error) {
+        return '';
+    }
 }
 
 function setTokens(tokens = {}) {
+    const merged = {
+        access: String(tokens.access || ''),
+        refresh: String(tokens.refresh || ''),
+    };
+
     if (tokens.access) {
         localStorage.setItem(ACCESS_TOKEN_KEY, String(tokens.access));
     }
     if (tokens.refresh) {
         localStorage.setItem(REFRESH_TOKEN_KEY, String(tokens.refresh));
     }
+
+    if (merged.access || merged.refresh) {
+        localStorage.setItem(AUTH_KEY, JSON.stringify(merged));
+    }
 }
 
 function clearTokens() {
     localStorage.removeItem(ACCESS_TOKEN_KEY);
     localStorage.removeItem(REFRESH_TOKEN_KEY);
+    localStorage.removeItem(AUTH_KEY);
 }
 
 function toAbsoluteUrl(pathOrUrl) {

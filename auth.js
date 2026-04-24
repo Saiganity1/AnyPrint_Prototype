@@ -1,6 +1,7 @@
 const core = window.AnyPrintCore || {};
 const API_BASE = core.API_BASE || window.API_BASE || 'https://anyprint-prototype-backend.onrender.com/api';
 const authConfig = window.AnyPrintAuthConfig || {};
+const USER_KEY = 'anyprint_user_v1';
 
 const loginForm = document.getElementById('loginForm');
 const registerForm = document.getElementById('registerForm');
@@ -113,6 +114,15 @@ function parseApiEnvelope(body) {
     return body;
 }
 
+function persistCurrentUser(user) {
+    if (!user || typeof user !== 'object') return;
+    localStorage.setItem(USER_KEY, JSON.stringify(user));
+}
+
+function clearStoredUser() {
+    localStorage.removeItem(USER_KEY);
+}
+
 async function readJsonSafe(res) {
     if (core.parseJson) {
         return core.parseJson(res);
@@ -154,6 +164,7 @@ async function completeLoginWithPayload(payload, fallbackErrorMessage) {
         core.setTokens(data.tokens);
     }
     currentUser = data.user;
+    persistCurrentUser(currentUser);
     renderAuthState();
     const successText = registerForm && !loginForm
         ? 'Account created successfully.'
@@ -339,6 +350,7 @@ async function verifyPhoneOtpCode(event) {
         core.setTokens(data.tokens);
     }
     currentUser = data.user;
+    persistCurrentUser(currentUser);
     renderAuthState();
     showToast('Signed in with phone number.', 'success');
     window.location.href = getSafeNextUrl();
@@ -522,6 +534,7 @@ if (loginForm) {
             core.setTokens(body.tokens);
         }
         currentUser = body.user;
+        persistCurrentUser(currentUser);
         renderAuthState();
         showToast('Welcome back!', 'success');
         window.location.href = getSafeNextUrl();
@@ -577,6 +590,7 @@ if (registerForm) {
             core.setTokens(body.tokens);
         }
         currentUser = body.user;
+        persistCurrentUser(currentUser);
         renderAuthState();
         showToast('Account created successfully.', 'success');
         window.location.href = getSafeNextUrl();
@@ -606,6 +620,7 @@ if (logoutButton) {
             core.clearTokens();
         }
         currentUser = null;
+        clearStoredUser();
         renderAuthState();
         showToast('Logged out.', 'default');
 
