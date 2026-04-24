@@ -31,13 +31,6 @@ let currentUser = null;
 let currentProduct = null;
 let cart = loadCart();
 
-function getCookie(name) {
-    const cookieValue = document.cookie
-        .split('; ')
-        .find((row) => row.startsWith(`${name}=`));
-    return cookieValue ? decodeURIComponent(cookieValue.split('=').slice(1).join('=')) : '';
-}
-
 function renderCartCount() {
     if (!cartCountEl) return;
     const count = cart.reduce((sum, item) => sum + Number(item.quantity || 0), 0);
@@ -63,17 +56,7 @@ function showLocalToast(message, tone = 'default') {
 }
 
 async function apiFetchWithCsrf(url, options = {}) {
-    const config = { credentials: 'include', ...options };
-    const method = String(config.method || 'GET').toUpperCase();
-    if (!['GET', 'HEAD', 'OPTIONS', 'TRACE'].includes(method)) {
-        const headers = new Headers(config.headers || {});
-        const csrfToken = getCookie('csrftoken');
-        if (csrfToken && !headers.has('X-CSRFToken')) {
-            headers.set('X-CSRFToken', csrfToken);
-        }
-        config.headers = headers;
-    }
-    return fetch(url, config);
+    return apiFetch(url, options);
 }
 
 function setAuthButton() {
@@ -309,12 +292,19 @@ function renderReviewsSection(product) {
             : '<span class="meta">No ratings yet</span>';
     }
 
+    const canReview = !!product.can_review;
     if (reviewPrompt) {
-        reviewPrompt.textContent = currentUser ? 'Share your experience with this shirt.' : 'Login to write a review.';
+        if (!currentUser) {
+            reviewPrompt.textContent = 'Login to write a review.';
+        } else if (canReview) {
+            reviewPrompt.textContent = 'Share your experience with this shirt.';
+        } else {
+            reviewPrompt.textContent = product.can_review_reason || 'Only customers with delivered orders can review this item.';
+        }
     }
 
     if (reviewForm) {
-        reviewForm.classList.toggle('hidden', !currentUser);
+        reviewForm.classList.toggle('hidden', !(currentUser && canReview));
     }
 
     if (reviewList) {
@@ -463,6 +453,10 @@ function renderProduct(product) {
             event.preventDefault();
             if (!currentUser) {
                 window.location.href = getLoginRedirectUrl();
+                return;
+            }
+            if (!product.can_review) {
+                showLocalToast(product.can_review_reason || 'Only customers with delivered orders can review this item.', 'error');
                 return;
             }
 
