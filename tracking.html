@@ -23,34 +23,84 @@
         }
 
         .track-hero {
-            margin-top: 1.2rem;
-            border-radius: 20px;
-            padding: 1.4rem;
-            color: #fff;
-            background:
-                radial-gradient(circle at 12% 24%, rgba(255, 255, 255, 0.18), transparent 28%),
-                radial-gradient(circle at 84% 72%, rgba(255, 255, 255, 0.14), transparent 32%),
-                linear-gradient(120deg, #ff6a40 0%, var(--shopee-orange) 52%, var(--shopee-orange-deep) 100%);
-            box-shadow: 0 20px 45px rgba(238, 77, 45, 0.22);
+            margin-top: 1rem;
+            padding: 0.2rem 0 0.9rem;
         }
 
         .track-hero h2 {
             margin: 0;
-            font-size: clamp(1.5rem, 3.4vw, 2rem);
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: var(--shopee-text);
             letter-spacing: -0.02em;
         }
 
         .track-hero p {
-            margin: 0.45rem 0 0;
-            max-width: 64ch;
-            color: rgba(255, 255, 255, 0.95);
+            margin: 0.25rem 0 0;
+            max-width: 70ch;
+            color: var(--shopee-muted);
+            font-size: 0.86rem;
+        }
+
+        .track-shortcuts {
+            margin-top: 0.85rem;
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 0.5rem;
+        }
+
+        .track-shortcut {
+            border: 1px solid #ebebeb;
+            background: #fff;
+            border-radius: 4px;
+            min-height: 86px;
+            display: grid;
+            justify-items: center;
+            align-content: center;
+            gap: 0.45rem;
+            padding: 0.6rem 0.4rem;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+            text-decoration: none;
+            color: var(--shopee-text);
+        }
+
+        .track-shortcut.active {
+            border-color: rgba(238, 77, 45, 0.42);
+            background: #fff7f4;
+        }
+
+        .track-shortcut-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 999px;
+            display: grid;
+            place-items: center;
+            background: rgba(238, 77, 45, 0.08);
+            color: var(--shopee-orange);
+        }
+
+        .track-shortcut-icon svg {
+            width: 18px;
+            height: 18px;
+            stroke: currentColor;
+            fill: none;
+            stroke-width: 1.8;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        .track-shortcut span {
+            font-size: 0.8rem;
+            font-weight: 600;
+            line-height: 1.1;
+            text-align: center;
         }
 
         .track-layout {
             display: grid;
             grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
             gap: 1rem;
-            margin-top: 1rem;
+            margin-top: 0.8rem;
         }
 
         .track-card {
@@ -401,6 +451,10 @@
         }
 
         @media (max-width: 980px) {
+            .track-shortcuts {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+
             .track-layout {
                 grid-template-columns: 1fr;
             }
@@ -475,8 +529,47 @@
 
     <main class="container page-shell checkout-page track-page">
         <section class="track-hero">
-            <h2>Track your AnyPrint order</h2>
-            <p>Get live delivery updates with a Shopee-style progress view. Search using your tracking number or order ID from your confirmation email.</p>
+            <h2>My Orders</h2>
+            <p>Shopee-style order shortcuts for quick access to each stage of your order.</p>
+
+            <div class="track-shortcuts" aria-label="Order shortcuts">
+                <a class="track-shortcut" href="#trackForm">
+                    <span class="track-shortcut-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24">
+                            <path d="M7 7h10v10H7z"></path>
+                            <path d="M5 9V6a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v3"></path>
+                        </svg>
+                    </span>
+                    <span>To Pay</span>
+                </a>
+                <a class="track-shortcut active" href="#trackForm">
+                    <span class="track-shortcut-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24">
+                            <path d="M5 9h14l-1 8H6z"></path>
+                            <path d="M9 9V6a3 3 0 0 1 6 0v3"></path>
+                        </svg>
+                    </span>
+                    <span>To Ship</span>
+                </a>
+                <a class="track-shortcut" href="#trackForm">
+                    <span class="track-shortcut-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24">
+                            <path d="M4 14h10l3-4h3"></path>
+                            <circle cx="8" cy="17" r="2"></circle>
+                            <circle cx="17" cy="17" r="2"></circle>
+                        </svg>
+                    </span>
+                    <span>To Receive</span>
+                </a>
+                <a class="track-shortcut" href="#trackForm">
+                    <span class="track-shortcut-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24">
+                            <path d="M12 4l2.2 4.5 5 .7-3.6 3.4.9 5-4.5-2.4-4.5 2.4.9-5L4.8 9.2l5-.7z"></path>
+                        </svg>
+                    </span>
+                    <span>To Rate</span>
+                </a>
+            </div>
         </section>
 
         <div id="adminAccessNotice" class="products-error hidden"></div>
