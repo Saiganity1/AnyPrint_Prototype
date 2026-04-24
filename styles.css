@@ -1538,6 +1538,23 @@ main.checkout-page .status {
     gap: 1rem;
 }
 
+.orders-filter-row {
+    display: grid;
+    grid-template-columns: 1fr 220px;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+.owner-orders-filter-row {
+    margin-bottom: 10px;
+}
+
+@media (max-width: 720px) {
+    .orders-filter-row {
+        grid-template-columns: 1fr;
+    }
+}
+
 .metrics-grid {
     display: grid;
     gap: 0.85rem;
