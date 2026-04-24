@@ -17,6 +17,7 @@ const topProductsList = document.getElementById('topProductsList');
 const lowStockProductsList = document.getElementById('lowStockProductsList');
 const lowStockVariantsList = document.getElementById('lowStockVariantsList');
 const recentOrdersList = document.getElementById('recentOrdersList');
+const adminUsersSection = document.getElementById('adminUsersSection');
 const adminUsersList = document.getElementById('adminUsersList');
 const adminStatus = document.getElementById('adminStatus');
 
@@ -65,6 +66,14 @@ function requireDashboardAccess() {
         adminAccessNotice.innerHTML = '';
     }
     return true;
+}
+
+function applyRoleView() {
+    if (!adminUsersSection) return;
+
+    const role = String((currentUser && currentUser.role) || '').toUpperCase();
+    const isOwner = role === 'OWNER';
+    adminUsersSection.classList.toggle('hidden', !isOwner);
 }
 
 function renderMetrics(metrics) {
@@ -265,6 +274,10 @@ async function loadDashboard() {
 }
 
 async function loadUsers() {
+    if (!currentUser || String(currentUser.role || '').toUpperCase() !== 'OWNER') {
+        return;
+    }
+
     if (!requireDashboardAccess()) return;
 
     try {
@@ -333,6 +346,7 @@ if (logoutButton) {
         return;
     }
     if (!requireDashboardAccess()) return;
+    applyRoleView();
     await loadDashboard();
     await loadUsers();
 })();
