@@ -17,6 +17,8 @@ const topProductsList = document.getElementById('topProductsList');
 const lowStockProductsList = document.getElementById('lowStockProductsList');
 const lowStockVariantsList = document.getElementById('lowStockVariantsList');
 const recentOrdersList = document.getElementById('recentOrdersList');
+const adminOrderSearch = document.getElementById('adminOrderSearch');
+const adminOrderStatusFilter = document.getElementById('adminOrderStatusFilter');
 const adminUsersSection = document.getElementById('adminUsersSection');
 const adminUsersList = document.getElementById('adminUsersList');
 const adminStatus = document.getElementById('adminStatus');
@@ -24,6 +26,7 @@ const adminStatus = document.getElementById('adminStatus');
 let currentUser = null;
 let dashboardData = null;
 let usersData = [];
+let recentOrdersData = [];
 
 const ORDER_STATUS_OPTIONS = ['PENDING', 'CONFIRMED', 'PACKED', 'SHIPPED', 'OUT_FOR_DELIVERY', 'DELIVERED', 'CANCELLED'];
 const ROLE_OPTIONS = ['OWNER', 'ADMIN', 'USER'];
@@ -147,6 +150,38 @@ function buildStatusSelect(order) {
     `;
 }
 
+function getFilteredRecentOrders() {
+    const search = String((adminOrderSearch && adminOrderSearch.value) || '').trim().toLowerCase();
+    const statusFilter = String((adminOrderStatusFilter && adminOrderStatusFilter.value) || '').trim().toUpperCase();
+
+    return recentOrdersData.filter((order) => {
+        if (statusFilter && String(order.status || '').toUpperCase() !== statusFilter) {
+            return false;
+        }
+
+        if (!search) {
+            return true;
+        }
+
+        const haystack = [
+            order.id,
+            order.full_name,
+            order.tracking_number,
+            order.payment_method,
+            order.payment_status,
+            order.email,
+        ]
+            .map((value) => String(value || '').toLowerCase())
+            .join(' ');
+
+        return haystack.includes(search);
+    });
+}
+
+function applyRecentOrdersFilter() {
+    renderRecentOrders(getFilteredRecentOrders());
+}
+
 function renderRecentOrders(items) {
     if (!recentOrdersList) return;
 
@@ -262,7 +297,8 @@ async function loadDashboard() {
         renderTopProducts(body.top_products || []);
         renderLowStockProducts(body.low_stock_products || []);
         renderLowStockVariants(body.low_stock_variants || []);
-        renderRecentOrders(body.recent_orders || []);
+        recentOrdersData = body.recent_orders || [];
+        applyRecentOrdersFilter();
         if (adminStatus) {
             adminStatus.textContent = 'Dashboard loaded.';
         }
@@ -337,6 +373,14 @@ if (logoutButton) {
             showToast('Could not log out right now.', 'error');
         }
     });
+}
+
+if (adminOrderSearch) {
+    adminOrderSearch.addEventListener('input', applyRecentOrdersFilter);
+}
+
+if (adminOrderStatusFilter) {
+    adminOrderStatusFilter.addEventListener('change', applyRecentOrdersFilter);
 }
 
 (async function init() {

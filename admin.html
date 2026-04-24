@@ -86,6 +86,19 @@
                     <h3>Recent orders</h3>
                     <span class="meta">Update delivery status</span>
                 </div>
+                <div class="checkout-form" style="display:grid; grid-template-columns: 1fr 220px; gap: 10px; margin-bottom: 10px;">
+                    <input id="adminOrderSearch" type="search" placeholder="Search by customer, tracking, ID, payment" aria-label="Search recent orders" />
+                    <select id="adminOrderStatusFilter" aria-label="Filter recent orders by status">
+                        <option value="">All statuses</option>
+                        <option value="PENDING">Pending</option>
+                        <option value="CONFIRMED">Confirmed</option>
+                        <option value="PACKED">Packed</option>
+                        <option value="SHIPPED">Shipped</option>
+                        <option value="OUT_FOR_DELIVERY">Out for delivery</option>
+                        <option value="DELIVERED">Delivered</option>
+                        <option value="CANCELLED">Cancelled</option>
+                    </select>
+                </div>
                 <div id="recentOrdersList" class="table-stack"></div>
             </section>
 

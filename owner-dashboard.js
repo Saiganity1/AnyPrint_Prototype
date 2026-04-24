@@ -3,12 +3,16 @@ const { API_BASE, apiFetch, escapeHtml, formatPrice, showToast } = window.AnyPri
 const ownerKpis = document.getElementById('ownerKpis');
 const ownerStatus = document.getElementById('ownerStatus');
 const ownerAnalyticsSummary = document.getElementById('ownerAnalyticsSummary');
+const ownerOrderSearch = document.getElementById('ownerOrderSearch');
+const ownerOrderStatusFilter = document.getElementById('ownerOrderStatusFilter');
+const ownerRecentOrdersList = document.getElementById('ownerRecentOrdersList');
 const ownerProductsTable = document.getElementById('ownerProductsTable');
 const ownerCreateProductForm = document.getElementById('ownerCreateProductForm');
 const ownerLogoutButton = document.getElementById('ownerLogoutButton');
 
 let currentUser = null;
 let products = [];
+let recentOrdersData = [];
 
 async function readJsonSafe(res) {
     try {
@@ -58,6 +62,53 @@ function renderAnalyticsSummary(payload = {}) {
             </article>
         `).join('')
         : '<p class="meta">No top products yet.</p>';
+}
+
+function getFilteredOwnerOrders() {
+    const search = String((ownerOrderSearch && ownerOrderSearch.value) || '').trim().toLowerCase();
+    const statusFilter = String((ownerOrderStatusFilter && ownerOrderStatusFilter.value) || '').trim().toUpperCase();
+
+    return recentOrdersData.filter((order) => {
+        if (statusFilter && String(order.status || '').toUpperCase() !== statusFilter) {
+            return false;
+        }
+
+        if (!search) {
+            return true;
+        }
+
+        const haystack = [
+            order.id,
+            order.full_name,
+            order.tracking_number,
+            order.payment_method,
+            order.payment_status,
+            order.email,
+        ]
+            .map((value) => String(value || '').toLowerCase())
+            .join(' ');
+        return haystack.includes(search);
+    });
+}
+
+function renderOwnerRecentOrders(items) {
+    if (!ownerRecentOrdersList) return;
+    ownerRecentOrdersList.innerHTML = items.length
+        ? items.map((order) => `
+            <article class="table-row order-row">
+                <div>
+                    <strong>#${order.id} • ${escapeHtml(order.full_name || '')}</strong>
+                    <p class="meta">${escapeHtml(order.tracking_number || '')} • ${escapeHtml(order.payment_method || '')} • ${escapeHtml(order.payment_status || '')}</p>
+                    <p class="meta">${escapeHtml(order.status || '')} • ${escapeHtml(order.created_at || '')}</p>
+                </div>
+                <strong>${formatPrice(order.total_amount || 0)}</strong>
+            </article>
+        `).join('')
+        : '<p class="meta">No recent orders match your filters.</p>';
+}
+
+function applyOwnerOrderFilters() {
+    renderOwnerRecentOrders(getFilteredOwnerOrders());
 }
 
 function renderProductsTable() {
@@ -149,6 +200,8 @@ async function loadOwnerHomepage() {
 
     renderKpis(dashboardBody.metrics || {}, analyticsBody.metrics || {});
     renderAnalyticsSummary(analyticsBody);
+    recentOrdersData = dashboardBody.recent_orders || [];
+    applyOwnerOrderFilters();
 }
 
 async function createProduct(payload) {
@@ -216,6 +269,14 @@ if (ownerLogoutButton) {
         window.AnyPrint.clearAuthToken();
         window.location.href = 'index.html';
     });
+}
+
+if (ownerOrderSearch) {
+    ownerOrderSearch.addEventListener('input', applyOwnerOrderFilters);
+}
+
+if (ownerOrderStatusFilter) {
+    ownerOrderStatusFilter.addEventListener('change', applyOwnerOrderFilters);
 }
 
 async function initOwnerDashboard() {

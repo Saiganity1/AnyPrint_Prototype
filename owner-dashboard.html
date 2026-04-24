@@ -77,6 +77,24 @@
             </section>
 
             <section class="owner-card">
+                <h3>Recent Orders</h3>
+                <div class="owner-form-grid" style="margin-bottom: 10px;">
+                    <input id="ownerOrderSearch" type="search" placeholder="Search by customer, tracking, ID, payment" aria-label="Search owner recent orders" />
+                    <select id="ownerOrderStatusFilter" aria-label="Filter owner recent orders by status" title="Filter owner recent orders by status">
+                        <option value="">All statuses</option>
+                        <option value="PENDING">Pending</option>
+                        <option value="CONFIRMED">Confirmed</option>
+                        <option value="PACKED">Packed</option>
+                        <option value="SHIPPED">Shipped</option>
+                        <option value="OUT_FOR_DELIVERY">Out for delivery</option>
+                        <option value="DELIVERED">Delivered</option>
+                        <option value="CANCELLED">Cancelled</option>
+                    </select>
+                </div>
+                <div id="ownerRecentOrdersList" class="table-stack"></div>
+            </section>
+
+            <section class="owner-card">
                 <h3>Products and Restock</h3>
                 <div id="ownerProductsTable"></div>
             </section>
