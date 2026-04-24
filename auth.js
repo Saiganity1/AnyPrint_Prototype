@@ -113,6 +113,18 @@ function parseApiEnvelope(body) {
     return body;
 }
 
+async function readJsonSafe(res) {
+    if (core.parseJson) {
+        return core.parseJson(res);
+    }
+
+    try {
+        return await res.json();
+    } catch (_error) {
+        return {};
+    }
+}
+
 async function completeLoginWithPayload(payload, fallbackErrorMessage) {
     clearAuthMessages();
 
@@ -124,7 +136,7 @@ async function completeLoginWithPayload(payload, fallbackErrorMessage) {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload),
         });
-        body = await res.json();
+        body = await readJsonSafe(res);
     } catch (_error) {
         showToast('Could not reach the server. Please try again.', 'error');
         return false;
@@ -253,7 +265,7 @@ async function requestPhoneOtpCode() {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ phone_number: phoneNumber }),
         });
-        body = await res.json();
+        body = await readJsonSafe(res);
     } catch (_error) {
         if (phoneAuthError) phoneAuthError.textContent = 'Could not reach the server. Please try again.';
         return;
@@ -311,7 +323,7 @@ async function verifyPhoneOtpCode(event) {
                 email: registerEmail,
             }),
         });
-        body = await res.json();
+        body = await readJsonSafe(res);
     } catch (_error) {
         if (phoneAuthError) phoneAuthError.textContent = 'Could not reach the server. Please try again.';
         return;
@@ -450,7 +462,7 @@ function renderAuthState() {
 async function refreshAuthState() {
     try {
         const res = await apiFetch(`${API_BASE}/auth/me/`);
-        const body = await res.json();
+        const body = await readJsonSafe(res);
         currentUser = body && body.is_authenticated ? body.user : null;
     } catch (_error) {
         currentUser = null;
@@ -495,7 +507,7 @@ if (loginForm) {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload),
             });
-            body = await res.json();
+            body = await readJsonSafe(res);
         } catch (_error) {
             showToast('Could not reach the server. Please try again.', 'error');
             return;
@@ -550,7 +562,7 @@ if (registerForm) {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload),
             });
-            body = await res.json();
+            body = await readJsonSafe(res);
         } catch (_error) {
             showToast('Could not reach the server. Please try again.', 'error');
             return;
