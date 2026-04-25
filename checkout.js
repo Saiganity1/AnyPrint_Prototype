@@ -68,14 +68,23 @@ function getCookie(name) {
 async function apiFetchWithCsrf(url, options = {}) {
     const config = { credentials: 'include', ...options };
     const method = String(config.method || 'GET').toUpperCase();
+    const authToken = window.AnyPrint && typeof window.AnyPrint.getAuthToken === 'function'
+        ? window.AnyPrint.getAuthToken()
+        : '';
+
+    const headers = new Headers(config.headers || {});
+    if (authToken && !headers.has('Authorization')) {
+        headers.set('Authorization', `Bearer ${authToken}`);
+    }
+
     if (!['GET', 'HEAD', 'OPTIONS', 'TRACE'].includes(method)) {
-        const headers = new Headers(config.headers || {});
         const csrfToken = getCookie('csrftoken');
         if (csrfToken && !headers.has('X-CSRFToken')) {
             headers.set('X-CSRFToken', csrfToken);
         }
-        config.headers = headers;
     }
+    config.headers = headers;
+
     return fetch(url, config);
 }
 
