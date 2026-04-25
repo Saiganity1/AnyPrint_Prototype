@@ -13,7 +13,6 @@ import NotFoundPage from "./pages/NotFoundPage";
 import ProductPage from "./pages/ProductPage";
 import ShopPage from "./pages/ShopPage";
 import TrackingPage from "./pages/TrackingPage";
-import WishlistPage from "./pages/WishlistPage";
 
 function App() {
   return (
@@ -27,7 +26,6 @@ function App() {
         <Route path="/admin" element={<AdminPage />} />
         <Route path="/owner" element={<OwnerDashboardPage />} />
         <Route path="/checkout" element={<CheckoutPage />} />
-        <Route path="/wishlist" element={<WishlistPage />} />
         <Route path="/tracking" element={<TrackingPage />} />
         <Route path="/products/:slug" element={<ProductPage />} />
         <Route

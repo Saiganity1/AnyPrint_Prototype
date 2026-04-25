@@ -48,9 +48,6 @@ export default function Layout({ children }) {
                 Account
               </NavLink>
             ) : null}
-            <NavLink to="/wishlist" className={navClass}>
-              Wishlist
-            </NavLink>
             <NavLink to="/tracking" className={navClass}>
               Tracking
             </NavLink>
