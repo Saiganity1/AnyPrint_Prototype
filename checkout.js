@@ -209,7 +209,7 @@ async function updateQuote() {
     }
 
     try {
-        const response = await apiFetch(`${API_BASE}/checkout/quote/`, {
+        const response = await apiFetchWithCsrf(`${API_BASE}/checkout/quote/`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -379,7 +379,7 @@ async function saveAddressForNextTime(formData) {
         return;
     }
 
-    const response = await apiFetch(`${API_BASE}/addresses/create/`, {
+    const response = await apiFetchWithCsrf(`${API_BASE}/addresses/create/`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
@@ -454,9 +454,10 @@ async function placeOrder() {
     };
 
     try {
+        checkoutMessage.textContent = 'Placing order...';
         await saveAddressForNextTime(new FormData(addressForm));
 
-        const response = await apiFetch(`${API_BASE}/orders/`, {
+        const response = await apiFetchWithCsrf(`${API_BASE}/orders/`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload),
