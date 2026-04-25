@@ -2018,6 +2018,14 @@ main.checkout-page .status {
     background: var(--brand-dark);
 }
 
+/* Loading state for buttons */
+.btn.loading,
+.btn:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
 .auth-btn {
     background: #0f766e;
 }

@@ -102,6 +102,13 @@ function buildOwnerStatusSelect(order) {
 
 async function updateOrderStatus(orderId, status) {
     try {
+        // Show loading state
+        const statusSelect = document.getElementById(`status-${orderId}`);
+        if (statusSelect) {
+            statusSelect.disabled = true;
+            statusSelect.classList.add('loading');
+        }
+
         const response = await apiFetch(`${API_BASE}/admin/orders/${orderId}/status/`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -115,6 +122,13 @@ async function updateOrderStatus(orderId, status) {
         await loadOwnerHomepage();
     } catch (_error) {
         showToast('Could not update order status.', 'error');
+    } finally {
+        // Reset loading state
+        const statusSelect = document.getElementById(`status-${orderId}`);
+        if (statusSelect) {
+            statusSelect.disabled = false;
+            statusSelect.classList.remove('loading');
+        }
     }
 }
 

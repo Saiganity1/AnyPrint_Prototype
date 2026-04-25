@@ -452,6 +452,13 @@ async function placeOrder() {
         return;
     }
 
+    // Show loading state on button
+    const placeOrderBtn = document.getElementById('placeOrder');
+    const originalBtnText = placeOrderBtn.textContent;
+    placeOrderBtn.disabled = true;
+    placeOrderBtn.textContent = 'Placing Order...';
+    placeOrderBtn.classList.add('loading');
+
     const payload = {
         full_name: checkoutData.full_name,
         email: checkoutData.email,
@@ -497,6 +504,11 @@ async function placeOrder() {
         }, 1400);
     } catch (error) {
         checkoutMessage.textContent = error.message || 'Could not place order right now.';
+    } finally {
+        // Reset button state
+        placeOrderBtn.disabled = false;
+        placeOrderBtn.textContent = originalBtnText;
+        placeOrderBtn.classList.remove('loading');
     }
 }
 
