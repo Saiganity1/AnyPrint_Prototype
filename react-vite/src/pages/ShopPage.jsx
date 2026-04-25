@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { apiRequest, readJsonSafe } from "../lib/api";
+import { upsertCartItem } from "../lib/cart";
 import { formatPrice } from "../lib/format";
 
 export default function ShopPage() {
@@ -63,6 +64,20 @@ export default function ShopPage() {
     setSearchParams(nextParams);
   }
 
+  function addToCart(product) {
+    upsertCartItem({
+      key: `${product.id}|M|Black`,
+      product_id: product.id,
+      variant_id: null,
+      quantity: 1,
+      size: "M",
+      color: "Black",
+      product_name: product.name,
+      unit_price: product.price,
+      image_url: product.image_url || "",
+    });
+  }
+
   const summary = useMemo(() => {
     if (loading) return "Loading products...";
     if (error) return error;
@@ -106,9 +121,14 @@ export default function ShopPage() {
                 <h3>{product.name}</h3>
                 <p className="meta">{product.category || "Uncategorized"}</p>
                 <p className="price">{formatPrice(product.price)}</p>
-                <Link className="btn secondary" to={`/products/${encodeURIComponent(product.slug)}`}>
-                  View Details
-                </Link>
+                <div className="row-actions compact">
+                  <button type="button" className="btn" onClick={() => addToCart(product)}>
+                    Add to Cart
+                  </button>
+                  <Link className="btn secondary" to={`/products/${encodeURIComponent(product.slug)}`}>
+                    View
+                  </Link>
+                </div>
               </div>
             </article>
           ))}

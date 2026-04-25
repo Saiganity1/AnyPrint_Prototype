@@ -1,5 +1,7 @@
+import { useEffect, useState } from "react";
 import { Link, NavLink, useNavigate } from "react-router-dom";
 import { clearStoredSession, getStoredUser, roleCanManage } from "../lib/auth";
+import { cartCount, loadCart } from "../lib/cart";
 
 function navClass({ isActive }) {
   return isActive ? "nav-link active" : "nav-link";
@@ -8,6 +10,19 @@ function navClass({ isActive }) {
 export default function Layout({ children }) {
   const navigate = useNavigate();
   const currentUser = getStoredUser();
+  const [count, setCount] = useState(() => cartCount(loadCart()));
+
+  useEffect(() => {
+    function syncCount() {
+      setCount(cartCount(loadCart()));
+    }
+
+    syncCount();
+    window.addEventListener("anyprint:cart-updated", syncCount);
+    return () => {
+      window.removeEventListener("anyprint:cart-updated", syncCount);
+    };
+  }, []);
 
   function logout() {
     clearStoredSession();
@@ -27,6 +42,15 @@ export default function Layout({ children }) {
             </NavLink>
             <NavLink to="/shop" className={navClass}>
               Shop
+            </NavLink>
+            <NavLink to="/wishlist" className={navClass}>
+              Wishlist
+            </NavLink>
+            <NavLink to="/tracking" className={navClass}>
+              Tracking
+            </NavLink>
+            <NavLink to="/checkout" className={navClass}>
+              Checkout ({count})
             </NavLink>
             {currentUser && roleCanManage(currentUser.role) ? (
               <NavLink to="/analytics" className={navClass}>

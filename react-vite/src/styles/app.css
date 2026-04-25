@@ -118,6 +118,10 @@ a {
   margin-top: 1rem;
 }
 
+.row-actions.compact {
+  gap: 0.45rem;
+}
+
 .btn {
   border: 1px solid var(--brand);
   background: var(--brand);
@@ -187,6 +191,28 @@ select {
   color: var(--muted);
 }
 
+.stepper {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+}
+
+.step-chip {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  padding: 0.35rem 0.7rem;
+  color: var(--muted);
+  font-weight: 600;
+}
+
+.step-chip.active {
+  background: #e8f0ff;
+  border-color: #c6d8ff;
+  color: var(--brand-deep);
+}
+
 .error-text {
   color: var(--danger);
   font-weight: 600;
@@ -197,6 +223,12 @@ select {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
   gap: 0.9rem;
+}
+
+.empty-panel {
+  margin-top: 1rem;
+  display: grid;
+  gap: 0.55rem;
 }
 
 .product-card {
@@ -282,6 +314,81 @@ select {
 
 .table-wrap {
   overflow-x: auto;
+}
+
+.checkout-list {
+  display: grid;
+  gap: 0.65rem;
+}
+
+.checkout-item {
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 0.7rem;
+  display: flex;
+  justify-content: space-between;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.checkout-review {
+  display: grid;
+  gap: 0.25rem;
+}
+
+.tab-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 0.8rem;
+}
+
+.tab-chip {
+  border: 1px solid var(--line);
+  background: #fff;
+  color: var(--muted);
+  border-radius: 999px;
+  padding: 0.38rem 0.75rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.tab-chip.active {
+  border-color: #c6d8ff;
+  background: #e8f0ff;
+  color: var(--brand-deep);
+}
+
+.orders-stack {
+  display: grid;
+  gap: 0.7rem;
+}
+
+.order-meta-grid {
+  margin-top: 0.6rem;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 0.5rem;
+}
+
+.order-meta-grid > div {
+  display: grid;
+  gap: 0.1rem;
+}
+
+.timeline-row {
+  border-top: 1px dashed var(--line);
+  padding-top: 0.45rem;
+  margin-top: 0.45rem;
+}
+
+textarea {
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 0.65rem 0.7rem;
+  font: inherit;
+  min-height: 92px;
+  resize: vertical;
 }
 
 table {
