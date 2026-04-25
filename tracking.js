@@ -53,8 +53,8 @@ const TAB_CONFIG = {
         label: 'To Rate',
         hint: 'Delivered orders that are ready for feedback.',
         statuses: ['DELIVERED'],
-    },
-];
+    }
+};
 
 const STATUS_WEIGHT = {
     PENDING: 0,
