@@ -2,6 +2,10 @@ import { Route, Routes } from "react-router-dom";
 import Layout from "./components/Layout";
 import RequireManager from "./components/RequireManager";
 import AnalyticsPage from "./pages/AnalyticsPage";
+import AdminPage from "./pages/AdminPage";
+import AccountPage from "./pages/AccountPage";
+import OwnerDashboardPage from "./pages/OwnerDashboardPage";
+import RegisterPage from "./pages/RegisterPage";
 import HomePage from "./pages/HomePage";
 import CheckoutPage from "./pages/CheckoutPage";
 import LoginPage from "./pages/LoginPage";
@@ -18,6 +22,10 @@ function App() {
         <Route path="/" element={<HomePage />} />
         <Route path="/shop" element={<ShopPage />} />
         <Route path="/login" element={<LoginPage />} />
+        <Route path="/register" element={<RegisterPage />} />
+        <Route path="/account" element={<AccountPage />} />
+        <Route path="/admin" element={<AdminPage />} />
+        <Route path="/owner" element={<OwnerDashboardPage />} />
         <Route path="/checkout" element={<CheckoutPage />} />
         <Route path="/wishlist" element={<WishlistPage />} />
         <Route path="/tracking" element={<TrackingPage />} />

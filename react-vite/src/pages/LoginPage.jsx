@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { Link } from "react-router-dom";
 import { useLocation, useNavigate } from "react-router-dom";
 import { apiRequest, normalizeApiError, readJsonSafe } from "../lib/api";
 import { clearStoredSession, getStoredUser, setStoredSession } from "../lib/auth";
@@ -28,7 +29,16 @@ export default function LoginPage() {
   useEffect(() => {
     const user = getStoredUser();
     if (user) {
-      navigate(nextPath, { replace: true });
+      const role = String(user.role || "").toUpperCase();
+      if (nextPath && nextPath !== "/") {
+        navigate(nextPath, { replace: true });
+      } else if (role === "OWNER") {
+        navigate("/owner", { replace: true });
+      } else if (role === "ADMIN") {
+        navigate("/admin", { replace: true });
+      } else {
+        navigate("/account", { replace: true });
+      }
     }
   }, [navigate, nextPath]);
 
@@ -63,7 +73,16 @@ export default function LoginPage() {
 
       setStoredSession({ user: body.user, tokens: body.tokens });
       setStatus("Welcome back. Redirecting...");
-      navigate(nextPath, { replace: true });
+      const role = String((body.user && body.user.role) || "").toUpperCase();
+      if (nextPath && nextPath !== "/") {
+        navigate(nextPath, { replace: true });
+      } else if (role === "OWNER") {
+        navigate("/owner", { replace: true });
+      } else if (role === "ADMIN") {
+        navigate("/admin", { replace: true });
+      } else {
+        navigate("/account", { replace: true });
+      }
     } catch {
       setError("Could not reach server.");
     } finally {
@@ -126,6 +145,9 @@ export default function LoginPage() {
           <button type="submit" className="btn" disabled={submitting}>
             {submitting ? "Signing in..." : "Login"}
           </button>
+          <Link className="btn secondary" to="/register">
+            Create Account
+          </Link>
           <button type="button" className="btn secondary" onClick={onLogout}>
             Logout
           </button>

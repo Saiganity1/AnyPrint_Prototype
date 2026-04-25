@@ -43,6 +43,11 @@ export default function Layout({ children }) {
             <NavLink to="/shop" className={navClass}>
               Shop
             </NavLink>
+            {currentUser ? (
+              <NavLink to="/account" className={navClass}>
+                Account
+              </NavLink>
+            ) : null}
             <NavLink to="/wishlist" className={navClass}>
               Wishlist
             </NavLink>
@@ -52,6 +57,16 @@ export default function Layout({ children }) {
             <NavLink to="/checkout" className={navClass}>
               Checkout ({count})
             </NavLink>
+            {currentUser && String(currentUser.role || "").toUpperCase() === "OWNER" ? (
+              <NavLink to="/owner" className={navClass}>
+                Owner
+              </NavLink>
+            ) : null}
+            {currentUser && roleCanManage(currentUser.role) ? (
+              <NavLink to="/admin" className={navClass}>
+                Admin
+              </NavLink>
+            ) : null}
             {currentUser && roleCanManage(currentUser.role) ? (
               <NavLink to="/analytics" className={navClass}>
                 Analytics
