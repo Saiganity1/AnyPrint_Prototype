@@ -13,6 +13,7 @@ const ownerLogoutButton = document.getElementById('ownerLogoutButton');
 let currentUser = null;
 let products = [];
 let recentOrdersData = [];
+const ORDER_STATUS_OPTIONS = ['PENDING', 'CONFIRMED', 'PACKED', 'SHIPPED', 'OUT_FOR_DELIVERY', 'DELIVERED', 'CANCELLED'];
 
 async function readJsonSafe(res) {
     try {
@@ -91,6 +92,32 @@ function getFilteredOwnerOrders() {
     });
 }
 
+function buildOwnerStatusSelect(order) {
+    return `
+        <select class="status-select" data-order-id="${order.id}">
+            ${ORDER_STATUS_OPTIONS.map((status) => `<option value="${status}" ${String(order.status || 'PENDING') === status ? 'selected' : ''}>${status}</option>`).join('')}
+        </select>
+    `;
+}
+
+async function updateOrderStatus(orderId, status) {
+    try {
+        const response = await apiFetch(`${API_BASE}/admin/orders/${orderId}/status/`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ status }),
+        });
+        const body = await response.json();
+        if (!response.ok) {
+            throw new Error(body.error || 'Could not update order status.');
+        }
+        showToast('Order status updated.', 'success');
+        await loadOwnerHomepage();
+    } catch (_error) {
+        showToast('Could not update order status.', 'error');
+    }
+}
+
 function renderOwnerRecentOrders(items) {
     if (!ownerRecentOrdersList) return;
     ownerRecentOrdersList.innerHTML = items.length
@@ -101,10 +128,23 @@ function renderOwnerRecentOrders(items) {
                     <p class="meta">${escapeHtml(order.tracking_number || '')} • ${escapeHtml(order.payment_method || '')} • ${escapeHtml(order.payment_status || '')}</p>
                     <p class="meta">${escapeHtml(order.status || '')} • ${escapeHtml(order.created_at || '')}</p>
                 </div>
+                <div class="order-row-actions">
+                    ${buildOwnerStatusSelect(order)}
+                    <button class="btn small status-save-btn" data-order-id="${order.id}">Update</button>
+                </div>
                 <strong>${formatPrice(order.total_amount || 0)}</strong>
             </article>
         `).join('')
         : '<p class="meta">No recent orders match your filters.</p>';
+
+    ownerRecentOrdersList.querySelectorAll('.status-save-btn').forEach((button) => {
+        button.addEventListener('click', async () => {
+            const orderId = Number(button.getAttribute('data-order-id'));
+            const select = ownerRecentOrdersList.querySelector(`.status-select[data-order-id="${orderId}"]`);
+            if (!select) return;
+            await updateOrderStatus(orderId, select.value);
+        });
+    });
 }
 
 function applyOwnerOrderFilters() {
