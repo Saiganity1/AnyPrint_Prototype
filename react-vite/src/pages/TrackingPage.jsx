@@ -4,6 +4,14 @@ import { apiRequest, normalizeApiError, readJsonSafe } from "../lib/api";
 import { getStoredUser } from "../lib/auth";
 import { formatPrice } from "../lib/format";
 
+// Shopee-style stepper config
+const ORDER_STEPS = [
+  { key: "placed", label: "Order Placed" },
+  { key: "to_ship", label: "To Ship" },
+  { key: "to_receive", label: "To Receive" },
+  { key: "to_rate", label: "To Rate" },
+];
+
 const TAB_CONFIG = {
   to_pay: { label: "To Pay", statuses: ["PENDING"] },
   to_ship: { label: "To Ship", statuses: ["CONFIRMED", "PACKED"] },
@@ -93,22 +101,26 @@ export default function TrackingPage() {
   return (
     <section className="tracking-page">
       <div className="page-intro">
-        <p className="page-kicker">Track Orders</p>
-        <h2 className="page-title">Order Tracking</h2>
-        <p className="page-lead">{user ? "Track your order progress." : "Login recommended for full order history."}</p>
+        <p className="page-kicker">Orders waiting for payment confirmation.</p>
+        <h2 className="page-title">To Pay</h2>
+        <p className="page-lead">Orders waiting for payment confirmation.</p>
       </div>
       <p className="status-text">{status}</p>
       {error ? <p className="error-text">{error}</p> : null}
 
-      <div className="tab-row">
+      {/* Tabbed navigation */}
+      <div className="tab-row" style={{ marginBottom: "1.2rem" }}>
         {Object.entries(TAB_CONFIG).map(([key, tab]) => (
           <button
             key={key}
             type="button"
             className={key === activeTab ? "tab-chip active" : "tab-chip"}
             onClick={() => setActiveTab(key)}
+            style={{ minWidth: 120, fontWeight: 700, fontSize: "1.05rem" }}
           >
-            {tab.label} ({counts[key] || 0})
+            {tab.label}
+            <span style={{ color: "#c62828", fontWeight: 600, marginLeft: 6 }}>{counts[key] > 0 ? counts[key] : null}</span>
+            <span style={{ color: "#aaa", fontWeight: 400, marginLeft: 4, fontSize: "0.95em" }}>orders</span>
           </button>
         ))}
       </div>
@@ -120,61 +132,128 @@ export default function TrackingPage() {
       ) : (
         <div className="orders-stack">
           {tabOrders.map((order) => (
-            <article className="panel" key={order.id}>
-              <div className="row-between">
+            <article className="panel" key={order.id} style={{ padding: 0, overflow: "hidden" }}>
+              {/* Order summary header */}
+              <div style={{ background: "#f8fbff", borderBottom: "1px solid #e3e8f0", padding: "1.1rem 1.5rem 0.7rem 1.5rem", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                 <div>
-                  <h3 style={{ marginBottom: "0.2rem" }}>Order #{order.id}</h3>
-                  <p className="meta">
-                    {order.tracking_number || "No tracking yet"} • {statusLabel(order.status)}
-                  </p>
+                  <span style={{ fontWeight: 600, fontSize: "1.1rem" }}>Order #{order.id}</span>
+                  <span style={{ marginLeft: 12, color: "#888", fontSize: "0.98rem" }}>Placed {order.created_at || "-"}</span>
+                  <span style={{ marginLeft: 12, color: "#c62828", fontWeight: 700, fontSize: "0.98rem", border: "1px solid #f5bcbc", borderRadius: 8, padding: "2px 10px" }}>{statusLabel(order.status)}</span>
                 </div>
-                <strong>{formatPrice(order.total_amount)}</strong>
-              </div>
-
-              <div className="order-meta-grid">
-                <div>
-                  <span className="meta">Payment</span>
-                  <strong>{statusLabel(order.payment_status)}</strong>
-                </div>
-                <div>
-                  <span className="meta">Delivery</span>
-                  <strong>{order.estimated_delivery_date || "Pending"}</strong>
-                </div>
-                <div>
-                  <span className="meta">Items</span>
-                  <strong>{(order.items || []).length}</strong>
+                <div style={{ textAlign: "right" }}>
+                  <div style={{ fontWeight: 700, color: "#0b62ff", fontSize: "1.1rem" }}>Total {formatPrice(order.total_amount)}</div>
+                  <div style={{ color: "#888", fontSize: "0.97rem" }}>Items: {(order.items || []).length}</div>
                 </div>
               </div>
 
-              <div className="row-actions">
-                <button className="btn secondary" type="button" onClick={() => toggleDetails(order.id)}>
-                  {expanded[order.id] ? "Hide Details" : "View Details"}
-                </button>
-              </div>
-
-              {expanded[order.id] ? (
-                <div className="panel" style={{ marginTop: "0.8rem" }}>
-                  <h4>Items</h4>
-                  {(order.items || []).map((item, index) => (
-                    <p key={`${order.id}-${index}`} className="meta">
-                      {item.product_name} x {item.quantity} • {item.color || "Default"} / {item.size || "M"} • {formatPrice(item.subtotal)}
-                    </p>
-                  ))}
-
-                  <h4>Status Timeline</h4>
-                  {(order.tracking_events || []).length ? (
-                    (order.tracking_events || []).map((event, index) => (
-                      <div className="timeline-row" key={`${order.id}-event-${index}`}>
-                        <strong>{statusLabel(event.status)}</strong>
-                        <p className="meta">{event.note || "Order status updated."}</p>
-                        <p className="meta">{event.created_at}</p>
+              {/* Progress tracker */}
+              <div style={{ padding: "0.7rem 1.5rem 0.7rem 1.5rem", borderBottom: "1px solid #e3e8f0" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 32 }}>
+                  {ORDER_STEPS.map((step, idx) => {
+                    const isActive =
+                      (step.key === "placed" && order.status) ||
+                      (step.key === "to_ship" && ["CONFIRMED", "PACKED"].includes(String(order.status).toUpperCase())) ||
+                      (step.key === "to_receive" && ["SHIPPED", "OUT_FOR_DELIVERY"].includes(String(order.status).toUpperCase())) ||
+                      (step.key === "to_rate" && String(order.status).toUpperCase() === "DELIVERED");
+                    return (
+                      <div key={step.key} style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                        <span style={{
+                          width: 16,
+                          height: 16,
+                          borderRadius: "50%",
+                          background: isActive ? "#0b62ff" : "#e3e8f0",
+                          display: "inline-block",
+                          border: isActive ? "2px solid #0b62ff" : "2px solid #e3e8f0",
+                        }}></span>
+                        <span style={{ fontWeight: isActive ? 700 : 500, color: isActive ? "#0b62ff" : "#888", fontSize: "0.98rem" }}>{step.label}</span>
+                        {idx < ORDER_STEPS.length - 1 && (
+                          <span style={{ width: 36, height: 2, background: isActive ? "#0b62ff" : "#e3e8f0", display: "inline-block", borderRadius: 2 }}></span>
+                        )}
                       </div>
-                    ))
-                  ) : (
-                    <p className="meta">No status updates yet.</p>
-                  )}
+                    );
+                  })}
                 </div>
-              ) : null}
+              </div>
+
+              {/* Action buttons */}
+              <div style={{ padding: "0.7rem 1.5rem 0.7rem 1.5rem", borderBottom: "1px solid #e3e8f0", display: "flex", gap: 12 }}>
+                <button className="btn secondary" type="button" onClick={() => toggleDetails(order.id)}>
+                  View Details
+                </button>
+                <button className="btn secondary" type="button" style={{ background: "#fffbe7", color: "#b88a00", borderColor: "#ffe08a" }}>Contact Seller</button>
+                <button className="btn secondary" type="button" style={{ background: "#f5f7fb", color: "#0b62ff", borderColor: "#dbeafe" }}>Need Help?</button>
+              </div>
+
+              {/* Order details expanded */}
+              {expanded[order.id] && (
+                <div style={{ padding: "1.2rem 1.5rem 1.2rem 1.5rem", background: "#fff" }}>
+                  <div style={{ display: "flex", gap: 32, flexWrap: "wrap", marginBottom: 16 }}>
+                    <div>
+                      <div style={{ color: "#888", fontSize: "0.97rem" }}>Tracking Number</div>
+                      <div style={{ fontWeight: 700 }}>{order.tracking_number || "-"}</div>
+                    </div>
+                    <div>
+                      <div style={{ color: "#888", fontSize: "0.97rem" }}>Estimated Delivery</div>
+                      <div style={{ fontWeight: 700 }}>{order.estimated_delivery_date || "-"}</div>
+                    </div>
+                    <div>
+                      <div style={{ color: "#888", fontSize: "0.97rem" }}>Status</div>
+                      <div style={{ fontWeight: 700 }}>{statusLabel(order.status)}</div>
+                    </div>
+                  </div>
+                  <div style={{ borderTop: "1px solid #e3e8f0", margin: "12px 0" }}></div>
+                  <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", fontSize: "1.05rem" }}>
+                      <span>Subtotal</span>
+                      <span>PHP {order.subtotal ? formatPrice(order.subtotal) : "-"}</span>
+                    </div>
+                    <div style={{ display: "flex", justifyContent: "space-between", fontSize: "1.05rem" }}>
+                      <span>Shipping</span>
+                      <span>PHP {order.shipping_fee ? formatPrice(order.shipping_fee) : "0.00"}</span>
+                    </div>
+                    <div style={{ display: "flex", justifyContent: "space-between", fontSize: "1.05rem" }}>
+                      <span>Discounts</span>
+                      <span>-PHP {order.discount_amount ? formatPrice(order.discount_amount) : "0.00"}</span>
+                    </div>
+                    <div style={{ display: "flex", justifyContent: "space-between", fontWeight: 700, background: "#f5f7fb", padding: "6px 0", borderRadius: 6, fontSize: "1.09rem", marginTop: 4 }}>
+                      <span>Total</span>
+                      <span>PHP {formatPrice(order.total_amount)}</span>
+                    </div>
+                  </div>
+                  <div style={{ borderTop: "1px solid #e3e8f0", margin: "16px 0" }}></div>
+                  <div>
+                    <div style={{ fontWeight: 700, marginBottom: 6 }}>Items <span style={{ color: "#888", fontWeight: 400, fontSize: "0.97rem" }}>({(order.items || []).length} item{(order.items || []).length !== 1 ? "s" : ""})</span></div>
+                    {(order.items || []).map((item, index) => (
+                      <div key={`${order.id}-${index}`} style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 8 }}>
+                        <div style={{ width: 36, height: 36, background: "#e3e8f0", borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, color: "#0b62ff" }}>
+                          {item.product_name ? item.product_name[0] : "?"}
+                        </div>
+                        <div style={{ flex: 1 }}>
+                          <div style={{ fontWeight: 600 }}>{item.product_name}</div>
+                          <div style={{ color: "#888", fontSize: "0.97rem" }}>Variation: {item.color || "Default"} - {item.size || "M"}</div>
+                          <div style={{ color: "#888", fontSize: "0.97rem" }}>Quantity: {item.quantity}</div>
+                        </div>
+                        <div style={{ fontWeight: 700, color: "#c62828" }}>PHP {formatPrice(item.subtotal)}</div>
+                      </div>
+                    ))}
+                  </div>
+                  <div style={{ borderTop: "1px solid #e3e8f0", margin: "16px 0" }}></div>
+                  <div>
+                    <div style={{ fontWeight: 700, marginBottom: 6 }}>Status timeline</div>
+                    {(order.tracking_events || []).length ? (
+                      (order.tracking_events || []).map((event, index) => (
+                        <div className="timeline-row" key={`${order.id}-event-${index}`}>
+                          <span style={{ color: event.status === "PENDING" ? "#c62828" : "#0b62ff", fontWeight: 700 }}>{statusLabel(event.status)}</span>
+                          <span style={{ marginLeft: 8, color: "#888" }}>{event.note || "Order status updated."}</span>
+                          <div style={{ color: "#888", fontSize: "0.97rem" }}>{event.created_at}</div>
+                        </div>
+                      ))
+                    ) : (
+                      <p className="meta">No status updates yet.</p>
+                    )}
+                  </div>
+                </div>
+              )}
             </article>
           ))}
         </div>
