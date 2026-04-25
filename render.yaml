@@ -5,6 +5,12 @@ services:
   - type: static
     name: anyprint-frontend
     publish: public
+    routes:
+      - path: /*
+        methods:
+          - GET
+        dest: /index.html
+        status: 200
     headers:
       - path: /*
         name: Cache-Control
