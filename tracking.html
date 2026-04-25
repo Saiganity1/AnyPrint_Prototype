@@ -22,6 +22,28 @@
             padding-bottom: 3rem;
         }
 
+        .site-header,
+        .site-header .nav-wrap,
+        .top-actions,
+        #authButton,
+        #logoutButton,
+        .track-shortcut,
+        .track-filter-btn {
+            position: relative;
+            pointer-events: auto;
+        }
+
+        .top-actions,
+        #authButton,
+        #logoutButton {
+            z-index: 12;
+        }
+
+        .track-shortcut,
+        .track-filter-btn {
+            z-index: 2;
+        }
+
         .track-hero {
             margin-top: 1rem;
             padding: 0.2rem 0 0.9rem;
@@ -675,8 +697,8 @@
 
     <div id="toastStack" class="toast-stack"></div>
 
-    <script src="api.js?v=5"></script>
-    <script src="common.js?v=5"></script>
-    <script src="tracking.js?v=5"></script>
+    <script src="api.js?v=6"></script>
+    <script src="common.js?v=6"></script>
+    <script src="tracking.js?v=6"></script>
 </body>
 </html>

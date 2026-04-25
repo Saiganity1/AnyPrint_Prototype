@@ -23,6 +23,7 @@ const shortcutCounts = Array.from(document.querySelectorAll('[data-count]'));
 let currentUser = null;
 let currentOrders = [];
 let currentTab = 'to_pay';
+let lastKnownUser = null;
 
 function hasStoredAuthToken() {
     const commonToken = getAuthToken ? getAuthToken() : '';
@@ -130,6 +131,13 @@ function setActiveTab(tabKey) {
 
 async function refreshAuthState() {
     const fallbackUser = getCurrentUser ? getCurrentUser() : null;
+    const sessionUser = (() => {
+        try {
+            return JSON.parse(sessionStorage.getItem('anyprint_track_user_v1') || 'null');
+        } catch (_error) {
+            return null;
+        }
+    })();
     const hasToken = hasStoredAuthToken();
 
     try {
@@ -142,6 +150,8 @@ async function refreshAuthState() {
             }
         } else if (fallbackUser) {
             currentUser = fallbackUser;
+        } else if (sessionUser) {
+            currentUser = sessionUser;
         } else if (hasToken) {
             currentUser = { role: 'USER' };
         } else {
@@ -150,10 +160,21 @@ async function refreshAuthState() {
     } catch (_error) {
         if (fallbackUser) {
             currentUser = fallbackUser;
+        } else if (sessionUser) {
+            currentUser = sessionUser;
         } else if (hasToken) {
             currentUser = { role: 'USER' };
         } else {
             currentUser = null;
+        }
+    }
+
+    if (currentUser) {
+        lastKnownUser = currentUser;
+        try {
+            sessionStorage.setItem('anyprint_track_user_v1', JSON.stringify(currentUser));
+        } catch (_error) {
+            // Ignore storage failures.
         }
     }
 
@@ -414,10 +435,43 @@ async function loadOrders() {
 
 function attachTabHandlers() {
     [...shortcutButtons, ...filterButtons].forEach((button) => {
+        button.disabled = false;
+        button.style.pointerEvents = 'auto';
+
+        const activate = () => {
+            const targetTab = button.getAttribute('data-tab') || 'to_pay';
+            setActiveTab(targetTab);
+        };
+
         button.addEventListener('click', () => {
-            setActiveTab(button.getAttribute('data-tab') || 'to_pay');
+            activate();
+        });
+
+        // Some browsers/extensions interfere with click bubbling; pointerup keeps the tabs responsive.
+        button.addEventListener('pointerup', (event) => {
+            event.preventDefault();
+            activate();
         });
     });
+}
+
+function attachAuthButtonGuard() {
+    if (!authButton) return;
+
+    authButton.style.pointerEvents = 'auto';
+    authButton.addEventListener('click', (event) => {
+        const href = authButton.getAttribute('href') || (currentUser || lastKnownUser ? 'account.html' : 'login.html');
+        if (!href || href === '#') {
+            event.preventDefault();
+            window.location.assign(currentUser || lastKnownUser ? 'account.html' : 'login.html');
+            return;
+        }
+
+        // Force navigation in case another script prevents default navigation.
+        if (event.defaultPrevented) {
+            window.location.assign(href);
+        }
+    }, true);
 }
 
 function attachOrderCardHandlers() {
@@ -455,6 +509,7 @@ if (logoutButton) {
 
 attachTabHandlers();
 attachOrderCardHandlers();
+attachAuthButtonGuard();
 
 (async function init() {
     const params = new URLSearchParams(window.location.search);
