@@ -5,3 +5,8 @@ services:
   - type: static
     name: anyprint-frontend
     publish: public
+    staticPublishOptions:
+      redirects:
+        - source: "/*"
+          destination: "/index.html"
+          status: 200
