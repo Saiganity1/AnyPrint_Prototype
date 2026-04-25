@@ -32,7 +32,11 @@ export default function ShopPage() {
           return;
         }
 
-        const resultItems = Array.isArray(body.results) ? body.results : [];
+        const resultItems = Array.isArray(body.results)
+          ? body.results
+          : Array.isArray(body.products)
+            ? body.products
+            : [];
         if (!cancelled) {
           setProducts(resultItems);
         }

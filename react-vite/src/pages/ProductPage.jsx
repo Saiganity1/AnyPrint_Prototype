@@ -29,11 +29,13 @@ export default function ProductPage() {
           return;
         }
 
-        if (!cancelled) {
-          setProduct(body);
-          addRecentlyViewed(body);
+        const payload = body && typeof body === "object" && body.product ? body.product : body;
 
-          const firstVariant = Array.isArray(body.variants) && body.variants.length ? body.variants[0] : null;
+        if (!cancelled) {
+          setProduct(payload);
+          addRecentlyViewed(payload);
+
+          const firstVariant = Array.isArray(payload?.variants) && payload.variants.length ? payload.variants[0] : null;
           if (firstVariant) {
             setSelectedSize(firstVariant.size || "M");
             setSelectedColor(firstVariant.color || "Black");
