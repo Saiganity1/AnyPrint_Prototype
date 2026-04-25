@@ -11,6 +11,8 @@ export default function Layout({ children }) {
   const navigate = useNavigate();
   const currentUser = getStoredUser();
   const [count, setCount] = useState(() => cartCount(loadCart()));
+  const isOwner = currentUser && String(currentUser.role || "").toUpperCase() === "OWNER";
+  const canManage = currentUser && roleCanManage(currentUser.role);
 
   useEffect(() => {
     function syncCount() {
@@ -32,53 +34,79 @@ export default function Layout({ children }) {
   return (
     <div className="site-shell">
       <header className="site-header">
+        <div className="topbar">
+          <div className="container topbar-inner">
+            <div className="topbar-left">
+              <span className="topbar-item">T-shirt store • Metro Manila → Nationwide delivery</span>
+            </div>
+            <div className="topbar-right">
+              <a className="topbar-link" href="#how-it-works">
+                How it works
+              </a>
+              <a className="topbar-link" href="#why-choose-us">
+                Why choose us
+              </a>
+              <a className="topbar-link" href="#contact">
+                Contact
+              </a>
+            </div>
+          </div>
+        </div>
         <div className="container nav-wrap">
-          <Link className="brand" to="/">
-            AnyPrint
-          </Link>
-          <nav className="site-nav">
+          <div className="brand-block">
+            <Link className="brand" to="/">
+              AnyPrint
+            </Link>
+            <p className="brand-tag">T-shirt Store</p>
+          </div>
+          <nav className="site-nav" aria-label="Primary">
             <NavLink to="/" className={navClass} end>
               Home
             </NavLink>
             <NavLink to="/shop" className={navClass}>
-              Shop
+              All Products
+            </NavLink>
+            <NavLink to="/tracking" className={navClass}>
+              Track Order
             </NavLink>
             {currentUser ? (
               <NavLink to="/account" className={navClass}>
-                Account
+                Saved (User)
               </NavLink>
             ) : null}
-            <NavLink to="/tracking" className={navClass}>
-              Tracking
-            </NavLink>
-            <NavLink to="/checkout" className={navClass}>
-              Checkout ({count})
-            </NavLink>
-            {currentUser && String(currentUser.role || "").toUpperCase() === "OWNER" ? (
+            {isOwner ? (
               <NavLink to="/owner" className={navClass}>
                 Owner
               </NavLink>
             ) : null}
-            {currentUser && roleCanManage(currentUser.role) ? (
+            {canManage ? (
               <NavLink to="/admin" className={navClass}>
                 Admin
               </NavLink>
             ) : null}
-            {currentUser && roleCanManage(currentUser.role) ? (
+            {canManage ? (
               <NavLink to="/analytics" className={navClass}>
                 Analytics
               </NavLink>
             ) : null}
+          </nav>
+          <div className="top-actions">
             {currentUser ? (
-              <button type="button" className="btn secondary" onClick={logout}>
+              <button type="button" className="auth-btn secondary" onClick={logout}>
                 Logout
               </button>
             ) : (
-              <NavLink to="/login" className={navClass}>
+              <NavLink to="/login" className="auth-btn">
                 Login
               </NavLink>
             )}
-          </nav>
+            <NavLink to="/checkout" className="cart-btn">
+              Cart ({count})
+            </NavLink>
+            {currentUser ? (
+              <span className="user-chip">{currentUser.username || "User"}</span>
+            ) : null}
+          </div>
         </div>
       </header>
       <main className="container page-content">{children}</main>
