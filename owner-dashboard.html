@@ -65,6 +65,11 @@
                             <option value="Kids">Kids</option>
                         </select>
                     </div>
+                    <div class="owner-form-row">
+                        <label for="productImage" class="file-upload-label">Product Image (optional)</label>
+                        <input id="productImage" name="image" type="file" accept="image/*" />
+                        <p class="field-hint">Supported: JPG, PNG, GIF, WebP (max 5MB)</p>
+                    </div>
                     <textarea name="description" rows="3" placeholder="Description"></textarea>
                     <label><input name="is_featured" type="checkbox" /> Featured product</label>
                     <button type="submit" class="btn">Create Product</button>

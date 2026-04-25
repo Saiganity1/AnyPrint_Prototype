@@ -258,13 +258,37 @@ async function loadOwnerHomepage() {
     applyOwnerOrderFilters();
 }
 
-async function createProduct(payload) {
-    const response = await apiFetch(`${API_BASE}/admin/products/create/`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-    });
-    const body = await readJsonSafe(response);
+async function createProduct(payload, imageFile = null) {
+    let response;
+    let body;
+    
+    if (imageFile) {
+        // Use FormData for file upload
+        const formData = new FormData();
+        formData.append('name', payload.name);
+        formData.append('category', payload.category);
+        formData.append('price', payload.price);
+        formData.append('stock_quantity', payload.stock_quantity);
+        formData.append('print_style', payload.print_style);
+        formData.append('description', payload.description);
+        formData.append('is_featured', payload.is_featured);
+        formData.append('is_active', payload.is_active);
+        formData.append('image', imageFile);
+        
+        response = await apiFetch(`${API_BASE}/admin/products/create/`, {
+            method: 'POST',
+            body: formData,
+        });
+        body = await readJsonSafe(response);
+    } else {
+        response = await apiFetch(`${API_BASE}/admin/products/create/`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload),
+        });
+        body = await readJsonSafe(response);
+    }
+    
     if (!response.ok) {
         throw new Error(body.error || 'Could not create product.');
     }
@@ -288,6 +312,15 @@ if (ownerCreateProductForm) {
     ownerCreateProductForm.addEventListener('submit', async (event) => {
         event.preventDefault();
         const formData = new FormData(ownerCreateProductForm);
+        const imageInput = document.getElementById('productImage');
+        const imageFile = imageInput && imageInput.files.length > 0 ? imageInput.files[0] : null;
+        
+        // Validate file size (5MB max)
+        if (imageFile && imageFile.size > 5 * 1024 * 1024) {
+            showToast('Image must be less than 5MB.', 'error');
+            return;
+        }
+        
         const payload = {
             name: String(formData.get('name') || '').trim(),
             category: String(formData.get('category') || '').trim(),
@@ -300,12 +333,26 @@ if (ownerCreateProductForm) {
         };
 
         try {
-            await createProduct(payload);
+            // Show loading state
+            const submitBtn = ownerCreateProductForm.querySelector('button[type="submit"]');
+            if (submitBtn) {
+                submitBtn.disabled = true;
+                submitBtn.textContent = 'Creating...';
+            }
+            
+            await createProduct(payload, imageFile);
             showToast('Product created.', 'success');
             ownerCreateProductForm.reset();
             await Promise.all([loadProducts(), loadOwnerHomepage()]);
         } catch (error) {
             showToast(error.message || 'Could not create product.', 'error');
+        } finally {
+            // Reset button state
+            const submitBtn = ownerCreateProductForm.querySelector('button[type="submit"]');
+            if (submitBtn) {
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Create Product';
+            }
         }
     });
 }
