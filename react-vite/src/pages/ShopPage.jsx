@@ -86,54 +86,78 @@ export default function ShopPage() {
   }, [loading, error, products]);
 
   return (
-    <section>
-      <div className="row-between">
-        <h2>Shop</h2>
-        <form className="inline-form" onSubmit={submitSearch}>
-          <input
-            value={search}
-            onChange={(event) => setSearch(event.target.value)}
-            placeholder="Search shirts"
-            aria-label="Search shirts"
-          />
-          <button className="btn" type="submit">
-            Search
-          </button>
-        </form>
-      </div>
-
-      <p className="status-text">{summary}</p>
-
-      {loading ? <div className="panel">Loading...</div> : null}
-
-      {!loading && !error ? (
-        <div className="product-grid">
-          {products.map((product) => (
-            <article className="product-card" key={product.id}>
-              <Link to={`/products/${encodeURIComponent(product.slug)}`} className="product-image-link">
-                {product.image_url ? (
-                  <img src={product.image_url} alt={product.name} loading="lazy" />
-                ) : (
-                  <div className="image-fallback">No image</div>
-                )}
-              </Link>
-              <div className="card-body">
-                <h3>{product.name}</h3>
-                <p className="meta">{product.category || "Uncategorized"}</p>
-                <p className="price">{formatPrice(product.price)}</p>
-                <div className="row-actions compact">
-                  <button type="button" className="btn" onClick={() => addToCart(product)}>
-                    Add to Cart
-                  </button>
-                  <Link className="btn secondary" to={`/products/${encodeURIComponent(product.slug)}`}>
-                    View
-                  </Link>
-                </div>
-              </div>
-            </article>
-          ))}
+    <section className="shop-page">
+      <section className="page-intro shop-page-intro">
+        <p className="page-kicker">All Products</p>
+        <h2 className="page-title">Find the right tee faster.</h2>
+        <p className="page-lead">
+          Search the full catalog in one place, compare options quickly, and move straight into checkout.
+        </p>
+        <div className="shop-highlights">
+          <article className="shop-highlight-card">
+            <h3>Best sellers</h3>
+            <p className="meta">Start with top-performing items first.</p>
+          </article>
+          <article className="shop-highlight-card">
+            <h3>Easy filtering</h3>
+            <p className="meta">Search by shirt name, category, or style.</p>
+          </article>
+          <article className="shop-highlight-card">
+            <h3>Fast checkout</h3>
+            <p className="meta">Go from browse to cart in fewer clicks.</p>
+          </article>
         </div>
-      ) : null}
+      </section>
+
+      <section className="panel shop-panel">
+        <div className="row-between shop-toolbar">
+          <h3 className="shop-title">Shop Catalog</h3>
+          <form className="inline-form" onSubmit={submitSearch}>
+            <input
+              value={search}
+              onChange={(event) => setSearch(event.target.value)}
+              placeholder="Search by name, category, or style"
+              aria-label="Search shirts"
+            />
+            <button className="btn" type="submit">
+              Search
+            </button>
+          </form>
+        </div>
+
+        <p className="status-text shop-summary">{summary}</p>
+
+        {loading ? <div className="panel">Loading...</div> : null}
+
+        {!loading && !error ? (
+          <div className="product-grid old-product-grid">
+            {products.map((product) => (
+              <article className="product-card premium-card" key={product.id}>
+                <Link to={`/products/${encodeURIComponent(product.slug)}`} className="product-image-link">
+                  {product.image_url ? (
+                    <img src={product.image_url} alt={product.name} loading="lazy" />
+                  ) : (
+                    <div className="image-fallback">No image</div>
+                  )}
+                </Link>
+                <div className="card-body">
+                  <p className="meta small">{product.category || "Uncategorized"}</p>
+                  <h3>{product.name}</h3>
+                  <p className="price">{formatPrice(product.price)}</p>
+                  <div className="row-actions compact">
+                    <button type="button" className="btn" onClick={() => addToCart(product)}>
+                      Add to Cart
+                    </button>
+                    <Link className="btn secondary" to={`/products/${encodeURIComponent(product.slug)}`}>
+                      View
+                    </Link>
+                  </div>
+                </div>
+              </article>
+            ))}
+          </div>
+        ) : null}
+      </section>
     </section>
   );
 }

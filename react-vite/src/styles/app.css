@@ -377,6 +377,110 @@ a {
   font-size: 1rem;
 }
 
+.small {
+  font-size: 0.86rem;
+}
+
+.shop-page,
+.product-page {
+  display: grid;
+  gap: 1rem;
+}
+
+.page-intro {
+  border: 1px solid #d8deeb;
+  border-radius: 16px;
+  background: linear-gradient(120deg, #f3f7ff, #eef9f4);
+  padding: 1.1rem;
+}
+
+.page-kicker {
+  margin: 0;
+  color: #2f55b0;
+  font-size: 0.77rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  font-weight: 700;
+}
+
+.page-title {
+  margin: 0.35rem 0;
+  font-family: "Sora", "Segoe UI", sans-serif;
+  font-size: clamp(1.45rem, 2.9vw, 2.1rem);
+}
+
+.page-lead {
+  margin: 0;
+  color: #4b5b78;
+  max-width: 72ch;
+}
+
+.shop-highlights {
+  margin-top: 0.95rem;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.6rem;
+}
+
+.shop-highlight-card {
+  border: 1px solid #d9deea;
+  border-radius: 12px;
+  padding: 0.75rem;
+  background: #fff;
+}
+
+.shop-highlight-card h3 {
+  margin: 0 0 0.2rem;
+  font-size: 1rem;
+}
+
+.shop-panel {
+  border-radius: 16px;
+}
+
+.shop-toolbar {
+  margin-bottom: 0.65rem;
+}
+
+.shop-title {
+  margin: 0;
+  font-family: "Sora", "Segoe UI", sans-serif;
+}
+
+.shop-summary {
+  margin: 0.3rem 0 0.85rem;
+}
+
+.old-product-grid {
+  margin-top: 0;
+}
+
+.premium-card {
+  border-radius: 16px;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.premium-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 16px 28px rgba(27, 52, 98, 0.13);
+}
+
+.plain-inline {
+  color: #24458f;
+  font-weight: 700;
+}
+
+.product-detail-shell {
+  border-radius: 16px;
+}
+
+.variant-grid {
+  margin-top: 0.75rem;
+  display: grid;
+  gap: 0.6rem;
+  grid-template-columns: repeat(2, minmax(0, 200px));
+}
+
 .hero-panel,
 .panel {
   background: var(--surface);
@@ -740,6 +844,11 @@ td {
   .stats-section,
   .trust-strip {
     grid-template-columns: 1fr 1fr;
+  }
+
+  .shop-highlights,
+  .variant-grid {
+    grid-template-columns: 1fr;
   }
 
   .product-detail-grid {
