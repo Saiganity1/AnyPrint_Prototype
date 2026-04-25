@@ -1,6 +1,7 @@
 build:
   publish: public
   command: echo "Static site - no build required"
+  # Trigger redeploy: 2026-04-25
 services:
   - type: static
     name: anyprint-frontend
