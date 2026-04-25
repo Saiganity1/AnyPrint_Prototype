@@ -1,33 +1,7 @@
 build:
   publish: public
-  command: echo "Static site - no build required"
-  # Trigger redeploy: 2026-04-25
+  command: bash build.sh
 services:
   - type: static
     name: anyprint-frontend
     publish: public
-    routes:
-      - path: /*
-        methods:
-          - GET
-        dest: /index.html
-        status: 200
-    headers:
-      - path: /*
-        name: Cache-Control
-        value: public, max-age=0, must-revalidate
-      - path: "*.js"
-        name: Cache-Control
-        value: public, max-age=31536000
-      - path: "*.css"
-        name: Cache-Control
-        value: public, max-age=31536000
-      - path: "*.svg"
-        name: Cache-Control
-        value: public, max-age=31536000
-      - path: "*.png"
-        name: Cache-Control
-        value: public, max-age=31536000
-      - path: "*.jpg"
-        name: Cache-Control
-        value: public, max-age=31536000
