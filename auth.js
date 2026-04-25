@@ -20,6 +20,7 @@ const phoneLoginForm = document.getElementById('phoneLoginForm');
 const requestPhoneCodeButton = document.getElementById('requestPhoneCodeButton');
 const googleLoginButton = document.getElementById('googleLoginButton');
 const facebookLoginButton = document.getElementById('facebookLoginButton');
+const showLoginPasswordToggle = document.getElementById('showLoginPassword');
 
 const loginUsernameInput = loginForm ? loginForm.querySelector('[name="username"]') : null;
 const loginPasswordInput = loginForm ? loginForm.querySelector('[name="password"]') : null;
@@ -439,6 +440,12 @@ if (loginUsernameInput) {
 
 if (loginPasswordInput) {
     loginPasswordInput.addEventListener('input', () => setInlineError(loginPasswordInput, loginPasswordError, ''));
+}
+
+if (showLoginPasswordToggle && loginPasswordInput) {
+    showLoginPasswordToggle.addEventListener('change', () => {
+        loginPasswordInput.type = showLoginPasswordToggle.checked ? 'text' : 'password';
+    });
 }
 
 if (registerUsernameInput) {

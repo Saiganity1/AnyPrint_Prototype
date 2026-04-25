@@ -16,6 +16,8 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
         }
         .date-range {
             display: flex;
@@ -26,6 +28,45 @@
             padding: 8px 12px;
             border: 1px solid #ddd;
             border-radius: 4px;
+        }
+        .report-actions {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .report-summary {
+            background: #fff;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 20px;
+        }
+        .report-summary h3 {
+            margin-top: 0;
+            margin-bottom: 10px;
+            font-size: 18px;
+        }
+        .report-summary ul {
+            margin: 0;
+            padding-left: 20px;
+            color: #444;
+            line-height: 1.45;
+        }
+        .analytics-status {
+            margin-top: 8px;
+            color: #666;
+            font-size: 14px;
+        }
+        .sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            border: 0;
         }
         .metrics-grid {
             display: grid;
@@ -160,13 +201,25 @@
     <div class="analytics-container">
         <div class="analytics-header">
             <h1>Sales Analytics</h1>
-            <div class="date-range">
-                <input type="date" id="dateFrom" onchange="loadAnalytics()">
-                <span>to</span>
-                <input type="date" id="dateTo" onchange="loadAnalytics()">
-                <button class="btn" onclick="resetDateRange()">Reset</button>
+            <div class="report-actions">
+                <div class="date-range">
+                    <label for="dateFrom" class="sr-only">From date</label>
+                    <input type="date" id="dateFrom" aria-label="From date" title="From date" onchange="loadAnalytics()">
+                    <span>to</span>
+                    <label for="dateTo" class="sr-only">To date</label>
+                    <input type="date" id="dateTo" aria-label="To date" title="To date" onchange="loadAnalytics()">
+                    <button class="btn" onclick="resetDateRange()">Reset</button>
+                </div>
+                <button class="btn" id="exportCsvBtn" type="button">Export CSV</button>
+                <button class="btn" id="printReportBtn" type="button">Print Report</button>
             </div>
         </div>
+        <p class="analytics-status" id="analyticsStatus">Loading analytics report...</p>
+
+        <section class="report-summary" id="reportSummary">
+            <h3>Report Summary</h3>
+            <ul id="reportSummaryList"></ul>
+        </section>
 
         <!-- Key Metrics -->
         <div class="metrics-grid">
@@ -225,6 +278,7 @@
     <script src="common.js"></script>
     <script>
         const { API_BASE, apiFetch, formatPrice, getCurrentUser } = window.AnyPrint;
+        let latestAnalyticsData = null;
 
         async function initAnalytics() {
             const user = window.AnyPrint.getCurrentUser();
@@ -246,20 +300,36 @@
         async function loadAnalytics() {
             const dateFrom = document.getElementById('dateFrom').value;
             const dateTo = document.getElementById('dateTo').value;
+            const analyticsStatus = document.getElementById('analyticsStatus');
 
             try {
+                if (analyticsStatus) {
+                    analyticsStatus.textContent = 'Loading analytics report...';
+                }
                 const response = await apiFetch(`${API_BASE}/admin/analytics/?date_from=${dateFrom}&date_to=${dateTo}`);
                 
                 if (response.ok) {
                     const data = await response.json();
+                    latestAnalyticsData = data;
                     displayMetrics(data.metrics);
                     displayPaymentBreakdown(data.payment_breakdown);
                     displayStatusBreakdown(data.status_breakdown);
                     displayTopProducts(data.top_products);
                     displayDailySalesTrend(data.daily_sales);
+                    displayReportSummary(data, dateFrom, dateTo);
+                    if (analyticsStatus) {
+                        analyticsStatus.textContent = `Report ready for ${dateFrom} to ${dateTo}.`;
+                    }
+                } else {
+                    if (analyticsStatus) {
+                        analyticsStatus.textContent = 'Could not load analytics report.';
+                    }
                 }
             } catch (error) {
                 console.error('Failed to load analytics:', error);
+                if (analyticsStatus) {
+                    analyticsStatus.textContent = 'Could not load analytics report.';
+                }
             }
         }
 
@@ -271,6 +341,11 @@
         }
 
         function displayPaymentBreakdown(breakdown) {
+            if (!Array.isArray(breakdown) || breakdown.length === 0) {
+                document.getElementById('paymentBreakdown').innerHTML = '<p class="payment-stats">No payment data in this period.</p>';
+                return;
+            }
+
             let html = '';
             breakdown.forEach(item => {
                 html += `
@@ -285,6 +360,11 @@
         }
 
         function displayStatusBreakdown(breakdown) {
+            if (!Array.isArray(breakdown) || breakdown.length === 0) {
+                document.getElementById('statusBreakdown').innerHTML = '<p class="payment-stats">No orders in this period.</p>';
+                return;
+            }
+
             let html = '<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px;">';
             breakdown.forEach(item => {
                 html += `
@@ -299,6 +379,11 @@
         }
 
         function displayTopProducts(products) {
+            if (!Array.isArray(products) || products.length === 0) {
+                document.getElementById('topProductsBody').innerHTML = '<tr><td colspan="3">No product sales in this period.</td></tr>';
+                return;
+            }
+
             let html = '';
             products.forEach(product => {
                 html += `
@@ -313,7 +398,10 @@
         }
 
         function displayDailySalesTrend(dailySales) {
-            if (dailySales.length === 0) return;
+            if (!Array.isArray(dailySales) || dailySales.length === 0) {
+                document.getElementById('dailySalesChart').innerHTML = '<p class="payment-stats">No daily sales trend data available.</p>';
+                return;
+            }
 
             const maxRevenue = Math.max(...dailySales.map(d => parseFloat(d.revenue) || 0));
             let html = '';
@@ -334,6 +422,97 @@
             document.getElementById('dailySalesChart').innerHTML = html;
         }
 
+        function displayReportSummary(data, dateFrom, dateTo) {
+            const summaryList = document.getElementById('reportSummaryList');
+            if (!summaryList || !data || !data.metrics) {
+                return;
+            }
+
+            const metrics = data.metrics;
+            const completionRate = metrics.total_orders > 0
+                ? ((Number(metrics.completed_orders || 0) / Number(metrics.total_orders || 1)) * 100).toFixed(1)
+                : '0.0';
+
+            const topPayment = Array.isArray(data.payment_breakdown) && data.payment_breakdown.length
+                ? data.payment_breakdown[0].payment_method
+                : 'N/A';
+
+            const topProduct = Array.isArray(data.top_products) && data.top_products.length
+                ? data.top_products[0].product__name
+                : 'N/A';
+
+            summaryList.innerHTML = `
+                <li>Report Period: <strong>${dateFrom}</strong> to <strong>${dateTo}</strong></li>
+                <li>Revenue: <strong>${formatPrice(metrics.total_revenue)}</strong> from <strong>${metrics.total_orders}</strong> orders</li>
+                <li>Completion Rate: <strong>${completionRate}%</strong> delivered orders</li>
+                <li>Top Payment Method: <strong>${topPayment}</strong></li>
+                <li>Top Selling Product: <strong>${topProduct}</strong></li>
+            `;
+        }
+
+        function csvEscape(value) {
+            const str = String(value ?? '');
+            if (str.includes(',') || str.includes('"') || str.includes('\n')) {
+                return `"${str.replaceAll('"', '""')}"`;
+            }
+            return str;
+        }
+
+        function exportAnalyticsCsv() {
+            if (!latestAnalyticsData) {
+                alert('Please load analytics data first.');
+                return;
+            }
+
+            const lines = [];
+            const from = document.getElementById('dateFrom').value;
+            const to = document.getElementById('dateTo').value;
+
+            lines.push('AnyPrint Sales Report');
+            lines.push(`Date Range,${csvEscape(from)} to ${csvEscape(to)}`);
+            lines.push('');
+            lines.push('Metrics');
+            lines.push('Total Revenue,Total Orders,Completed Orders,Average Order Value');
+            lines.push([
+                latestAnalyticsData.metrics.total_revenue,
+                latestAnalyticsData.metrics.total_orders,
+                latestAnalyticsData.metrics.completed_orders,
+                latestAnalyticsData.metrics.average_order_value,
+            ].map(csvEscape).join(','));
+            lines.push('');
+
+            lines.push('Payment Breakdown');
+            lines.push('Payment Method,Order Count,Total Amount');
+            (latestAnalyticsData.payment_breakdown || []).forEach((item) => {
+                lines.push([
+                    item.payment_method,
+                    item.count,
+                    item.total,
+                ].map(csvEscape).join(','));
+            });
+            lines.push('');
+
+            lines.push('Top Products');
+            lines.push('Product Name,Quantity Sold,Revenue');
+            (latestAnalyticsData.top_products || []).forEach((item) => {
+                lines.push([
+                    item.product__name,
+                    item.quantity_sold,
+                    item.revenue,
+                ].map(csvEscape).join(','));
+            });
+
+            const blob = new Blob([lines.join('\n')], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `anyprint-sales-report-${from}-to-${to}.csv`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+        }
+
         function resetDateRange() {
             const today = new Date();
             const thirtyDaysAgo = new Date(today.getTime() - 30 * 24 * 60 * 60 * 1000);
@@ -349,6 +528,8 @@
             window.location.href = 'index.html';
         }
 
+        document.getElementById('exportCsvBtn').addEventListener('click', exportAnalyticsCsv);
+        document.getElementById('printReportBtn').addEventListener('click', () => window.print());
         document.addEventListener('DOMContentLoaded', initAnalytics);
     </script>
 </body>
