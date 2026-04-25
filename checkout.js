@@ -443,11 +443,6 @@ async function placeOrder() {
         return;
     }
 
-    if (!quoteData) {
-        checkoutMessage.textContent = 'Calculate the delivery quote first.';
-        return;
-    }
-
     const payload = {
         full_name: checkoutData.full_name,
         email: checkoutData.email,
@@ -461,7 +456,11 @@ async function placeOrder() {
 
     try {
         checkoutMessage.textContent = 'Placing order...';
-        await saveAddressForNextTime(new FormData(addressForm));
+        try {
+            await saveAddressForNextTime(new FormData(addressForm));
+        } catch (_error) {
+            showToast('Could not save address right now. Continuing order.', 'error');
+        }
 
         const response = await apiFetchWithCsrf(`${API_BASE}/orders/`, {
             method: 'POST',
@@ -485,7 +484,7 @@ async function placeOrder() {
         }
 
         setTimeout(() => {
-            window.location.href = 'tracking.html?order_id=' + encodeURIComponent(String(body.order_id));
+            window.location.href = 'tracking.html?order_id=' + encodeURIComponent(String(body.order_id)) + '&placed_order=' + encodeURIComponent(String(body.order_id));
         }, 1400);
     } catch (error) {
         checkoutMessage.textContent = error.message || 'Could not place order right now.';

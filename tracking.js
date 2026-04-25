@@ -431,6 +431,9 @@ attachTabHandlers();
 attachOrderCardHandlers();
 
 (async function init() {
+    const params = new URLSearchParams(window.location.search);
+    const placedOrderId = params.get('placed_order');
+
     await refreshAuthState();
 
     if (!currentUser) {
@@ -443,6 +446,10 @@ attachOrderCardHandlers();
     try {
         await loadOrders();
         setActiveTab(currentTab);
+        if (placedOrderId) {
+            setActiveTab('to_pay');
+            showToast(`Order #${placedOrderId} placed successfully.`, 'default');
+        }
     } catch (error) {
         if (trackingResult) {
             trackingResult.innerHTML = `<div class="track-order-empty">${escapeHtml(error.message || 'Could not load your orders right now.')}</div>`;
