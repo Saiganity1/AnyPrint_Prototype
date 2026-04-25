@@ -3,7 +3,7 @@ const {
     apiFetch,
     escapeHtml,
     formatPrice,
-    requireAuth,
+    getCurrentUser,
     roleLabel,
     getLoginRedirectUrl,
     showToast,
@@ -66,6 +66,17 @@ const STATUS_INDEX = {
     DELIVERED: 3,
 };
 
+async function readJsonResponse(response) {
+    const text = await response.text();
+    if (!text) return {};
+
+    try {
+        return JSON.parse(text);
+    } catch (_error) {
+        return { raw: text };
+    }
+}
+
 function normalizeStatus(status) {
     return String(status || '').toUpperCase();
 }
@@ -109,12 +120,18 @@ function setActiveTab(tabKey) {
 }
 
 async function refreshAuthState() {
+    const fallbackUser = getCurrentUser ? getCurrentUser() : null;
+
     try {
         const response = await apiFetch(`${API_BASE}/auth/me/`);
-        const body = await response.json();
-        currentUser = body && body.is_authenticated ? body.user : null;
+        const body = await readJsonResponse(response);
+        if (response.ok && body && body.is_authenticated) {
+            currentUser = body.user;
+        } else {
+            currentUser = fallbackUser;
+        }
     } catch (_error) {
-        currentUser = null;
+        currentUser = fallbackUser;
     }
 
     if (authButton) {
@@ -355,9 +372,9 @@ async function loadOrders() {
     if (!currentUser) return;
 
     const response = await apiFetch(`${API_BASE}/orders/history/`);
-    const body = await response.json();
+    const body = await readJsonResponse(response);
     if (!response.ok) {
-        throw new Error(body.error || 'Could not load orders.');
+        throw new Error(body.error || body.raw || 'Could not load orders.');
     }
 
     currentOrders = Array.isArray(body.orders) ? body.orders : [];
@@ -416,7 +433,10 @@ attachOrderCardHandlers();
 (async function init() {
     await refreshAuthState();
 
-    if (!requireAuth(currentUser, 'tracking.html')) {
+    if (!currentUser) {
+        if (trackingResult) {
+            trackingResult.innerHTML = '<div class="track-order-empty">Please log in to view your order statuses (To Pay, To Ship, To Receive, To Rate).</div>';
+        }
         return;
     }
 

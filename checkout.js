@@ -449,7 +449,13 @@ async function placeOrder() {
     }
 
     const payload = {
-        ...checkoutData,
+        full_name: checkoutData.full_name,
+        email: checkoutData.email,
+        phone: checkoutData.phone,
+        address: checkoutData.address,
+        payment_method: checkoutData.payment_method,
+        promo_code: checkoutData.promo_code,
+        notes: checkoutData.notes,
         items: buildOrderItems(),
     };
 
