@@ -2228,6 +2228,24 @@ main.checkout-page .status {
     min-height: 1.2rem;
 }
 
+.inline-success {
+    margin: 0;
+    color: #0a7a0a;
+    font-size: 0.9rem;
+    min-height: 1.2rem;
+}
+
+.form-link {
+    text-align: right;
+    margin: 0 0 1rem;
+    font-size: 0.9rem;
+}
+
+.form-link a {
+    color: var(--brand);
+    text-decoration: underline;
+}
+
 .field-error {
     margin: -0.25rem 0 0;
     min-height: 1rem;
