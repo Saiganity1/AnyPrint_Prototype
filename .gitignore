@@ -1,0 +1,26 @@
+# Local Netlify folder
+.netlify
+
+# Ignore old static HTML files (React app is in public/)
+*.html
+!public/index.html
+*.js
+!public/*.js
+!public/assets/*.js
+*.css
+!public/*.css
+!public/assets/*.css
+
+# Node modules
+node_modules/
+react-vite/node_modules/
+
+# Build outputs
+dist/
+react-vite/dist/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
