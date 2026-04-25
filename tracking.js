@@ -24,6 +24,14 @@ let currentUser = null;
 let currentOrders = [];
 let currentTab = 'to_pay';
 
+function hasStoredAuthToken() {
+    const commonToken = getAuthToken ? getAuthToken() : '';
+    const coreToken = window.AnyPrintCore && typeof window.AnyPrintCore.getAccessToken === 'function'
+        ? window.AnyPrintCore.getAccessToken()
+        : '';
+    return Boolean(commonToken || coreToken);
+}
+
 const TAB_CONFIG = {
     to_pay: {
         label: 'To Pay',
@@ -122,13 +130,16 @@ function setActiveTab(tabKey) {
 
 async function refreshAuthState() {
     const fallbackUser = getCurrentUser ? getCurrentUser() : null;
-    const hasToken = !!(getAuthToken && getAuthToken());
+    const hasToken = hasStoredAuthToken();
 
     try {
         const response = await apiFetch(`${API_BASE}/auth/me/`);
         const body = await readJsonResponse(response);
         if (response.ok && body && body.is_authenticated) {
             currentUser = body.user;
+            if (currentUser && window.AnyPrint && typeof window.AnyPrint.setCurrentUser === 'function') {
+                window.AnyPrint.setCurrentUser(currentUser);
+            }
         } else if (fallbackUser) {
             currentUser = fallbackUser;
         } else if (hasToken) {
@@ -148,8 +159,8 @@ async function refreshAuthState() {
 
     if (authButton) {
         if (currentUser) {
-            authButton.textContent = `Saved (${roleLabel(currentUser.role)})`;
-            authButton.href = 'wishlist.html';
+            authButton.textContent = 'My Account';
+            authButton.href = 'account.html';
         } else {
             authButton.textContent = 'Login/Register';
             authButton.href = 'login.html';
