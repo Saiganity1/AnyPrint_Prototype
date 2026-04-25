@@ -234,11 +234,14 @@ export default function CheckoutPage() {
   }
 
   return (
-    <section>
-      <h2>Checkout</h2>
-      <p className="status-text">{cartCount(cart)} item{cartCount(cart) === 1 ? "" : "s"} in cart</p>
+    <section className="checkout-page">
+      <div className="page-intro">
+        <p className="page-kicker">Secure Checkout</p>
+        <h2 className="page-title">Checkout</h2>
+        <p className="page-lead">{cartCount(cart)} item{cartCount(cart) === 1 ? "" : "s"} in cart</p>
+      </div>
 
-      <div className="stepper panel" style={{ marginBottom: "1rem" }}>
+      <div className="stepper panel checkout-stepper" style={{ marginBottom: "1rem" }}>
         {steps.map((label, index) => (
           <span key={label} className={index + 1 === step ? "step-chip active" : "step-chip"}>
             {index + 1}. {label}

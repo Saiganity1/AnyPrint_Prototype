@@ -97,10 +97,11 @@ export default function AccountPage() {
 
 
   return (
-    <section>
-      <div className="row-between">
-        <h2>My Account</h2>
-        <p className="status-text">Welcome, {displayName}</p>
+    <section className="account-page">
+      <div className="page-intro">
+        <p className="page-kicker">User Dashboard</p>
+        <h2 className="page-title">My Account</h2>
+        <p className="page-lead">Welcome, {displayName}</p>
       </div>
       <p className="status-text">{status}</p>
       {error ? <p className="error-text">{error}</p> : null}

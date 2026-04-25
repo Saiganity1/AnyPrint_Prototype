@@ -136,8 +136,12 @@ export default function AdminPage() {
   const metrics = dashboard?.metrics || {};
 
   return (
-    <section>
-      <h2>Admin Dashboard</h2>
+    <section className="dashboard-page">
+      <div className="page-intro">
+        <p className="page-kicker">Management</p>
+        <h2 className="page-title">Admin Dashboard</h2>
+        <p className="page-lead">Monitor orders, manage statuses, and update user roles.</p>
+      </div>
       <p className="status-text">{statusText}</p>
       {error ? <p className="error-text">{error}</p> : null}
 

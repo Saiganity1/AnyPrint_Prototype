@@ -59,9 +59,14 @@ export default function RegisterPage() {
   }
 
   return (
-    <section className="panel auth-panel">
-      <h2>Register</h2>
-      <p className="lead">Create your account to save details and track orders.</p>
+    <section className="auth-page">
+      <div className="page-intro">
+        <p className="page-kicker">Create Account</p>
+        <h2 className="page-title">Register</h2>
+        <p className="page-lead">Create your account to save details and track orders.</p>
+      </div>
+
+      <section className="panel auth-panel">
 
       <form className="form-grid" onSubmit={onSubmit}>
         <label htmlFor="username">Username</label>
@@ -109,6 +114,7 @@ export default function RegisterPage() {
           </Link>
         </div>
       </form>
+      </section>
     </section>
   );
 }

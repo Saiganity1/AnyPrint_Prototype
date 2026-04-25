@@ -103,9 +103,14 @@ export default function LoginPage() {
   }
 
   return (
-    <section className="panel auth-panel">
-      <h2>Login</h2>
-      <p className="lead">Sign in with your AnyPrint account.</p>
+    <section className="auth-page">
+      <div className="page-intro">
+        <p className="page-kicker">Welcome Back</p>
+        <h2 className="page-title">Login</h2>
+        <p className="page-lead">Sign in with your AnyPrint account.</p>
+      </div>
+
+      <section className="panel auth-panel">
 
       <form className="form-grid" onSubmit={onSubmit}>
         <label htmlFor="username">Username</label>
@@ -153,6 +158,7 @@ export default function LoginPage() {
           </button>
         </div>
       </form>
+      </section>
     </section>
   );
 }

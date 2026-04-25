@@ -187,8 +187,12 @@ export default function OwnerDashboardPage() {
   }
 
   return (
-    <section>
-      <h2>Owner Dashboard</h2>
+    <section className="dashboard-page">
+      <div className="page-intro">
+        <p className="page-kicker">Owner Console</p>
+        <h2 className="page-title">Owner Dashboard</h2>
+        <p className="page-lead">Track sales, create products, and manage stock from one place.</p>
+      </div>
       <p className="status-text">{status}</p>
       {error ? <p className="error-text">{error}</p> : null}
 

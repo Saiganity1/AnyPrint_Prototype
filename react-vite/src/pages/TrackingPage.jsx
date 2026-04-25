@@ -91,9 +91,12 @@ export default function TrackingPage() {
   }
 
   return (
-    <section>
-      <h2>Order Tracking</h2>
-      <p className="status-text">{user ? "Track your order progress." : "Login recommended for full order history."}</p>
+    <section className="tracking-page">
+      <div className="page-intro">
+        <p className="page-kicker">Track Orders</p>
+        <h2 className="page-title">Order Tracking</h2>
+        <p className="page-lead">{user ? "Track your order progress." : "Login recommended for full order history."}</p>
+      </div>
       <p className="status-text">{status}</p>
       {error ? <p className="error-text">{error}</p> : null}
 

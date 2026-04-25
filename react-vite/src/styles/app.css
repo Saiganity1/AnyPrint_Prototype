@@ -387,6 +387,17 @@ a {
   gap: 1rem;
 }
 
+.auth-page,
+.checkout-page,
+.tracking-page,
+.account-page,
+.dashboard-page,
+.analytics-page,
+.notfound-page {
+  display: grid;
+  gap: 0.95rem;
+}
+
 .page-intro {
   border: 1px solid #d8deeb;
   border-radius: 16px;
@@ -436,6 +447,48 @@ a {
 
 .shop-panel {
   border-radius: 16px;
+}
+
+.checkout-stepper {
+  background: #f8fbff;
+  border-color: #d7e0ef;
+}
+
+.dashboard-page .panel,
+.account-page .panel,
+.tracking-page .panel,
+.analytics-page .panel,
+.checkout-page .panel,
+.auth-page .panel,
+.notfound-page .panel {
+  border-radius: 16px;
+  border-color: #d8dfec;
+}
+
+.tab-row {
+  background: #f8fbff;
+  border: 1px solid #dbe2ef;
+  border-radius: 14px;
+  padding: 0.45rem;
+}
+
+.checkout-item {
+  background: #fff;
+}
+
+.orders-stack .panel {
+  background: #ffffff;
+}
+
+.auth-panel {
+  max-width: 640px;
+}
+
+.analytics-page .row-between {
+  background: #ffffff;
+  border: 1px solid #d8dfec;
+  border-radius: 14px;
+  padding: 0.7rem;
 }
 
 .shop-toolbar {
@@ -849,6 +902,10 @@ td {
   .shop-highlights,
   .variant-grid {
     grid-template-columns: 1fr;
+  }
+
+  .analytics-page .row-between {
+    gap: 0.6rem;
   }
 
   .product-detail-grid {

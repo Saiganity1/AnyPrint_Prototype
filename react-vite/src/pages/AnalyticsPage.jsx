@@ -120,9 +120,14 @@ export default function AnalyticsPage() {
   const topProduct = data?.top_products?.[0]?.product__name || "N/A";
 
   return (
-    <section>
+    <section className="analytics-page">
+      <div className="page-intro">
+        <p className="page-kicker">Reports</p>
+        <h2 className="page-title">Sales Analytics</h2>
+        <p className="page-lead">Analyze revenue, order completion, top products, and payment trends.</p>
+      </div>
+
       <div className="row-between">
-        <h2>Sales Analytics</h2>
         <div className="inline-form wrap">
           <label htmlFor="dateFrom" className="sr-only">
             From date
