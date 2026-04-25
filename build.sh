@@ -14,9 +14,9 @@ if [ ! -f "public/index.html" ]; then
   exit 1
 fi
 
-# Ensure _redirects file exists for SPA routing
+# Ensure _redirects file exists for SPA routing (Netlify/Render compatible)
 cat > public/_redirects << 'EOF'
-/* /index.html 200
+/*    /index.html   200
 EOF
 
 echo "Build complete. Static files ready in public/ folder."
