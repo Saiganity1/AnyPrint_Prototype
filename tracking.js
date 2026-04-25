@@ -3,24 +3,47 @@ const {
     apiFetch,
     escapeHtml,
     formatPrice,
+    requireAuth,
     roleLabel,
+    getLoginRedirectUrl,
     showToast,
 } = window.AnyPrint;
 
 const authButton = document.getElementById('authButton');
 const logoutButton = document.getElementById('logoutButton');
-const trackForm = document.getElementById('trackForm');
 const trackingResult = document.getElementById('trackingResult');
-const trackingStatus = document.getElementById('trackingStatus');
-const trackingHint = document.getElementById('trackingHint');
+const ordersSummary = document.getElementById('ordersSummary');
+const selectedTabTitle = document.getElementById('selectedTabTitle');
+const selectedTabHint = document.getElementById('selectedTabHint');
+const shortcutButtons = Array.from(document.querySelectorAll('.track-shortcut[data-tab]'));
+const filterButtons = Array.from(document.querySelectorAll('.track-filter-btn[data-tab]'));
+const shortcutCounts = Array.from(document.querySelectorAll('[data-count]'));
 
 let currentUser = null;
+let currentOrders = [];
+let currentTab = 'to_pay';
 
-const ORDER_PROGRESS_STEPS = [
-    { key: 'PENDING', label: 'Order Placed' },
-    { key: 'CONFIRMED', label: 'Order Confirmed' },
-    { key: 'SHIPPED', label: 'In Transit' },
-    { key: 'DELIVERED', label: 'Delivered' },
+const TAB_CONFIG = {
+    to_pay: {
+        label: 'To Pay',
+        hint: 'Orders waiting for payment confirmation.',
+        statuses: ['PENDING'],
+    },
+    to_ship: {
+        label: 'To Ship',
+        hint: 'Orders that are paid and ready for the admin to pack or ship.',
+        statuses: ['CONFIRMED', 'PACKED'],
+    },
+    to_receive: {
+        label: 'To Receive',
+        hint: 'Orders already shipped and on the way to you.',
+        statuses: ['SHIPPED', 'OUT_FOR_DELIVERY'],
+    },
+    to_rate: {
+        label: 'To Rate',
+        hint: 'Delivered orders that are ready for feedback.',
+        statuses: ['DELIVERED'],
+    },
 ];
 
 const STATUS_WEIGHT = {
@@ -31,6 +54,59 @@ const STATUS_WEIGHT = {
     OUT_FOR_DELIVERY: 2,
     DELIVERED: 3,
 };
+
+const ORDER_PROGRESS_STEPS = ['Order Placed', 'To Ship', 'To Receive', 'To Rate'];
+
+const STATUS_INDEX = {
+    PENDING: 0,
+    CONFIRMED: 1,
+    PACKED: 1,
+    SHIPPED: 2,
+    OUT_FOR_DELIVERY: 2,
+    DELIVERED: 3,
+};
+
+function normalizeStatus(status) {
+    return String(status || '').toUpperCase();
+}
+
+function getOrderTab(order) {
+    const status = normalizeStatus(order.status);
+    if (status === 'DELIVERED') return 'to_rate';
+    if (status === 'SHIPPED' || status === 'OUT_FOR_DELIVERY') return 'to_receive';
+    if (status === 'CONFIRMED' || status === 'PACKED') return 'to_ship';
+    return 'to_pay';
+}
+
+function getTabOrders(tabKey) {
+    return currentOrders.filter((order) => getOrderTab(order) === tabKey);
+}
+
+function updateShortcutCounts() {
+    const counts = {
+        to_pay: getTabOrders('to_pay').length,
+        to_ship: getTabOrders('to_ship').length,
+        to_receive: getTabOrders('to_receive').length,
+        to_rate: getTabOrders('to_rate').length,
+    };
+
+    shortcutCounts.forEach((node) => {
+        const tabKey = node.getAttribute('data-count');
+        const count = counts[tabKey] || 0;
+        node.textContent = `${count} order${count === 1 ? '' : 's'}`;
+    });
+}
+
+function setActiveTab(tabKey) {
+    currentTab = tabKey;
+    shortcutButtons.forEach((button) => button.classList.toggle('active', button.getAttribute('data-tab') === tabKey));
+    filterButtons.forEach((button) => button.classList.toggle('active', button.getAttribute('data-tab') === tabKey));
+
+    const config = TAB_CONFIG[tabKey] || TAB_CONFIG.to_pay;
+    if (selectedTabTitle) selectedTabTitle.textContent = config.label;
+    if (selectedTabHint) selectedTabHint.textContent = config.hint;
+    renderOrders();
+}
 
 async function refreshAuthState() {
     try {
@@ -148,10 +224,8 @@ function renderProgress(status) {
     `;
 }
 
-function renderOrder(order) {
-    if (!trackingResult) return;
-
-    const items = (order.items || []).map((item) => `
+function renderOrderCard(order) {
+    const items = (order.items || []).slice(0, 2).map((item) => `
         <article class="order-line shopee-order-line">
             ${renderItemThumbnail(item)}
             <div class="shopee-item-main">
@@ -163,101 +237,160 @@ function renderOrder(order) {
         </article>
     `).join('');
 
-    const orderDate = formatDateTime(order.created_at);
-    const statusLabel = formatStatusLabel(order.status || 'PENDING');
+    const statusKey = normalizeStatus(order.status);
+    const statusLabel = formatStatusLabel(statusKey || 'Pending');
+    const tabKey = getOrderTab(order);
 
-    trackingResult.innerHTML = `
-        <section class="track-card pad tracking-result-stack">
-            <div class="shopee-result-head">
+    return `
+        <article class="track-order-card">
+            <div class="track-order-card-head">
                 <div>
-                    <h3>Order #${escapeHtml(String(order.id || ''))}</h3>
-                    <p class="meta">Placed on ${escapeHtml(orderDate || 'N/A')}</p>
+                    <h4>Order #${escapeHtml(String(order.id || ''))}</h4>
+                    <p class="track-order-meta">Placed ${escapeHtml(formatDateTime(order.created_at) || 'recently')} • ${escapeHtml(order.tracking_number || 'No tracking yet')}</p>
                 </div>
-                <span class="shopee-status-badge ${statusClassName(order.status)}">${escapeHtml(statusLabel)}</span>
+                <span class="shopee-status-badge ${statusClassName(statusKey)}">${escapeHtml(statusLabel)}</span>
             </div>
-            ${renderProgress(order.status)}
-            <div class="shopee-action-row" aria-label="Order actions">
-                <a class="shopee-action-btn primary" href="mailto:anyprint.support@gmail.com?subject=${encodeURIComponent(`Order ${order.id} Support`)}&body=${encodeURIComponent(`Hi AnyPrint,\n\nI need help with order #${order.id} (${order.tracking_number || 'N/A'}).`)}">Contact Seller</a>
-                <a class="shopee-action-btn" href="faq.html">Need Help?</a>
-            </div>
-        </section>
 
-        <section class="track-card pad tracking-result-stack">
-            <div class="shopee-info-grid">
-                <article class="shopee-info-card">
-                    <p class="meta">Tracking Number</p>
-                    <strong>${escapeHtml(order.tracking_number || 'N/A')}</strong>
-                </article>
-                <article class="shopee-info-card">
-                    <p class="meta">Estimated Delivery</p>
-                    <strong>${escapeHtml(order.estimated_delivery_date || 'Pending update')}</strong>
-                </article>
-                <article class="shopee-info-card">
-                    <p class="meta">Payment</p>
+            <div class="track-order-summary">
+                <div>
+                    <span>Payment</span>
                     <strong>${escapeHtml(formatStatusLabel(order.payment_status || 'PENDING'))}</strong>
-                </article>
+                </div>
+                <div>
+                    <span>Delivery</span>
+                    <strong>${escapeHtml(order.estimated_delivery_date || 'Pending')}</strong>
+                </div>
+                <div>
+                    <span>Items</span>
+                    <strong>${(order.items || []).length}</strong>
+                </div>
+                <div>
+                    <span>Total</span>
+                    <strong>${formatPrice(order.total_amount)}</strong>
+                </div>
             </div>
-            <div class="shopee-total-wrap">
-                <div class="quote-row"><span>Subtotal</span><strong>${formatPrice(order.subtotal_amount)}</strong></div>
-                <div class="quote-row"><span>Shipping</span><strong>${formatPrice(order.shipping_fee)}</strong></div>
-                <div class="quote-row"><span>Discounts</span><strong>-${formatPrice(Number(order.discount_amount || 0))}</strong></div>
-                <div class="quote-row quote-total"><span>Total</span><strong>${formatPrice(order.total_amount)}</strong></div>
-            </div>
-        </section>
 
-        <section class="track-card pad tracking-result-stack">
-            <div class="section-head shopee-section-head">
-                <h3>Items</h3>
-                <span class="meta">${order.items.length} item${order.items.length === 1 ? '' : 's'}</span>
+            <div class="shopee-progress-wrap" aria-label="Order progress">
+                ${['Order Placed', 'To Ship', 'To Receive', 'To Rate'].map((label, index) => {
+                    const activeIndex = STATUS_INDEX[statusKey] ?? 0;
+                    const stepState = index < activeIndex ? 'done' : index === activeIndex ? 'active' : 'todo';
+                    return `
+                        <div class="shopee-step ${stepState}">
+                            <span class="shopee-step-dot" aria-hidden="true"></span>
+                            <span class="shopee-step-label">${escapeHtml(label)}</span>
+                        </div>
+                    `;
+                }).join('')}
             </div>
-            <div class="tracking-lines">${items}</div>
-        </section>
 
-        <section class="track-card pad tracking-result-stack">
-            <div class="section-head shopee-section-head">
-                <h3>Status timeline</h3>
-                <span class="meta">Live updates after checkout</span>
+            <div class="track-order-actions">
+                <button class="track-order-action primary" type="button" data-view-order="${escapeHtml(String(order.id))}">View Details</button>
+                <a class="track-order-action" href="mailto:anyprint.support@gmail.com?subject=${encodeURIComponent(`Order ${order.id} Support`)}&body=${encodeURIComponent(`Hi AnyPrint,\n\nI need help with order #${order.id} (${order.tracking_number || 'N/A'}).`)}">Contact Seller</a>
+                <a class="track-order-action" href="faq.html">Need Help?</a>
             </div>
-            ${renderTimeline(order)}
-        </section>
+
+            <div class="track-order-details hidden" data-order-details="${escapeHtml(String(order.id))}">
+                <section class="track-card pad soft tracking-summary">
+                    <div class="shopee-info-grid">
+                        <article class="shopee-info-card">
+                            <p class="meta">Tracking Number</p>
+                            <strong>${escapeHtml(order.tracking_number || 'N/A')}</strong>
+                        </article>
+                        <article class="shopee-info-card">
+                            <p class="meta">Estimated Delivery</p>
+                            <strong>${escapeHtml(order.estimated_delivery_date || 'Pending update')}</strong>
+                        </article>
+                        <article class="shopee-info-card">
+                            <p class="meta">Status</p>
+                            <strong>${escapeHtml(TAB_CONFIG[tabKey].label)}</strong>
+                        </article>
+                    </div>
+                    <div class="shopee-total-wrap">
+                        <div class="quote-row"><span>Subtotal</span><strong>${formatPrice(order.subtotal_amount)}</strong></div>
+                        <div class="quote-row"><span>Shipping</span><strong>${formatPrice(order.shipping_fee)}</strong></div>
+                        <div class="quote-row"><span>Discounts</span><strong>-${formatPrice(Number(order.discount_amount || 0))}</strong></div>
+                        <div class="quote-row quote-total"><span>Total</span><strong>${formatPrice(order.total_amount)}</strong></div>
+                    </div>
+                </section>
+
+                <section class="track-card pad soft tracking-summary">
+                    <div class="section-head shopee-section-head">
+                        <h3>Items</h3>
+                        <span class="meta">${(order.items || []).length} item${(order.items || []).length === 1 ? '' : 's'}</span>
+                    </div>
+                    <div class="tracking-lines">${items}</div>
+                </section>
+
+                <section class="track-card pad soft tracking-summary">
+                    <div class="section-head shopee-section-head">
+                        <h3>Status timeline</h3>
+                        <span class="meta">Live updates after checkout</span>
+                    </div>
+                    ${renderTimeline(order)}
+                </section>
+            </div>
+        </article>
     `;
 }
 
-async function trackOrder(formData) {
-    const trackingNumber = String(formData.get('tracking_number') || '').trim();
-    const orderId = String(formData.get('order_id') || '').trim();
-    const email = String(formData.get('email') || '').trim();
+function renderOrders() {
+    if (!trackingResult) return;
 
-    const params = new URLSearchParams();
-    if (trackingNumber) params.set('tracking_number', trackingNumber);
-    if (orderId) params.set('order_id', orderId);
-    if (email) params.set('email', email);
+    const orders = getTabOrders(currentTab);
+    const config = TAB_CONFIG[currentTab] || TAB_CONFIG.to_pay;
 
-    if (!trackingNumber && !orderId) {
-        trackingStatus.textContent = 'Enter a tracking number or order ID.';
+    if (ordersSummary) {
+        ordersSummary.textContent = `${orders.length} order${orders.length === 1 ? '' : 's'} in ${config.label}`;
+    }
+
+    if (!orders.length) {
+        trackingResult.innerHTML = `<div class="track-order-empty">No ${config.label.toLowerCase()} orders yet. When you place an order, the admin can move it through this flow from To Pay to To Ship, then To Receive, and finally To Rate.</div>`;
         return;
     }
 
-    trackingStatus.textContent = 'Looking up order...';
-    try {
-        const response = await apiFetch(`${API_BASE}/orders/track/?${params.toString()}`);
-        const body = await response.json();
-        if (!response.ok) {
-            throw new Error(body.error || 'Could not find that order.');
-        }
-        trackingStatus.textContent = 'Order found.';
-        renderOrder(body.order);
-    } catch (error) {
-        trackingStatus.textContent = error.message || 'Could not find that order.';
-        trackingResult.innerHTML = '';
-    }
+    trackingResult.innerHTML = orders.map(renderOrderCard).join('');
 }
 
-if (trackForm) {
-    trackForm.addEventListener('submit', async (event) => {
-        event.preventDefault();
-        const formData = new FormData(trackForm);
-        await trackOrder(formData);
+async function loadOrders() {
+    if (!currentUser) return;
+
+    const response = await apiFetch(`${API_BASE}/orders/history/`);
+    const body = await response.json();
+    if (!response.ok) {
+        throw new Error(body.error || 'Could not load orders.');
+    }
+
+    currentOrders = Array.isArray(body.orders) ? body.orders : [];
+    updateShortcutCounts();
+    renderOrders();
+}
+
+function attachTabHandlers() {
+    [...shortcutButtons, ...filterButtons].forEach((button) => {
+        button.addEventListener('click', () => {
+            if (!currentUser) {
+                window.location.href = getLoginRedirectUrl();
+                return;
+            }
+            setActiveTab(button.getAttribute('data-tab') || 'to_pay');
+        });
+    });
+}
+
+function attachOrderCardHandlers() {
+    if (!trackingResult) return;
+
+    trackingResult.addEventListener('click', (event) => {
+        const target = event.target;
+        if (!(target instanceof HTMLElement)) return;
+
+        const orderId = target.getAttribute('data-view-order');
+        if (!orderId) return;
+
+        const details = trackingResult.querySelector(`[data-order-details="${CSS.escape(orderId)}"]`);
+        if (details) {
+            details.classList.toggle('hidden');
+        }
     });
 }
 
@@ -277,18 +410,23 @@ if (logoutButton) {
     });
 }
 
-(function init() {
-    const params = new URLSearchParams(window.location.search);
-    const orderId = params.get('order_id');
-    const trackingNumber = params.get('tracking_number');
-    if (orderId && trackForm) {
-        trackForm.querySelector('[name="order_id"]').value = orderId;
+attachTabHandlers();
+attachOrderCardHandlers();
+
+(async function init() {
+    await refreshAuthState();
+
+    if (!requireAuth(currentUser, 'tracking.html')) {
+        return;
     }
-    if (trackingNumber && trackForm) {
-        trackForm.querySelector('[name="tracking_number"]').value = trackingNumber;
+
+    try {
+        await loadOrders();
+        setActiveTab(currentTab);
+    } catch (error) {
+        if (trackingResult) {
+            trackingResult.innerHTML = `<div class="track-order-empty">${escapeHtml(error.message || 'Could not load your orders right now.')}</div>`;
+        }
+        showToast('Could not load your orders right now.', 'error');
     }
-    if (trackingHint) {
-        trackingHint.textContent = 'Use the tracking number from checkout or the order ID from your confirmation page.';
-    }
-    refreshAuthState();
 })();

@@ -27,6 +27,11 @@
             padding: 0.2rem 0 0.9rem;
         }
 
+        .track-hero-copy {
+            display: grid;
+            gap: 0.2rem;
+        }
+
         .track-hero h2 {
             margin: 0;
             font-size: 1.4rem;
@@ -62,6 +67,10 @@
             box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
             text-decoration: none;
             color: var(--shopee-text);
+            cursor: pointer;
+            appearance: none;
+            width: 100%;
+            font-family: inherit;
         }
 
         .track-shortcut.active {
@@ -96,102 +105,24 @@
             text-align: center;
         }
 
-        .track-layout {
-            display: grid;
-            grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
-            gap: 1rem;
-            margin-top: 0.8rem;
+        .track-shortcut-count {
+            font-size: 0.72rem;
+            color: var(--shopee-muted);
         }
 
-        .track-card {
+        .track-shortcut.active .track-shortcut-count {
+            color: var(--shopee-orange);
+        }
+
+        .track-panel {
             border: 1px solid var(--shopee-line);
             border-radius: 4px;
             background: var(--shopee-surface);
             box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
         }
 
-        .track-card.pad {
+        .track-panel.pad {
             padding: 0.95rem 1rem;
-        }
-
-        .lookup-title {
-            margin: 0;
-            font-size: 1rem;
-            font-weight: 600;
-            color: var(--shopee-text);
-        }
-
-        .lookup-sub {
-            margin: 0.2rem 0 0;
-            color: var(--shopee-muted);
-            font-size: 0.84rem;
-        }
-
-        .track-form-grid {
-            margin-top: 0.7rem;
-            display: grid;
-            grid-template-columns: repeat(3, minmax(0, 1fr));
-            gap: 0.45rem;
-        }
-
-        .track-form-grid input {
-            min-height: 40px;
-            border: 1px solid #dfdfdf;
-            border-radius: 2px;
-            padding: 0 0.8rem;
-            font-family: "Helvetica Neue", Arial, sans-serif;
-            font-size: 0.87rem;
-        }
-
-        .track-form-grid input:focus {
-            border-color: var(--shopee-orange);
-            box-shadow: 0 0 0 3px rgba(238, 77, 45, 0.14);
-            outline: none;
-        }
-
-        .track-submit {
-            margin-top: 0.55rem;
-            border: none;
-            border-radius: 2px;
-            min-height: 40px;
-            padding: 0 1.1rem;
-            font-weight: 600;
-            font-family: "Helvetica Neue", Arial, sans-serif;
-            font-size: 0.88rem;
-            color: #fff;
-            background: linear-gradient(140deg, #ff6b43, var(--shopee-orange));
-            box-shadow: none;
-            cursor: pointer;
-        }
-
-        .track-status {
-            margin: 0.45rem 0 0;
-            min-height: 1.2rem;
-            color: var(--shopee-muted);
-            font-size: 0.82rem;
-        }
-
-        .track-help {
-            background: linear-gradient(180deg, #fff, var(--shopee-soft));
-        }
-
-        .track-help h3 {
-            margin: 0;
-            font-size: 0.95rem;
-            color: var(--shopee-text);
-        }
-
-        .track-help ul {
-            margin: 0.55rem 0 0;
-            padding-left: 1.1rem;
-            color: var(--shopee-muted);
-            display: grid;
-            gap: 0.3rem;
-            font-size: 0.82rem;
-        }
-
-        #trackingResult {
-            margin-top: 1rem;
         }
 
         .tracking-result-stack + .tracking-result-stack {
@@ -450,17 +381,163 @@
             line-height: 1.35;
         }
 
+        .track-board {
+            margin-top: 0.8rem;
+            display: grid;
+            gap: 0.75rem;
+        }
+
+        .track-board-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+        }
+
+        .track-board-head h3 {
+            margin: 0;
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--shopee-text);
+        }
+
+        .track-board-head p {
+            margin: 0.1rem 0 0;
+            font-size: 0.82rem;
+            color: var(--shopee-muted);
+        }
+
+        .track-filters {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 0.5rem;
+        }
+
+        .track-filter-btn {
+            border: 1px solid #ebebeb;
+            background: #fff;
+            border-radius: 4px;
+            min-height: 56px;
+            display: grid;
+            gap: 0.15rem;
+            align-content: center;
+            justify-items: center;
+            font-family: inherit;
+            cursor: pointer;
+            color: var(--shopee-text);
+        }
+
+        .track-filter-btn strong {
+            font-size: 0.84rem;
+        }
+
+        .track-filter-btn span {
+            font-size: 0.72rem;
+            color: var(--shopee-muted);
+        }
+
+        .track-filter-btn.active {
+            border-color: rgba(238, 77, 45, 0.38);
+            color: var(--shopee-orange);
+            background: #fff7f4;
+        }
+
+        .track-order-list {
+            display: grid;
+            gap: 0.7rem;
+        }
+
+        .track-order-empty {
+            padding: 1rem;
+            border: 1px dashed #e2c4bb;
+            border-radius: 4px;
+            background: #fffaf8;
+            color: var(--shopee-muted);
+            font-size: 0.86rem;
+        }
+
+        .track-order-card {
+            border: 1px solid #ebebeb;
+            border-radius: 4px;
+            background: #fff;
+            padding: 0.9rem;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+            display: grid;
+            gap: 0.7rem;
+        }
+
+        .track-order-card-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+        }
+
+        .track-order-card-head h4 {
+            margin: 0;
+            font-size: 0.92rem;
+            font-weight: 700;
+            color: var(--shopee-text);
+        }
+
+        .track-order-meta {
+            margin: 0.15rem 0 0;
+            color: var(--shopee-muted);
+            font-size: 0.78rem;
+        }
+
+        .track-order-summary {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 0.5rem;
+        }
+
+        .track-order-summary div {
+            border: 1px solid #f1ddd5;
+            border-radius: 4px;
+            padding: 0.55rem 0.6rem;
+            background: #fffdfc;
+        }
+
+        .track-order-summary span {
+            display: block;
+            font-size: 0.7rem;
+            color: var(--shopee-muted);
+        }
+
+        .track-order-summary strong {
+            display: block;
+            margin-top: 0.1rem;
+            font-size: 0.82rem;
+            color: var(--shopee-text);
+        }
+
+        .track-order-actions {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .track-order-action {
+            border: 1px solid #d9d9d9;
+            border-radius: 2px;
+            background: #fff;
+            padding: 0.45rem 0.75rem;
+            color: var(--shopee-text);
+            text-decoration: none;
+            font-size: 0.78rem;
+            font-weight: 600;
+        }
+
+        .track-order-action.primary {
+            border-color: var(--shopee-orange);
+            color: var(--shopee-orange);
+            background: #fff7f4;
+        }
+
         @media (max-width: 980px) {
             .track-shortcuts {
                 grid-template-columns: repeat(2, minmax(0, 1fr));
-            }
-
-            .track-layout {
-                grid-template-columns: 1fr;
-            }
-
-            .track-form-grid {
-                grid-template-columns: 1fr;
             }
 
             .shopee-info-grid {
@@ -489,6 +566,11 @@
             .shopee-step:not(:last-child)::after {
                 left: 58%;
                 width: 84%;
+            }
+
+            .track-filters,
+            .track-order-summary {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
             }
         }
     </style>
@@ -530,10 +612,10 @@
     <main class="container page-shell checkout-page track-page">
         <section class="track-hero">
             <h2>My Orders</h2>
-            <p>Shopee-style order shortcuts for quick access to each stage of your order.</p>
+            <p>Shopee-style order center for quick access to each stage of your order.</p>
 
             <div class="track-shortcuts" aria-label="Order shortcuts">
-                <a class="track-shortcut" href="#trackForm">
+                <button class="track-shortcut active" type="button" data-tab="to_pay">
                     <span class="track-shortcut-icon" aria-hidden="true">
                         <svg viewBox="0 0 24 24">
                             <path d="M7 7h10v10H7z"></path>
@@ -541,8 +623,9 @@
                         </svg>
                     </span>
                     <span>To Pay</span>
-                </a>
-                <a class="track-shortcut active" href="#trackForm">
+                    <span class="track-shortcut-count" data-count="to_pay">0 orders</span>
+                </button>
+                <button class="track-shortcut" type="button" data-tab="to_ship">
                     <span class="track-shortcut-icon" aria-hidden="true">
                         <svg viewBox="0 0 24 24">
                             <path d="M5 9h14l-1 8H6z"></path>
@@ -550,8 +633,9 @@
                         </svg>
                     </span>
                     <span>To Ship</span>
-                </a>
-                <a class="track-shortcut" href="#trackForm">
+                    <span class="track-shortcut-count" data-count="to_ship">0 orders</span>
+                </button>
+                <button class="track-shortcut" type="button" data-tab="to_receive">
                     <span class="track-shortcut-icon" aria-hidden="true">
                         <svg viewBox="0 0 24 24">
                             <path d="M4 14h10l3-4h3"></path>
@@ -560,46 +644,52 @@
                         </svg>
                     </span>
                     <span>To Receive</span>
-                </a>
-                <a class="track-shortcut" href="#trackForm">
+                    <span class="track-shortcut-count" data-count="to_receive">0 orders</span>
+                </button>
+                <button class="track-shortcut" type="button" data-tab="to_rate">
                     <span class="track-shortcut-icon" aria-hidden="true">
                         <svg viewBox="0 0 24 24">
                             <path d="M12 4l2.2 4.5 5 .7-3.6 3.4.9 5-4.5-2.4-4.5 2.4.9-5L4.8 9.2l5-.7z"></path>
                         </svg>
                     </span>
                     <span>To Rate</span>
-                </a>
+                    <span class="track-shortcut-count" data-count="to_rate">0 orders</span>
+                </button>
             </div>
         </section>
 
         <div id="adminAccessNotice" class="products-error hidden"></div>
 
-        <section class="track-layout">
-            <section class="track-card pad">
-                <h3 class="lookup-title">Order Lookup</h3>
-                <p id="trackingHint" class="lookup-sub"></p>
-                <form id="trackForm" novalidate>
-                    <div class="track-form-grid">
-                        <input id="trackingNumberInput" name="tracking_number" placeholder="Tracking number (AP-000123)" />
-                        <input id="orderIdInput" name="order_id" placeholder="Order ID" />
-                        <input id="trackingEmailInput" name="email" type="email" placeholder="Checkout email (optional if logged in)" />
-                    </div>
-                    <button type="submit" class="track-submit">Track Order</button>
-                </form>
-                <p id="trackingStatus" class="track-status" role="status" aria-live="polite"></p>
-            </section>
+        <section class="track-panel pad track-board">
+            <div class="track-board-head">
+                <div>
+                    <h3 id="selectedTabTitle">To Pay</h3>
+                    <p id="selectedTabHint">Orders waiting for payment confirmation.</p>
+                </div>
+                <p id="ordersSummary" class="meta"></p>
+            </div>
 
-            <aside class="track-card pad track-help">
-                <h3>Before you search</h3>
-                <ul>
-                    <li>Tracking details appear after checkout confirmation.</li>
-                    <li>Some payment methods need a few minutes to verify.</li>
-                    <li>Use the same email from checkout for guest order access.</li>
-                </ul>
-            </aside>
+            <div class="track-filters" aria-label="Order status filters">
+                <button class="track-filter-btn active" type="button" data-tab="to_pay">
+                    <strong>To Pay</strong>
+                    <span>Waiting for payment</span>
+                </button>
+                <button class="track-filter-btn" type="button" data-tab="to_ship">
+                    <strong>To Ship</strong>
+                    <span>Payment verified</span>
+                </button>
+                <button class="track-filter-btn" type="button" data-tab="to_receive">
+                    <strong>To Receive</strong>
+                    <span>Already shipped</span>
+                </button>
+                <button class="track-filter-btn" type="button" data-tab="to_rate">
+                    <strong>To Rate</strong>
+                    <span>Delivered orders</span>
+                </button>
+            </div>
+
+            <div id="trackingResult" class="track-order-list"></div>
         </section>
-
-        <section id="trackingResult" class="page-stack"></section>
     </main>
 
     <div id="toastStack" class="toast-stack"></div>
