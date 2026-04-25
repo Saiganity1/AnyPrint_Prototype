@@ -3,6 +3,7 @@ const {
     apiFetch,
     escapeHtml,
     formatPrice,
+    getAuthToken,
     getCurrentUser,
     roleLabel,
     getLoginRedirectUrl,
@@ -121,17 +122,28 @@ function setActiveTab(tabKey) {
 
 async function refreshAuthState() {
     const fallbackUser = getCurrentUser ? getCurrentUser() : null;
+    const hasToken = !!(getAuthToken && getAuthToken());
 
     try {
         const response = await apiFetch(`${API_BASE}/auth/me/`);
         const body = await readJsonResponse(response);
         if (response.ok && body && body.is_authenticated) {
             currentUser = body.user;
-        } else {
+        } else if (fallbackUser) {
             currentUser = fallbackUser;
+        } else if (hasToken) {
+            currentUser = { role: 'USER' };
+        } else {
+            currentUser = null;
         }
     } catch (_error) {
-        currentUser = fallbackUser;
+        if (fallbackUser) {
+            currentUser = fallbackUser;
+        } else if (hasToken) {
+            currentUser = { role: 'USER' };
+        } else {
+            currentUser = null;
+        }
     }
 
     if (authButton) {
@@ -369,15 +381,22 @@ function renderOrders() {
 }
 
 async function loadOrders() {
-    if (!currentUser) return;
-
     const response = await apiFetch(`${API_BASE}/orders/history/`);
     const body = await readJsonResponse(response);
     if (!response.ok) {
+        if (response.status === 401) {
+            currentOrders = [];
+            updateShortcutCounts();
+            renderOrders();
+            return;
+        }
         throw new Error(body.error || body.raw || 'Could not load orders.');
     }
 
     currentOrders = Array.isArray(body.orders) ? body.orders : [];
+    if (!currentUser) {
+        currentUser = getCurrentUser ? (getCurrentUser() || { role: 'USER' }) : { role: 'USER' };
+    }
     updateShortcutCounts();
     renderOrders();
 }
@@ -385,10 +404,6 @@ async function loadOrders() {
 function attachTabHandlers() {
     [...shortcutButtons, ...filterButtons].forEach((button) => {
         button.addEventListener('click', () => {
-            if (!currentUser) {
-                window.location.href = getLoginRedirectUrl();
-                return;
-            }
             setActiveTab(button.getAttribute('data-tab') || 'to_pay');
         });
     });
@@ -435,13 +450,6 @@ attachOrderCardHandlers();
     const placedOrderId = params.get('placed_order');
 
     await refreshAuthState();
-
-    if (!currentUser) {
-        if (trackingResult) {
-            trackingResult.innerHTML = '<div class="track-order-empty">Please log in to view your order statuses (To Pay, To Ship, To Receive, To Rate).</div>';
-        }
-        return;
-    }
 
     try {
         await loadOrders();
