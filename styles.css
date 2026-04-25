@@ -731,7 +731,6 @@ body {
     border-radius: 20px;
     background: rgba(255, 255, 255, 0.96);
     box-shadow: 0 16px 36px rgba(12, 21, 40, 0.08);
-    backdrop-filter: blur(6px);
 }
 
 .panel-card.soft {
@@ -836,6 +835,55 @@ main.checkout-page .checkout-form input::placeholder {
 main.checkout-page .checkout-form input:focus {
     border-color: rgba(29, 78, 216, 0.45);
     box-shadow: 0 0 0 3px rgba(29, 78, 216, 0.10);
+}
+
+main.checkout-page .checkout-form select,
+main.checkout-page .checkout-form textarea {
+    padding: 0.9rem 1rem;
+    border-radius: 12px;
+    border: 1px solid #d9e2f0;
+    background: #ffffff;
+    transition: border-color 140ms ease, box-shadow 140ms ease, transform 140ms ease;
+    font-family: 'Sora', sans-serif;
+}
+
+main.checkout-page .checkout-form select:focus,
+main.checkout-page .checkout-form textarea:focus {
+    border-color: rgba(29, 78, 216, 0.45);
+    box-shadow: 0 0 0 3px rgba(29, 78, 216, 0.10);
+    outline: none;
+}
+
+.saved-address-block {
+    display: grid;
+    gap: 0.45rem;
+    padding: 0.85rem;
+    border: 1px solid #dbe5ff;
+    border-radius: 14px;
+    background: #f8fbff;
+}
+
+.saved-address-block label {
+    font-weight: 700;
+    color: var(--ink);
+}
+
+.saved-address-block select {
+    width: 100%;
+}
+
+.address-save-row {
+    display: flex;
+    align-items: center;
+    gap: 0.55rem;
+    font-size: 0.92rem;
+    color: var(--ink);
+}
+
+.address-save-row input {
+    width: 1rem;
+    height: 1rem;
+    margin: 0;
 }
 
 main.checkout-page .checkout-form .btn {
@@ -991,7 +1039,6 @@ main.checkout-page .status {
     top: 0;
     background: rgba(255, 255, 255, 0.92);
     border-bottom: 1px solid var(--line);
-    backdrop-filter: blur(10px);
     z-index: 10;
 }
 

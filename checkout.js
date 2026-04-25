@@ -3,6 +3,7 @@ const {
     apiFetch,
     escapeHtml,
     formatPrice,
+    getCurrentUser,
     loadCart,
     requireAuth,
     saveCart,
@@ -14,6 +15,8 @@ let cart = loadCart();
 let quoteData = null;
 let productsById = new Map();
 let currentStep = 1;
+let currentUser = null;
+let savedAddresses = [];
 
 const checkoutData = {
     full_name: '',
@@ -23,6 +26,7 @@ const checkoutData = {
     payment_method: '',
     promo_code: '',
     notes: '',
+    save_address: false,
 };
 
 const stepMap = {
@@ -49,6 +53,10 @@ const promoCodeInput = document.getElementById('promoCode');
 const paymentMethodInput = document.getElementById('paymentMethod');
 const addressForm = document.getElementById('addressForm');
 const paymentForm = document.getElementById('paymentForm');
+const savedAddressBlock = document.getElementById('savedAddressBlock');
+const savedAddressSelect = document.getElementById('savedAddressSelect');
+const savedAddressHint = document.getElementById('savedAddressHint');
+const saveAddressToggle = document.getElementById('saveAddressToggle');
 
 function getCookie(name) {
     const cookieValue = document.cookie
@@ -69,6 +77,17 @@ async function apiFetchWithCsrf(url, options = {}) {
         config.headers = headers;
     }
     return fetch(url, config);
+}
+
+async function readJsonResponse(response) {
+    const text = await response.text();
+    if (!text) return {};
+
+    try {
+        return JSON.parse(text);
+    } catch (_error) {
+        return { raw: text };
+    }
 }
 
 function setStep(step) {
@@ -190,7 +209,7 @@ async function updateQuote() {
     }
 
     try {
-        const response = await apiFetchWithCsrf(`${API_BASE}/checkout/quote/`, {
+        const response = await apiFetch(`${API_BASE}/checkout/quote/`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -199,9 +218,9 @@ async function updateQuote() {
                 promo_code: checkoutData.promo_code,
             }),
         });
-        const body = await response.json();
+        const body = await readJsonResponse(response);
         if (!response.ok) {
-            throw new Error(body.error || 'Could not calculate quote.');
+            throw new Error(body.error || body.raw || 'Could not calculate quote.');
         }
         quoteData = body.quote;
         renderQuote();
@@ -259,6 +278,119 @@ function setProductsFromCart() {
             price: item.unit_price || '0.00',
         });
     }
+}
+
+function setCurrentUserFromSession() {
+    if (!currentUser) {
+        currentUser = getCurrentUser() || null;
+    }
+}
+
+function fillAddressForm(address) {
+    if (!addressForm || !address) return;
+
+    const fullNameInput = addressForm.querySelector('[name="full_name"]');
+    const emailInput = addressForm.querySelector('[name="email"]');
+    const phoneInput = addressForm.querySelector('[name="phone"]');
+    const addressInput = addressForm.querySelector('[name="address"]');
+
+    if (fullNameInput) fullNameInput.value = address.full_name || '';
+    if (emailInput && currentUser && currentUser.email) emailInput.value = currentUser.email;
+    if (phoneInput) phoneInput.value = address.phone || '';
+    if (addressInput) addressInput.value = address.address || '';
+
+    checkoutData.full_name = address.full_name || '';
+    checkoutData.phone = address.phone || '';
+    checkoutData.address = address.address || '';
+
+    renderReviewStep();
+    updateQuote();
+}
+
+function renderSavedAddressOptions() {
+    if (!savedAddressSelect || !savedAddressBlock) return;
+
+    if (!currentUser) {
+        savedAddressBlock.classList.add('hidden');
+        savedAddresses = [];
+        return;
+    }
+
+    savedAddressBlock.classList.remove('hidden');
+    const options = ['<option value="">Select a saved address</option>'];
+    for (const address of savedAddresses) {
+        const label = `${address.full_name} - ${address.address}`;
+        options.push(`<option value="${escapeHtml(String(address.id))}">${escapeHtml(label)}</option>`);
+    }
+    savedAddressSelect.innerHTML = options.join('');
+
+    const defaultAddress = savedAddresses.find((address) => address.is_default) || savedAddresses[0] || null;
+    if (defaultAddress) {
+        savedAddressSelect.value = String(defaultAddress.id);
+        if (savedAddressHint) {
+            savedAddressHint.textContent = defaultAddress.is_default
+                ? 'Default saved address loaded.'
+                : 'Select any saved address to auto-fill the form.';
+        }
+    } else if (savedAddressHint) {
+        savedAddressHint.textContent = 'No saved addresses yet. Fill out the form and save it for next time.';
+    }
+}
+
+async function loadSavedAddresses() {
+    if (!currentUser) return;
+
+    try {
+        const response = await apiFetch(`${API_BASE}/addresses/`, { method: 'GET' });
+        const body = await readJsonResponse(response);
+        if (!response.ok) {
+            throw new Error(body.error || 'Could not load saved addresses.');
+        }
+
+        savedAddresses = Array.isArray(body.addresses) ? body.addresses : [];
+        renderSavedAddressOptions();
+        const defaultAddress = savedAddresses.find((address) => address.is_default) || savedAddresses[0];
+        if (defaultAddress) {
+            fillAddressForm(defaultAddress);
+        }
+    } catch (_error) {
+        savedAddresses = [];
+        renderSavedAddressOptions();
+    }
+}
+
+async function saveAddressForNextTime(formData) {
+    if (!currentUser) return;
+    if (!checkoutData.save_address) return;
+
+    const payload = {
+        full_name: String(formData.get('full_name') || '').trim(),
+        phone: String(formData.get('phone') || '').trim(),
+        address: String(formData.get('address') || '').trim(),
+        is_default: savedAddresses.length === 0,
+    };
+
+    const existing = savedAddresses.find((address) =>
+        address.full_name === payload.full_name &&
+        address.phone === payload.phone &&
+        address.address === payload.address
+    );
+    if (existing) {
+        return;
+    }
+
+    const response = await apiFetch(`${API_BASE}/addresses/create/`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+    });
+    const body = await readJsonResponse(response);
+    if (!response.ok) {
+        throw new Error(body.error || body.raw || 'Could not save the address.');
+    }
+
+    await loadSavedAddresses();
+    showToast('Address saved for next time.', 'success');
 }
 
 function validateAddressForm(formData) {
@@ -322,14 +454,16 @@ async function placeOrder() {
     };
 
     try {
-        const response = await apiFetchWithCsrf(`${API_BASE}/orders/`, {
+        await saveAddressForNextTime(new FormData(addressForm));
+
+        const response = await apiFetch(`${API_BASE}/orders/`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload),
         });
-        const body = await response.json();
+        const body = await readJsonResponse(response);
         if (!response.ok) {
-            throw new Error(body.error || 'Failed to place order.');
+            throw new Error(body.error || body.raw || 'Failed to place order.');
         }
 
         saveCart([]);
@@ -354,8 +488,9 @@ async function placeOrder() {
 async function ensureCheckoutAuth() {
     try {
         const response = await apiFetch(`${API_BASE}/auth/me/`);
-        const body = await response.json();
+        const body = await readJsonResponse(response);
         if (body && body.is_authenticated) {
+            currentUser = body.user || null;
             return true;
         }
     } catch (_error) {
@@ -381,6 +516,24 @@ function bindEvents() {
         setStep(3);
         await updateQuote();
     });
+
+    if (savedAddressSelect) {
+        savedAddressSelect.addEventListener('change', () => {
+            const selectedId = String(savedAddressSelect.value || '');
+            if (!selectedId) return;
+            const selectedAddress = savedAddresses.find((address) => String(address.id) === selectedId);
+            if (selectedAddress) {
+                fillAddressForm(selectedAddress);
+                showToast('Saved address loaded.', 'default');
+            }
+        });
+    }
+
+    if (saveAddressToggle) {
+        saveAddressToggle.addEventListener('change', () => {
+            checkoutData.save_address = saveAddressToggle.checked;
+        });
+    }
 
     paymentForm.addEventListener('submit', async (event) => {
         event.preventDefault();
@@ -412,6 +565,7 @@ function bindEvents() {
     const allowed = await ensureCheckoutAuth();
     if (!allowed) return;
 
+    setCurrentUserFromSession();
     cart = loadCart();
     if (cart.length) {
         trackEvent('checkout_start', { items: cart.length });
@@ -422,6 +576,7 @@ function bindEvents() {
     renderReviewStep();
     bindEvents();
     setStep(1);
+    await loadSavedAddresses();
     if (cart.length) {
         updateQuote();
     }

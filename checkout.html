@@ -50,6 +50,13 @@
                 <section id="step2" class="checkout-card panel-card pad hidden">
                     <h3>Address</h3>
                     <form id="addressForm" class="checkout-form">
+                        <div id="savedAddressBlock" class="saved-address-block hidden">
+                            <label for="savedAddressSelect">Saved addresses</label>
+                            <select id="savedAddressSelect" name="saved_address_id">
+                                <option value="">Select a saved address</option>
+                            </select>
+                            <p id="savedAddressHint" class="status">Choose one to auto-fill the form.</p>
+                        </div>
                         <label for="checkoutFullName">Full Name</label>
                         <input id="checkoutFullName" name="full_name" placeholder="Full Name" required />
                         <label for="checkoutEmail">Email</label>
@@ -58,6 +65,10 @@
                         <input id="checkoutPhone" name="phone" placeholder="Phone" required />
                         <label for="checkoutAddress">Delivery Address</label>
                         <textarea id="checkoutAddress" name="address" rows="3" placeholder="Delivery Address" required></textarea>
+                        <label class="address-save-row" for="saveAddressToggle">
+                            <input id="saveAddressToggle" type="checkbox" />
+                            Save this address for next time
+                        </label>
                         <div class="step-actions">
                             <button type="button" id="backTo1" class="plain-btn">Back</button>
                             <button type="submit" class="btn">Continue</button>
@@ -69,6 +80,7 @@
                     <h3>Payment Method</h3>
                     <form id="paymentForm" class="checkout-form">
                         <input id="promoCode" name="promo_code" placeholder="Promo code (optional)" />
+                        <label for="paymentMethod">Payment method</label>
                         <select id="paymentMethod" name="payment_method" required>
                             <option value="">Select payment method</option>
                             <option value="COD">Cash on Delivery</option>
