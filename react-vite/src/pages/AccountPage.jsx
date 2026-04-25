@@ -4,13 +4,12 @@ import { apiRequest, normalizeApiError, readJsonSafe } from "../lib/api";
 import { getStoredUser } from "../lib/auth";
 import { formatPrice } from "../lib/format";
 
-const TABS = ["orders", "addresses", "wishlist", "profile"];
+const TABS = ["orders", "addresses", "profile"];
 
 export default function AccountPage() {
   const user = getStoredUser();
   const [activeTab, setActiveTab] = useState("orders");
   const [orders, setOrders] = useState([]);
-  const [wishlist, setWishlist] = useState([]);
   const [addresses, setAddresses] = useState([]);
   const [status, setStatus] = useState("");
   const [error, setError] = useState("");
@@ -23,25 +22,21 @@ export default function AccountPage() {
       setStatus("Loading account data...");
       setError("");
       try {
-        const [ordersRes, wishlistRes, addressesRes] = await Promise.all([
+        const [ordersRes, addressesRes] = await Promise.all([
           apiRequest("orders/history/"),
-          apiRequest("wishlist/"),
           apiRequest("addresses/"),
         ]);
 
-        const [ordersBody, wishlistBody, addressesBody] = await Promise.all([
+        const [ordersBody, addressesBody] = await Promise.all([
           readJsonSafe(ordersRes),
-          readJsonSafe(wishlistRes),
           readJsonSafe(addressesRes),
         ]);
 
         if (!ordersRes.ok) throw new Error(normalizeApiError(ordersBody, "Could not load orders."));
-        if (!wishlistRes.ok) throw new Error(normalizeApiError(wishlistBody, "Could not load wishlist."));
         if (!addressesRes.ok) throw new Error(normalizeApiError(addressesBody, "Could not load addresses."));
 
         if (!cancelled) {
           setOrders(Array.isArray(ordersBody.orders) ? ordersBody.orders : []);
-          setWishlist(Array.isArray(wishlistBody.items) ? wishlistBody.items : []);
           setAddresses(Array.isArray(addressesBody.addresses) ? addressesBody.addresses : []);
           setStatus("Account loaded.");
         }
@@ -99,22 +94,7 @@ export default function AccountPage() {
     }
   }
 
-  async function removeWishlist(productId) {
-    try {
-      const response = await apiRequest("wishlist/toggle/", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ product_id: productId }),
-      });
-      const body = await readJsonSafe(response);
-      if (!response.ok) {
-        throw new Error(normalizeApiError(body, "Failed to update wishlist."));
-      }
-      setWishlist((prev) => prev.filter((item) => item.product?.id !== productId));
-    } catch (removeError) {
-      setError(removeError.message || "Failed to update wishlist.");
-    }
-  }
+
 
   return (
     <section>
@@ -216,36 +196,7 @@ export default function AccountPage() {
         </section>
       ) : null}
 
-      {activeTab === "wishlist" ? (
-        <section className="product-grid">
-          {wishlist.length ? (
-            wishlist.map((entry) => {
-              const product = entry.product || {};
-              return (
-                <article className="product-card" key={product.id || entry.id}>
-                  <Link className="product-image-link" to={`/products/${encodeURIComponent(product.slug || "")}`}>
-                    {product.image_url ? <img src={product.image_url} alt={product.name || "Product"} /> : <div className="image-fallback">No image</div>}
-                  </Link>
-                  <div className="card-body">
-                    <h3>{product.name}</h3>
-                    <p className="price">{formatPrice(product.price)}</p>
-                    <div className="row-actions compact">
-                      <button className="btn secondary" type="button" onClick={() => removeWishlist(product.id)}>
-                        Remove
-                      </button>
-                      <Link className="btn" to={`/products/${encodeURIComponent(product.slug || "")}`}>
-                        View
-                      </Link>
-                    </div>
-                  </div>
-                </article>
-              );
-            })
-          ) : (
-            <div className="panel empty-panel">Your wishlist is empty.</div>
-          )}
-        </section>
-      ) : null}
+
 
       {activeTab === "profile" ? (
         <section className="panel">
