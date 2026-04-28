@@ -7,12 +7,47 @@ import { normalizeOrders, normalizeProducts } from "../lib/normalize";
 
 const ORDER_STATUS_OPTIONS = ["pending", "paid", "shipped", "completed", "cancelled"];
 const SIZE_OPTIONS = ["S", "M", "L", "XL", "2XL", "3XL"];
+const DEFAULT_COLOR = "Black";
+
+function createVariantRow(size = "", color = DEFAULT_COLOR, stock = "") {
+  return { size, color, stock };
+}
+
+function normalizeVariantDrafts(rows = []) {
+  return rows
+    .map((variant) => ({
+      size: String(variant?.size || "").trim(),
+      color: String(variant?.color || "").trim() || DEFAULT_COLOR,
+      stock: Number(variant?.stock || 0),
+    }))
+    .filter((variant) => variant.size && variant.color);
+}
+
+function buildVariantDraft(product) {
+  const existingVariants = Array.isArray(product?.variants) ? product.variants : [];
+
+  if (existingVariants.length) {
+    return existingVariants.map((variant) =>
+      createVariantRow(
+        String(variant?.size || "").trim(),
+        String(variant?.color || "").trim() || DEFAULT_COLOR,
+        String(variant?.stock ?? 0),
+      ),
+    );
+  }
+
+  const sizes = Array.isArray(product?.sizes) && product.sizes.length ? product.sizes : [""];
+  const colors = Array.isArray(product?.colors) && product.colors.length ? product.colors : [DEFAULT_COLOR];
+  const stock = Number(product?.stock_quantity || 0);
+
+  return sizes.map((size, index) =>
+    createVariantRow(String(size || "").trim(), colors[index] || colors[0] || DEFAULT_COLOR, index === 0 ? String(stock) : "0"),
+  );
+}
 
 export default function OwnerDashboardPage() {
   const user = getStoredUser();
   const isOwner = String(user?.role || "").toUpperCase() === "OWNER";
-
-  const createVariantRow = () => ({ size: "", color: "Black", stock: "" });
 
   const [orders, setOrders] = useState([]);
   const [products, setProducts] = useState([]);
@@ -25,6 +60,8 @@ export default function OwnerDashboardPage() {
   });
   const [variants, setVariants] = useState([createVariantRow()]);
   const [imageFiles, setImageFiles] = useState([]);
+  const [stockEditorProductId, setStockEditorProductId] = useState("");
+  const [stockDrafts, setStockDrafts] = useState([]);
 
   useEffect(() => {
     let cancelled = false;
@@ -106,6 +143,49 @@ export default function OwnerDashboardPage() {
     } catch (stockError) {
       setError(stockError.message || "Could not update product.");
     }
+  }
+
+  function openStockEditor(product) {
+    setStockEditorProductId(product.id);
+    setStockDrafts(buildVariantDraft(product));
+  }
+
+  function closeStockEditor() {
+    setStockEditorProductId("");
+    setStockDrafts([]);
+  }
+
+  function updateStockDraft(index, updates) {
+    setStockDrafts((current) => current.map((item, itemIndex) => (itemIndex === index ? { ...item, ...updates } : item)));
+  }
+
+  function addStockDraft() {
+    setStockDrafts((current) => [...current, createVariantRow()]);
+  }
+
+  function removeStockDraft(index) {
+    setStockDrafts((current) => current.filter((_, itemIndex) => itemIndex !== index));
+  }
+
+  async function saveProductStock(product) {
+    const normalizedVariants = normalizeVariantDrafts(stockDrafts);
+
+    if (!normalizedVariants.length) {
+      setError("Add at least one size or color row before saving stock.");
+      return;
+    }
+
+    const sizes = [...new Set(normalizedVariants.map((variant) => variant.size).filter(Boolean))];
+    const colors = [...new Set(normalizedVariants.map((variant) => variant.color).filter(Boolean))];
+    const totalStock = normalizedVariants.reduce((sum, variant) => sum + Number(variant.stock || 0), 0);
+
+    await updateProduct(product.id, {
+      variants: normalizedVariants,
+      sizes,
+      colors,
+      stock: totalStock,
+    });
+    closeStockEditor();
   }
 
   async function deleteProduct(productId, productName) {
@@ -317,19 +397,86 @@ export default function OwnerDashboardPage() {
             <article className="checkout-item" key={product.id}>
               <div>
                 <strong>{product.name}</strong>
-                <p className="meta">{formatPrice(product.price)} / Stock: {product.stock_quantity}</p>
+                <p className="meta">{formatPrice(product.price)} / Total Stock: {product.stock_quantity}</p>
+                <p className="meta">{product.variants?.length ? `${product.variants.length} variant(s) saved` : "No variants saved yet."}</p>
               </div>
               <div className="inline-form wrap">
-                <button className="btn secondary" type="button" onClick={() => updateProduct(product.id, { stock: Number(product.stock_quantity || 0) + 1 })}>+1</button>
-                <button className="btn secondary" type="button" onClick={() => updateProduct(product.id, { stock: Number(product.stock_quantity || 0) + 5 })}>+5</button>
-                <button className="btn secondary" type="button" onClick={() => {
-                  const qty = Number(prompt("Set stock quantity:", String(product.stock_quantity || 0)));
-                  if (Number.isFinite(qty) && qty >= 0) updateProduct(product.id, { stock: qty });
-                }}>Set</button>
+                <button
+                  className="btn secondary"
+                  type="button"
+                  onClick={() => (stockEditorProductId === product.id ? closeStockEditor() : openStockEditor(product))}
+                >
+                  {stockEditorProductId === product.id ? "Close Editor" : "Manage Stock"}
+                </button>
                 <button className="btn secondary danger" type="button" onClick={() => deleteProduct(product.id, product.name)}>
                   Delete
                 </button>
               </div>
+
+              {stockEditorProductId === product.id ? (
+                <div className="variant-builder" style={{ marginTop: "1rem" }}>
+                  <div className="row-between">
+                    <h4>Variant Stock</h4>
+                    <button type="button" className="btn secondary" onClick={addStockDraft}>
+                      Add Variant
+                    </button>
+                  </div>
+
+                  <div className="variant-builder-list">
+                    {stockDrafts.map((variant, index) => (
+                      <div className="variant-builder-row" key={`${product.id}-stock-${index}`}>
+                        <div className="variant-size-picker">
+                          <span className="variant-size-label">Size</span>
+                          <div className="size-chip-row">
+                            {SIZE_OPTIONS.map((sizeOption) => (
+                              <button
+                                key={`${product.id}-${index}-${sizeOption}`}
+                                type="button"
+                                className={`size-chip ${variant.size === sizeOption ? "active" : ""}`}
+                                onClick={() => updateStockDraft(index, { size: sizeOption })}
+                              >
+                                {sizeOption}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                        <input
+                          placeholder="Color"
+                          value={variant.color}
+                          onChange={(event) => updateStockDraft(index, { color: event.target.value })}
+                          required
+                        />
+                        <input
+                          placeholder="Stock"
+                          type="number"
+                          min="0"
+                          step="1"
+                          value={variant.stock}
+                          onChange={(event) => updateStockDraft(index, { stock: event.target.value })}
+                          required
+                        />
+                        <button
+                          type="button"
+                          className="btn secondary"
+                          onClick={() => removeStockDraft(index)}
+                          disabled={stockDrafts.length === 1}
+                        >
+                          Remove
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className="row-actions" style={{ marginTop: "1rem" }}>
+                    <button type="button" className="btn secondary" onClick={closeStockEditor}>
+                      Cancel
+                    </button>
+                    <button type="button" className="btn" onClick={() => saveProductStock(product)}>
+                      Save Stock
+                    </button>
+                  </div>
+                </div>
+              ) : null}
             </article>
           )) : <p className="meta">No products found.</p>}
         </div>

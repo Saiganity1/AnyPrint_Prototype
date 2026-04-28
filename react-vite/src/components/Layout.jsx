@@ -66,14 +66,6 @@ export default function Layout({ children }) {
             <NavLink to="/shop" className={navClass}>
               All Products
             </NavLink>
-            <NavLink to="/tracking" className={navClass}>
-              Track Order
-            </NavLink>
-            {currentUser ? (
-              <NavLink to="/account" className={navClass}>
-                Saved (User)
-              </NavLink>
-            ) : null}
             {isOwner ? (
               <NavLink to="/owner" className={navClass}>
                 Owner

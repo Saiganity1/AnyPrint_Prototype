@@ -67,7 +67,7 @@ export default function RegisterPage() {
       <div className="page-intro">
         <p className="page-kicker">Create Account</p>
         <h2 className="page-title">Register</h2>
-        <p className="page-lead">Create your account to save details and track orders.</p>
+        <p className="page-lead">Create your account to save details and view your orders.</p>
       </div>
 
       <section className="panel auth-panel">
