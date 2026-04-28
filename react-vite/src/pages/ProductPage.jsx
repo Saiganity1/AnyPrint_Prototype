@@ -9,6 +9,7 @@ import { addRecentlyViewed } from "../lib/recent";
 export default function ProductPage() {
   const { slug } = useParams();
   const [product, setProduct] = useState(null);
+  const [activeImageIndex, setActiveImageIndex] = useState(0);
   const [selectedSize, setSelectedSize] = useState("M");
   const [selectedColor, setSelectedColor] = useState("Black");
   const [message, setMessage] = useState("");
@@ -38,6 +39,7 @@ export default function ProductPage() {
 
           setSelectedSize(payload?.sizes?.[0] || "M");
           setSelectedColor(payload?.colors?.[0] || "Black");
+          setActiveImageIndex(0);
         }
       } catch {
         if (!cancelled) {
@@ -77,6 +79,11 @@ export default function ProductPage() {
 
   const sizes = product.sizes?.length ? product.sizes : ["M", "L", "XL"];
   const colors = product.colors?.length ? product.colors : ["Black", "White"];
+  const images = product.images?.length ? product.images : product.image_url ? [product.image_url] : [];
+  const activeImage = images[activeImageIndex] || product.image_url || "";
+  const selectedVariant =
+    product.variants?.find((variant) => variant.size === selectedSize && variant.color === selectedColor) || null;
+  const availableStock = selectedVariant?.stock ?? product.stock_quantity ?? 0;
 
   function addToCart() {
     const key = `${product.id}|${selectedSize || "M"}|${selectedColor || "Black"}`;
@@ -112,13 +119,28 @@ export default function ProductPage() {
       <section className="panel product-detail-shell">
         <div className="product-detail-grid">
           <div className="product-media-panel">
-            {product.image_url ? (
+            {activeImage ? (
               <div className="product-detail-media">
-                <img className="product-detail-image" src={product.image_url} alt={product.name} />
+                <img className="product-detail-image" src={activeImage} alt={product.name} />
               </div>
             ) : (
               <div className="product-detail-media image-fallback">No image</div>
             )}
+
+            {images.length > 1 ? (
+              <div className="image-rail">
+                {images.map((image, index) => (
+                  <button
+                    type="button"
+                    key={`${image}-${index}`}
+                    className={`image-thumb ${index === activeImageIndex ? "active" : ""}`}
+                    onClick={() => setActiveImageIndex(index)}
+                  >
+                    <img src={image} alt={`${product.name} preview ${index + 1}`} />
+                  </button>
+                ))}
+              </div>
+            ) : null}
           </div>
 
           <div>
@@ -127,7 +149,7 @@ export default function ProductPage() {
             <p className="price large">{formatPrice(product.price)}</p>
             <p className="lead">{product.description || "No description yet."}</p>
             <p className="meta">Print style: {product.print_style || "Standard"}</p>
-            <p className="meta">Stock: {product.stock_quantity ?? 0}</p>
+            <p className="meta">Stock: {availableStock}</p>
 
             {sizes.length ? (
               <div className="variant-grid">
@@ -166,6 +188,20 @@ export default function ProductPage() {
                 Back to Shop
               </Link>
             </div>
+            {Array.isArray(product.variants) && product.variants.length ? (
+              <div className="variant-table-wrap">
+                <h3 className="variant-title">Variant Stock</h3>
+                <div className="variant-table">
+                  {product.variants.map((variant, index) => (
+                    <div className="variant-row-view" key={`${variant.size}-${variant.color}-${index}`}>
+                      <span>{variant.size || "-"}</span>
+                      <span>{variant.color || "-"}</span>
+                      <strong>{Number(variant.stock || 0)}</strong>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ) : null}
             {message ? <p className="status-text">{message}</p> : null}
           </div>
         </div>

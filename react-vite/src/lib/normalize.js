@@ -1,12 +1,28 @@
 export function normalizeProduct(product) {
   if (!product || typeof product !== "object") return null;
   const id = String(product._id || product.id || "");
+  const images = Array.isArray(product.images)
+    ? product.images.filter(Boolean)
+    : Array.isArray(product.imageUrls)
+      ? product.imageUrls.filter(Boolean)
+      : [];
+  const variants = Array.isArray(product.variants)
+    ? product.variants.map((variant) => ({
+        ...variant,
+        size: String(variant?.size || "").trim(),
+        color: String(variant?.color || "").trim(),
+        stock: Number(variant?.stock || 0),
+      }))
+    : [];
+  const stockFromVariants = variants.reduce((sum, variant) => sum + Number(variant.stock || 0), 0);
   return {
     ...product,
     id,
     slug: product.slug || id,
-    image_url: product.image_url || product.imageUrl || "",
-    stock_quantity: product.stock_quantity ?? product.stock ?? 0,
+    image_url: product.image_url || product.imageUrl || images[0] || "",
+    images,
+    variants,
+    stock_quantity: product.stock_quantity ?? product.stock ?? stockFromVariants,
     category: product.category || "T-shirt",
     print_style: product.print_style || "Standard",
     sizes: Array.isArray(product.sizes) ? product.sizes : [],

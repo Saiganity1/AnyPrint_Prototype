@@ -11,6 +11,8 @@ export default function OwnerDashboardPage() {
   const user = getStoredUser();
   const isOwner = String(user?.role || "").toUpperCase() === "OWNER";
 
+  const createVariantRow = () => ({ size: "", color: "Black", stock: "" });
+
   const [orders, setOrders] = useState([]);
   const [products, setProducts] = useState([]);
   const [status, setStatus] = useState("Loading owner dashboard...");
@@ -19,11 +21,9 @@ export default function OwnerDashboardPage() {
     name: "",
     description: "",
     price: "",
-    stock: "",
-    sizes: "S,M,L,XL",
-    colors: "Black,White",
   });
-  const [imageFile, setImageFile] = useState(null);
+  const [variants, setVariants] = useState([createVariantRow()]);
+  const [imageFiles, setImageFiles] = useState([]);
 
   useEffect(() => {
     let cancelled = false;
@@ -111,19 +111,37 @@ export default function OwnerDashboardPage() {
     event.preventDefault();
     setError("");
 
-    if (!imageFile) {
-      setError("Please choose an image file.");
+    const normalizedVariants = variants
+      .map((variant) => ({
+        size: String(variant.size || "").trim(),
+        color: String(variant.color || "").trim(),
+        stock: Number(variant.stock || 0),
+      }))
+      .filter((variant) => variant.size && variant.color && Number.isFinite(variant.stock));
+
+    if (!normalizedVariants.length) {
+      setError("Add at least one variant with size, color, and stock.");
       return;
     }
+
+    if (!imageFiles.length) {
+      setError("Please choose at least one image file.");
+      return;
+    }
+
+    const totalStock = normalizedVariants.reduce((sum, variant) => sum + Number(variant.stock || 0), 0);
+    const sizes = [...new Set(normalizedVariants.map((variant) => variant.size))].join(",");
+    const colors = [...new Set(normalizedVariants.map((variant) => variant.color))].join(",");
 
     const formData = new FormData();
     formData.append("name", newProduct.name.trim());
     formData.append("description", newProduct.description.trim());
     formData.append("price", String(Number(newProduct.price || 0)));
-    formData.append("stock", String(Number(newProduct.stock || 0)));
-    formData.append("sizes", newProduct.sizes);
-    formData.append("colors", newProduct.colors);
-    formData.append("image", imageFile);
+    formData.append("stock", String(totalStock));
+    formData.append("sizes", sizes);
+    formData.append("colors", colors);
+    formData.append("variants", JSON.stringify(normalizedVariants));
+    imageFiles.forEach((file) => formData.append("images", file));
 
     try {
       const response = await apiRequest("products/", {
@@ -136,11 +154,9 @@ export default function OwnerDashboardPage() {
         name: "",
         description: "",
         price: "",
-        stock: "",
-        sizes: "S,M,L,XL",
-        colors: "Black,White",
       });
-      setImageFile(null);
+      setVariants([createVariantRow()]);
+      setImageFiles([]);
       await reloadData();
     } catch (createError) {
       setError(createError.message || "Could not create product.");
@@ -170,18 +186,73 @@ export default function OwnerDashboardPage() {
           <div className="owner-form-grid">
             <input placeholder="Product name" value={newProduct.name} onChange={(e) => setNewProduct((p) => ({ ...p, name: e.target.value }))} required />
             <input placeholder="Price" type="number" min="1" step="0.01" value={newProduct.price} onChange={(e) => setNewProduct((p) => ({ ...p, price: e.target.value }))} required />
-            <input placeholder="Initial stock" type="number" min="0" step="1" value={newProduct.stock} onChange={(e) => setNewProduct((p) => ({ ...p, stock: e.target.value }))} required />
-            <input placeholder="Sizes: S,M,L,XL" value={newProduct.sizes} onChange={(e) => setNewProduct((p) => ({ ...p, sizes: e.target.value }))} />
-            <input placeholder="Colors: Black,White" value={newProduct.colors} onChange={(e) => setNewProduct((p) => ({ ...p, colors: e.target.value }))} />
-            <input
-              key={imageFile ? imageFile.name : "empty"}
-              type="file"
-              accept="image/*"
-              onChange={(e) => setImageFile(e.target.files?.[0] || null)}
-              required
-            />
           </div>
           <textarea rows={3} placeholder="Description" value={newProduct.description} onChange={(e) => setNewProduct((p) => ({ ...p, description: e.target.value }))} required />
+
+          <div className="variant-builder">
+            <div className="row-between">
+              <h4>Variant Stock</h4>
+              <button
+                type="button"
+                className="btn secondary"
+                onClick={() => setVariants((current) => [...current, createVariantRow()])}
+              >
+                Add Variant
+              </button>
+            </div>
+
+            <div className="variant-builder-list">
+              {variants.map((variant, index) => (
+                <div className="variant-builder-row" key={`variant-${index}`}>
+                  <input
+                    placeholder="Size"
+                    value={variant.size}
+                    onChange={(e) => setVariants((current) => current.map((item, itemIndex) => (itemIndex === index ? { ...item, size: e.target.value } : item)))}
+                    required
+                  />
+                  <input
+                    placeholder="Color"
+                    value={variant.color}
+                    onChange={(e) => setVariants((current) => current.map((item, itemIndex) => (itemIndex === index ? { ...item, color: e.target.value } : item)))}
+                    required
+                  />
+                  <input
+                    placeholder="Stock"
+                    type="number"
+                    min="0"
+                    step="1"
+                    value={variant.stock}
+                    onChange={(e) => setVariants((current) => current.map((item, itemIndex) => (itemIndex === index ? { ...item, stock: e.target.value } : item)))}
+                    required
+                  />
+                  <button
+                    type="button"
+                    className="btn secondary"
+                    onClick={() => setVariants((current) => current.filter((_, itemIndex) => itemIndex !== index))}
+                    disabled={variants.length === 1}
+                  >
+                    Remove
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="upload-panel">
+            <label className="upload-label" htmlFor="product-images">Product Images</label>
+            <input
+              id="product-images"
+              key={imageFiles.length ? imageFiles.map((file) => file.name).join("|") : "empty"}
+              type="file"
+              accept="image/*"
+              multiple
+              onChange={(e) => setImageFiles(Array.from(e.target.files || []))}
+              required
+            />
+            <p className="meta">You can upload multiple images. The first image becomes the cover image.</p>
+          </div>
+
+          {imageFiles.length ? <p className="status-text">{imageFiles.length} image(s) selected.</p> : null}
           <button className="btn" type="submit">Create Product</button>
         </form>
       </section>
