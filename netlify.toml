@@ -1,6 +1,7 @@
 [build]
-  publish = "public"
-  command = "echo 'No build needed for static site'"
+  base = "react-vite"
+  publish = "dist"
+  command = "npm run build"
 
 [[redirects]]
   from = "/*"
