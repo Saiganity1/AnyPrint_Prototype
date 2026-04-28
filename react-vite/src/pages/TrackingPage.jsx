@@ -3,6 +3,7 @@ import { useSearchParams } from "react-router-dom";
 import { apiRequest, normalizeApiError, readJsonSafe } from "../lib/api";
 import { getStoredUser } from "../lib/auth";
 import { formatPrice } from "../lib/format";
+import { normalizeOrders } from "../lib/normalize";
 
 // Shopee-style stepper config
 const ORDER_STEPS = [
@@ -13,17 +14,17 @@ const ORDER_STEPS = [
 ];
 
 const TAB_CONFIG = {
-  to_pay: { label: "To Pay", statuses: ["PENDING"] },
-  to_ship: { label: "To Ship", statuses: ["CONFIRMED", "PACKED"] },
-  to_receive: { label: "To Receive", statuses: ["SHIPPED", "OUT_FOR_DELIVERY"] },
-  to_rate: { label: "To Rate", statuses: ["DELIVERED"] },
+  to_pay: { label: "Pending", statuses: ["PENDING"] },
+  to_ship: { label: "Paid", statuses: ["PAID"] },
+  to_receive: { label: "Shipped", statuses: ["SHIPPED"] },
+  to_rate: { label: "Completed", statuses: ["COMPLETED"] },
 };
 
 function orderTab(order) {
   const status = String(order.status || "").toUpperCase();
-  if (status === "DELIVERED") return "to_rate";
-  if (status === "SHIPPED" || status === "OUT_FOR_DELIVERY") return "to_receive";
-  if (status === "CONFIRMED" || status === "PACKED") return "to_ship";
+  if (status === "COMPLETED") return "to_rate";
+  if (status === "SHIPPED") return "to_receive";
+  if (status === "PAID") return "to_ship";
   return "to_pay";
 }
 
@@ -32,6 +33,21 @@ function statusLabel(status) {
     .toLowerCase()
     .replaceAll("_", " ")
     .replace(/\b\w/g, (s) => s.toUpperCase());
+}
+
+function formatDateTime(value) {
+  if (!value) return "-";
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) return String(value);
+  return parsed.toLocaleString();
+}
+
+function orderStepIndex(status) {
+  const normalized = String(status || "").toUpperCase();
+  if (normalized === "COMPLETED") return 4;
+  if (normalized === "SHIPPED") return 3;
+  if (normalized === "PAID") return 2;
+  return 1;
 }
 
 export default function TrackingPage() {
@@ -50,12 +66,12 @@ export default function TrackingPage() {
       setError("");
       setStatus("Loading orders...");
       try {
-        const response = await apiRequest("orders/history/");
+        const response = await apiRequest("orders/me/");
         const body = await readJsonSafe(response);
         if (!response.ok) {
           throw new Error(normalizeApiError(body, "Could not load orders."));
         }
-        const nextOrders = Array.isArray(body.orders) ? body.orders : [];
+        const nextOrders = normalizeOrders(body);
         if (!cancelled) {
           setOrders(nextOrders);
           setStatus(`Loaded ${nextOrders.length} orders.`);
@@ -99,163 +115,190 @@ export default function TrackingPage() {
   }
 
   return (
-    <section className="tracking-page">
-      <div className="page-intro">
-        <p className="page-kicker">Orders waiting for payment confirmation.</p>
-        <h2 className="page-title">To Pay</h2>
-        <p className="page-lead">Orders waiting for payment confirmation.</p>
+    <section className="tracking-page tracking-redesign">
+      <div className="page-intro tracking-hero">
+        <p className="page-kicker">My Orders</p>
+        <h2 className="page-title">Order Center</h2>
+        <p className="page-lead">
+          {user
+            ? "Shopee-style order center for quick access to each stage of your order."
+            : "Login required for full order history."}
+        </p>
       </div>
+
       <p className="status-text">{status}</p>
       {error ? <p className="error-text">{error}</p> : null}
 
-      {/* Tabbed navigation */}
-      <div className="tab-row" style={{ marginBottom: "1.2rem" }}>
-        {Object.entries(TAB_CONFIG).map(([key, tab]) => (
-          <button
-            key={key}
-            type="button"
-            className={key === activeTab ? "tab-chip active" : "tab-chip"}
-            onClick={() => setActiveTab(key)}
-            style={{ minWidth: 120, fontWeight: 700, fontSize: "1.05rem" }}
-          >
-            {tab.label}
-            <span style={{ color: "#c62828", fontWeight: 600, marginLeft: 6 }}>{counts[key] > 0 ? counts[key] : null}</span>
-            <span style={{ color: "#aaa", fontWeight: 400, marginLeft: 4, fontSize: "0.95em" }}>orders</span>
-          </button>
-        ))}
+      <div className="tracking-stage-grid" role="tablist" aria-label="Order stages">
+        {Object.entries(TAB_CONFIG).map(([key, tab]) => {
+          const isActive = key === activeTab;
+          return (
+            <button
+              key={key}
+              type="button"
+              role="tab"
+              aria-selected={isActive}
+              className={isActive ? "tracking-stage-card is-active" : "tracking-stage-card"}
+              onClick={() => setActiveTab(key)}
+            >
+              <span className="tracking-stage-icon" aria-hidden="true">
+                {key === "to_pay" ? "💳" : key === "to_ship" ? "📦" : key === "to_receive" ? "🚚" : "⭐"}
+              </span>
+              <span className="tracking-stage-label">{tab.label}</span>
+              <span className="tracking-stage-count">
+                {counts[key]} order{counts[key] === 1 ? "" : "s"}
+              </span>
+            </button>
+          );
+        })}
       </div>
 
       {!tabOrders.length ? (
-        <div className="panel empty-panel">
+        <div className="panel empty-panel tracking-empty-state">
           <p>No {TAB_CONFIG[activeTab].label.toLowerCase()} orders yet.</p>
         </div>
       ) : (
-        <div className="orders-stack">
-          {tabOrders.map((order) => (
-            <article className="panel" key={order.id} style={{ padding: 0, overflow: "hidden" }}>
-              {/* Order summary header */}
-              <div style={{ background: "#f8fbff", borderBottom: "1px solid #e3e8f0", padding: "1.1rem 1.5rem 0.7rem 1.5rem", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                <div>
-                  <span style={{ fontWeight: 600, fontSize: "1.1rem" }}>Order #{order.id}</span>
-                  <span style={{ marginLeft: 12, color: "#888", fontSize: "0.98rem" }}>Placed {order.created_at || "-"}</span>
-                  <span style={{ marginLeft: 12, color: "#c62828", fontWeight: 700, fontSize: "0.98rem", border: "1px solid #f5bcbc", borderRadius: 8, padding: "2px 10px" }}>{statusLabel(order.status)}</span>
-                </div>
-                <div style={{ textAlign: "right" }}>
-                  <div style={{ fontWeight: 700, color: "#0b62ff", fontSize: "1.1rem" }}>Total {formatPrice(order.total_amount)}</div>
-                  <div style={{ color: "#888", fontSize: "0.97rem" }}>Items: {(order.items || []).length}</div>
-                </div>
-              </div>
+        <div className="orders-stack tracking-order-list">
+          {tabOrders.map((order) => {
+            const stepIndex = orderStepIndex(order.status);
+            const itemCount = (order.items || []).length;
+            const summaryText =
+              itemCount === 1 ? "1 item" : `${itemCount} items`;
 
-              {/* Progress tracker */}
-              <div style={{ padding: "0.7rem 1.5rem 0.7rem 1.5rem", borderBottom: "1px solid #e3e8f0" }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 32 }}>
-                  {ORDER_STEPS.map((step, idx) => {
-                    const isActive =
-                      (step.key === "placed" && order.status) ||
-                      (step.key === "to_ship" && ["CONFIRMED", "PACKED"].includes(String(order.status).toUpperCase())) ||
-                      (step.key === "to_receive" && ["SHIPPED", "OUT_FOR_DELIVERY"].includes(String(order.status).toUpperCase())) ||
-                      (step.key === "to_rate" && String(order.status).toUpperCase() === "DELIVERED");
+            return (
+              <article className="panel tracking-order-card" key={order.id}>
+                <header className="tracking-order-header row-between">
+                  <div>
+                    <h3>Order #{order.id}</h3>
+                    <p className="meta">Placed {formatDateTime(order.created_at)} · {order.tracking_number || "No tracking yet"}</p>
+                  </div>
+                  <span className="tracking-status-pill">{statusLabel(order.status)}</span>
+                </header>
+
+                <section className="tracking-summary-grid">
+                  <div className="tracking-summary-cell">
+                    <span className="meta">Payment</span>
+                    <strong>{statusLabel(order.payment_status)}</strong>
+                  </div>
+                  <div className="tracking-summary-cell">
+                    <span className="meta">Delivery</span>
+                    <strong>{order.estimated_delivery_date || "Pending"}</strong>
+                  </div>
+                  <div className="tracking-summary-cell">
+                    <span className="meta">Items</span>
+                    <strong>{summaryText}</strong>
+                  </div>
+                  <div className="tracking-summary-cell">
+                    <span className="meta">Total</span>
+                    <strong>PHP {formatPrice(order.total_amount)}</strong>
+                  </div>
+                </section>
+
+                <section className="tracking-stepper" aria-label="Order progress">
+                  {ORDER_STEPS.map((step, index) => {
+                    const active = index + 1 <= stepIndex;
                     return (
-                      <div key={step.key} style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                        <span style={{
-                          width: 16,
-                          height: 16,
-                          borderRadius: "50%",
-                          background: isActive ? "#0b62ff" : "#e3e8f0",
-                          display: "inline-block",
-                          border: isActive ? "2px solid #0b62ff" : "2px solid #e3e8f0",
-                        }}></span>
-                        <span style={{ fontWeight: isActive ? 700 : 500, color: isActive ? "#0b62ff" : "#888", fontSize: "0.98rem" }}>{step.label}</span>
-                        {idx < ORDER_STEPS.length - 1 && (
-                          <span style={{ width: 36, height: 2, background: isActive ? "#0b62ff" : "#e3e8f0", display: "inline-block", borderRadius: 2 }}></span>
-                        )}
+                      <div key={step.key} className={active ? "tracking-step is-active" : "tracking-step"}>
+                        <span className="tracking-step-dot" />
+                        <span className="tracking-step-label">{step.label}</span>
                       </div>
                     );
                   })}
+                </section>
+
+                <div className="tracking-actions row-actions">
+                  <button className="btn secondary" type="button" onClick={() => toggleDetails(order.id)}>
+                    {expanded[order.id] ? "Hide Details" : "View Details"}
+                  </button>
+                  <button className="btn secondary" type="button">Contact Seller</button>
+                  <button className="btn secondary" type="button">Need Help?</button>
                 </div>
-              </div>
 
-              {/* Action buttons */}
-              <div style={{ padding: "0.7rem 1.5rem 0.7rem 1.5rem", borderBottom: "1px solid #e3e8f0", display: "flex", gap: 12 }}>
-                <button className="btn secondary" type="button" onClick={() => toggleDetails(order.id)}>
-                  View Details
-                </button>
-                <button className="btn secondary" type="button" style={{ background: "#fffbe7", color: "#b88a00", borderColor: "#ffe08a" }}>Contact Seller</button>
-                <button className="btn secondary" type="button" style={{ background: "#f5f7fb", color: "#0b62ff", borderColor: "#dbeafe" }}>Need Help?</button>
-              </div>
-
-              {/* Order details expanded */}
-              {expanded[order.id] && (
-                <div style={{ padding: "1.2rem 1.5rem 1.2rem 1.5rem", background: "#fff" }}>
-                  <div style={{ display: "flex", gap: 32, flexWrap: "wrap", marginBottom: 16 }}>
-                    <div>
-                      <div style={{ color: "#888", fontSize: "0.97rem" }}>Tracking Number</div>
-                      <div style={{ fontWeight: 700 }}>{order.tracking_number || "-"}</div>
-                    </div>
-                    <div>
-                      <div style={{ color: "#888", fontSize: "0.97rem" }}>Estimated Delivery</div>
-                      <div style={{ fontWeight: 700 }}>{order.estimated_delivery_date || "-"}</div>
-                    </div>
-                    <div>
-                      <div style={{ color: "#888", fontSize: "0.97rem" }}>Status</div>
-                      <div style={{ fontWeight: 700 }}>{statusLabel(order.status)}</div>
-                    </div>
-                  </div>
-                  <div style={{ borderTop: "1px solid #e3e8f0", margin: "12px 0" }}></div>
-                  <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-                    <div style={{ display: "flex", justifyContent: "space-between", fontSize: "1.05rem" }}>
-                      <span>Subtotal</span>
-                      <span>PHP {order.subtotal ? formatPrice(order.subtotal) : "-"}</span>
-                    </div>
-                    <div style={{ display: "flex", justifyContent: "space-between", fontSize: "1.05rem" }}>
-                      <span>Shipping</span>
-                      <span>PHP {order.shipping_fee ? formatPrice(order.shipping_fee) : "0.00"}</span>
-                    </div>
-                    <div style={{ display: "flex", justifyContent: "space-between", fontSize: "1.05rem" }}>
-                      <span>Discounts</span>
-                      <span>-PHP {order.discount_amount ? formatPrice(order.discount_amount) : "0.00"}</span>
-                    </div>
-                    <div style={{ display: "flex", justifyContent: "space-between", fontWeight: 700, background: "#f5f7fb", padding: "6px 0", borderRadius: 6, fontSize: "1.09rem", marginTop: 4 }}>
-                      <span>Total</span>
-                      <span>PHP {formatPrice(order.total_amount)}</span>
-                    </div>
-                  </div>
-                  <div style={{ borderTop: "1px solid #e3e8f0", margin: "16px 0" }}></div>
-                  <div>
-                    <div style={{ fontWeight: 700, marginBottom: 6 }}>Items <span style={{ color: "#888", fontWeight: 400, fontSize: "0.97rem" }}>({(order.items || []).length} item{(order.items || []).length !== 1 ? "s" : ""})</span></div>
-                    {(order.items || []).map((item, index) => (
-                      <div key={`${order.id}-${index}`} style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 8 }}>
-                        <div style={{ width: 36, height: 36, background: "#e3e8f0", borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, color: "#0b62ff" }}>
-                          {item.product_name ? item.product_name[0] : "?"}
-                        </div>
-                        <div style={{ flex: 1 }}>
-                          <div style={{ fontWeight: 600 }}>{item.product_name}</div>
-                          <div style={{ color: "#888", fontSize: "0.97rem" }}>Variation: {item.color || "Default"} - {item.size || "M"}</div>
-                          <div style={{ color: "#888", fontSize: "0.97rem" }}>Quantity: {item.quantity}</div>
-                        </div>
-                        <div style={{ fontWeight: 700, color: "#c62828" }}>PHP {formatPrice(item.subtotal)}</div>
+                {expanded[order.id] ? (
+                  <section className="tracking-detail-wrap">
+                    <div className="tracking-micro-grid">
+                      <div className="tracking-micro-cell">
+                        <span className="meta">Tracking Number</span>
+                        <strong>{order.tracking_number || "-"}</strong>
                       </div>
-                    ))}
-                  </div>
-                  <div style={{ borderTop: "1px solid #e3e8f0", margin: "16px 0" }}></div>
-                  <div>
-                    <div style={{ fontWeight: 700, marginBottom: 6 }}>Status timeline</div>
-                    {(order.tracking_events || []).length ? (
-                      (order.tracking_events || []).map((event, index) => (
-                        <div className="timeline-row" key={`${order.id}-event-${index}`}>
-                          <span style={{ color: event.status === "PENDING" ? "#c62828" : "#0b62ff", fontWeight: 700 }}>{statusLabel(event.status)}</span>
-                          <span style={{ marginLeft: 8, color: "#888" }}>{event.note || "Order status updated."}</span>
-                          <div style={{ color: "#888", fontSize: "0.97rem" }}>{event.created_at}</div>
+                      <div className="tracking-micro-cell">
+                        <span className="meta">Estimated Delivery</span>
+                        <strong>{order.estimated_delivery_date || "-"}</strong>
+                      </div>
+                      <div className="tracking-micro-cell">
+                        <span className="meta">Status</span>
+                        <strong>{statusLabel(order.status)}</strong>
+                      </div>
+                    </div>
+
+                    <div className="tracking-amount-box">
+                      <div className="tracking-amount-row">
+                        <span>Subtotal</span>
+                        <strong>PHP {order.subtotal ? formatPrice(order.subtotal) : "0.00"}</strong>
+                      </div>
+                      <div className="tracking-amount-row">
+                        <span>Shipping</span>
+                        <strong>PHP {order.shipping_fee ? formatPrice(order.shipping_fee) : "0.00"}</strong>
+                      </div>
+                      <div className="tracking-amount-row">
+                        <span>Discounts</span>
+                        <strong>-PHP {order.discount_amount ? formatPrice(order.discount_amount) : "0.00"}</strong>
+                      </div>
+                      <div className="tracking-amount-row tracking-total-row">
+                        <span>Total</span>
+                        <strong>PHP {formatPrice(order.total_amount)}</strong>
+                      </div>
+                    </div>
+
+                    <div className="tracking-items-block">
+                      <div className="row-between">
+                        <h4>Items</h4>
+                        <span className="meta">{summaryText}</span>
+                      </div>
+                      <div className="tracking-items-stack">
+                        {(order.items || []).map((item, index) => (
+                          <div className="tracking-item-row" key={`${order.id}-${index}`}>
+                            <span className="tracking-item-avatar">
+                              {item.product_name ? item.product_name[0] : "?"}
+                            </span>
+                            <div className="tracking-item-main">
+                              <strong>{item.product_name}</strong>
+                              <p className="meta">Variation: {item.color || "Default"} · {item.size || "M"}</p>
+                              <p className="meta">Quantity: {item.quantity}</p>
+                            </div>
+                            <strong className="tracking-item-price">PHP {formatPrice(item.subtotal)}</strong>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="tracking-timeline-block">
+                      <div className="row-between">
+                        <h4>Status timeline</h4>
+                        <span className="meta">Live updates after checkout</span>
+                      </div>
+                      {(order.tracking_events || []).length ? (
+                        <div className="tracking-timeline-stack">
+                          {(order.tracking_events || []).map((event, index) => (
+                            <div className="timeline-row" key={`${order.id}-event-${index}`}>
+                              <span className="tracking-event-dot" aria-hidden="true" />
+                              <div>
+                                <strong>{statusLabel(event.status)}</strong>
+                                <p className="meta">{event.note || "Order status updated."}</p>
+                                <p className="meta">{formatDateTime(event.created_at)}</p>
+                              </div>
+                            </div>
+                          ))}
                         </div>
-                      ))
-                    ) : (
-                      <p className="meta">No status updates yet.</p>
-                    )}
-                  </div>
-                </div>
-              )}
-            </article>
-          ))}
+                      ) : (
+                        <p className="meta">No status updates yet.</p>
+                      )}
+                    </div>
+                  </section>
+                ) : null}
+              </article>
+            );
+          })}
         </div>
       )}
     </section>

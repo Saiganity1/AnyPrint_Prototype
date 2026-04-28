@@ -7,6 +7,7 @@
 *.js
 !public/*.js
 !public/assets/*.js
+!react-vite/src/**/*.js
 *.css
 !public/*.css
 !public/assets/*.css

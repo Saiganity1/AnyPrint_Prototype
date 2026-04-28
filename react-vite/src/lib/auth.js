@@ -16,9 +16,10 @@ export function getStoredUser() {
   }
 }
 
-export function setStoredSession({ user, tokens }) {
-  if (tokens) {
-    localStorage.setItem(STORAGE_KEYS.auth, JSON.stringify(tokens));
+export function setStoredSession({ user, token, tokens }) {
+  const authPayload = token ? { token } : tokens;
+  if (authPayload) {
+    localStorage.setItem(STORAGE_KEYS.auth, JSON.stringify(authPayload));
   }
   if (user) {
     localStorage.setItem(STORAGE_KEYS.user, JSON.stringify(user));
@@ -32,5 +33,5 @@ export function clearStoredSession() {
 
 export function roleCanManage(role) {
   const value = String(role || "").toUpperCase();
-  return value === "OWNER" || value === "ADMIN";
+  return value === "OWNER" || value === "STAFF" || value === "ADMIN";
 }

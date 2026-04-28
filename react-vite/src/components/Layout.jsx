@@ -104,7 +104,7 @@ export default function Layout({ children }) {
               Cart ({count})
             </NavLink>
             {currentUser ? (
-              <span className="user-chip">{currentUser.username || "User"}</span>
+              <span className="user-chip">{currentUser.name || currentUser.username || "User"}</span>
             ) : null}
           </div>
         </div>

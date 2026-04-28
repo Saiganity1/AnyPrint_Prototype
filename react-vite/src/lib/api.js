@@ -15,10 +15,6 @@ function readAuth() {
   }
 }
 
-function writeAuth(tokens) {
-  localStorage.setItem(STORAGE_KEYS.auth, JSON.stringify(tokens || {}));
-}
-
 function clearAuth() {
   localStorage.removeItem(STORAGE_KEYS.auth);
 }
@@ -36,7 +32,8 @@ async function requestRaw(pathOrUrl, options = {}) {
   const method = String(config.method || "GET").toUpperCase();
   const headers = new Headers(config.headers || {});
 
-  const accessToken = readAuth().access;
+  const auth = readAuth();
+  const accessToken = auth.token || auth.access;
   if (accessToken && !headers.has("Authorization")) {
     headers.set("Authorization", `Bearer ${accessToken}`);
   }
@@ -52,43 +49,10 @@ async function requestRaw(pathOrUrl, options = {}) {
   return fetch(toAbsoluteUrl(pathOrUrl), config);
 }
 
-async function refreshAccessToken() {
-  const refresh = readAuth().refresh;
-  if (!refresh) return false;
-
-  try {
-    const response = await requestRaw("auth/token/refresh/", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ refresh }),
-    });
-    const body = await response.json().catch(() => ({}));
-
-    if (!response.ok || !body.tokens || !body.tokens.access) {
-      clearAuth();
-      return false;
-    }
-
-    writeAuth(body.tokens);
-    return true;
-  } catch {
-    clearAuth();
-    return false;
-  }
-}
-
-export async function apiRequest(pathOrUrl, options = {}, attemptRefresh = true) {
+export async function apiRequest(pathOrUrl, options = {}) {
   const response = await requestRaw(pathOrUrl, options);
-  if (response.status !== 401 || !attemptRefresh) {
-    return response;
-  }
-
-  const refreshed = await refreshAccessToken();
-  if (!refreshed) {
-    return response;
-  }
-
-  return requestRaw(pathOrUrl, options);
+  if (response.status === 401) clearAuth();
+  return response;
 }
 
 export async function readJsonSafe(response) {

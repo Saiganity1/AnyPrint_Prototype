@@ -3,6 +3,7 @@ import { Link, useParams } from "react-router-dom";
 import { apiRequest, readJsonSafe } from "../lib/api";
 import { upsertCartItem } from "../lib/cart";
 import { formatPrice } from "../lib/format";
+import { normalizeProduct } from "../lib/normalize";
 import { addRecentlyViewed } from "../lib/recent";
 
 export default function ProductPage() {
@@ -29,17 +30,14 @@ export default function ProductPage() {
           return;
         }
 
-        const payload = body && typeof body === "object" && body.product ? body.product : body;
+        const payload = normalizeProduct(body && typeof body === "object" && body.product ? body.product : body);
 
         if (!cancelled) {
           setProduct(payload);
           addRecentlyViewed(payload);
 
-          const firstVariant = Array.isArray(payload?.variants) && payload.variants.length ? payload.variants[0] : null;
-          if (firstVariant) {
-            setSelectedSize(firstVariant.size || "M");
-            setSelectedColor(firstVariant.color || "Black");
-          }
+          setSelectedSize(payload?.sizes?.[0] || "M");
+          setSelectedColor(payload?.colors?.[0] || "Black");
         }
       } catch {
         if (!cancelled) {
@@ -77,32 +75,19 @@ export default function ProductPage() {
     return null;
   }
 
-  const variants = Array.isArray(product.variants) ? product.variants : [];
-  const sizes = [...new Set(variants.map((variant) => variant.size).filter(Boolean))];
-  const colors = [...new Set(variants.map((variant) => variant.color).filter(Boolean))];
-
-  function getSelectedVariant() {
-    const exact = variants.find(
-      (variant) =>
-        String(variant.size || "") === String(selectedSize || "") &&
-        String(variant.color || "").toLowerCase() === String(selectedColor || "").toLowerCase(),
-    );
-    return exact || variants[0] || null;
-  }
+  const sizes = product.sizes?.length ? product.sizes : ["M", "L", "XL"];
+  const colors = product.colors?.length ? product.colors : ["Black", "White"];
 
   function addToCart() {
-    const variant = getSelectedVariant();
-    const key = variant?.id
-      ? `variant:${variant.id}`
-      : `${product.id}|${selectedSize || "M"}|${selectedColor || "Black"}`;
+    const key = `${product.id}|${selectedSize || "M"}|${selectedColor || "Black"}`;
 
     upsertCartItem({
       key,
       product_id: product.id,
-      variant_id: variant?.id || null,
+      variant_id: null,
       quantity: 1,
-      size: selectedSize || variant?.size || "M",
-      color: selectedColor || variant?.color || "Black",
+      size: selectedSize || "M",
+      color: selectedColor || "Black",
       product_name: product.name,
       unit_price: product.price,
       image_url: product.image_url || "",

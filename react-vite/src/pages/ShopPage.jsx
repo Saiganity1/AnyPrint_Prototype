@@ -3,6 +3,7 @@ import { Link, useSearchParams } from "react-router-dom";
 import { apiRequest, readJsonSafe } from "../lib/api";
 import { upsertCartItem } from "../lib/cart";
 import { formatPrice } from "../lib/format";
+import { normalizeProducts } from "../lib/normalize";
 
 export default function ShopPage() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -32,13 +33,18 @@ export default function ShopPage() {
           return;
         }
 
-        const resultItems = Array.isArray(body.results)
-          ? body.results
-          : Array.isArray(body.products)
-            ? body.products
-            : [];
+        const resultItems = normalizeProducts(body);
+        const filteredItems = initialSearch.trim()
+          ? resultItems.filter((product) => {
+              const needle = initialSearch.trim().toLowerCase();
+              return [product.name, product.description, product.category, product.print_style]
+                .map((value) => String(value || "").toLowerCase())
+                .join(" ")
+                .includes(needle);
+            })
+          : resultItems;
         if (!cancelled) {
-          setProducts(resultItems);
+          setProducts(filteredItems);
         }
       } catch {
         if (!cancelled) {
@@ -137,7 +143,7 @@ export default function ShopPage() {
           <div className="product-grid old-product-grid">
             {products.map((product) => (
               <article className="product-card premium-card" key={product.id}>
-                <Link to={`/products/${encodeURIComponent(product.slug)}`} className="product-image-link">
+                <Link to={`/products/${encodeURIComponent(product.id)}`} className="product-image-link">
                   {product.image_url ? (
                     <img src={product.image_url} alt={product.name} loading="lazy" />
                   ) : (
@@ -152,7 +158,7 @@ export default function ShopPage() {
                     <button type="button" className="btn" onClick={() => addToCart(product)}>
                       Add to Cart
                     </button>
-                    <Link className="btn secondary" to={`/products/${encodeURIComponent(product.slug)}`}>
+                    <Link className="btn secondary" to={`/products/${encodeURIComponent(product.id)}`}>
                       View
                     </Link>
                   </div>

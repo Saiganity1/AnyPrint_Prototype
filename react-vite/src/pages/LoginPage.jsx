@@ -20,7 +20,7 @@ export default function LoginPage() {
   const navigate = useNavigate();
   const nextPath = useNextPath();
 
-  const [form, setForm] = useState({ username: "", password: "" });
+  const [form, setForm] = useState({ email: "", password: "" });
   const [showPassword, setShowPassword] = useState(false);
   const [status, setStatus] = useState("");
   const [error, setError] = useState("");
@@ -34,7 +34,7 @@ export default function LoginPage() {
         navigate(nextPath, { replace: true });
       } else if (role === "OWNER") {
         navigate("/owner", { replace: true });
-      } else if (role === "ADMIN") {
+      } else if (role === "STAFF" || role === "ADMIN") {
         navigate("/admin", { replace: true });
       } else {
         navigate("/account", { replace: true });
@@ -52,8 +52,8 @@ export default function LoginPage() {
     setStatus("");
     setError("");
 
-    if (!form.username.trim() || !form.password) {
-      setError("Username and password are required.");
+    if (!form.email.trim() || !form.password) {
+      setError("Email and password are required.");
       return;
     }
 
@@ -71,14 +71,14 @@ export default function LoginPage() {
         return;
       }
 
-      setStoredSession({ user: body.user, tokens: body.tokens });
+      setStoredSession({ user: body.user, token: body.token, tokens: body.tokens });
       setStatus("Welcome back. Redirecting...");
       const role = String((body.user && body.user.role) || "").toUpperCase();
       if (nextPath && nextPath !== "/") {
         navigate(nextPath, { replace: true });
       } else if (role === "OWNER") {
         navigate("/owner", { replace: true });
-      } else if (role === "ADMIN") {
+      } else if (role === "STAFF" || role === "ADMIN") {
         navigate("/admin", { replace: true });
       } else {
         navigate("/account", { replace: true });
@@ -113,12 +113,13 @@ export default function LoginPage() {
       <section className="panel auth-panel">
 
       <form className="form-grid" onSubmit={onSubmit}>
-        <label htmlFor="username">Username</label>
+        <label htmlFor="email">Email</label>
         <input
-          id="username"
-          name="username"
-          autoComplete="username"
-          value={form.username}
+          id="email"
+          name="email"
+          type="email"
+          autoComplete="email"
+          value={form.email}
           onChange={onChange}
           required
         />

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { Link, Navigate, useNavigate } from "react-router-dom";
 import { apiRequest, normalizeApiError, readJsonSafe } from "../lib/api";
 import { getStoredUser } from "../lib/auth";
@@ -12,8 +12,6 @@ export default function CheckoutPage() {
   const user = getStoredUser();
   const [step, setStep] = useState(1);
   const [cart, setCart] = useState(() => loadCart());
-  const [savedAddresses, setSavedAddresses] = useState([]);
-  const [quote, setQuote] = useState(null);
   const [message, setMessage] = useState("");
   const [placing, setPlacing] = useState(false);
 
@@ -30,89 +28,10 @@ export default function CheckoutPage() {
     notes: "",
   });
 
-  useEffect(() => {
-    let cancelled = false;
-    async function fetchAddresses() {
-      if (!user) return;
-      try {
-        const response = await apiRequest("addresses/");
-        const body = await readJsonSafe(response);
-        if (!response.ok) return;
-        const items = Array.isArray(body.addresses) ? body.addresses : [];
-        if (!cancelled) {
-          setSavedAddresses(items);
-          const defaultAddress = items.find((item) => item.is_default) || items[0];
-          if (defaultAddress) {
-            setAddressForm((prev) => ({
-              ...prev,
-              full_name: defaultAddress.full_name || prev.full_name,
-              phone: defaultAddress.phone || prev.phone,
-              address: defaultAddress.address || prev.address,
-            }));
-          }
-        }
-      } catch {
-        // Silent failure keeps checkout usable.
-      }
-    }
-    fetchAddresses();
-    return () => {
-      cancelled = true;
-    };
-  }, [user]);
-
   const subtotal = useMemo(
     () => cart.reduce((sum, item) => sum + Number(item.unit_price || 0) * Number(item.quantity || 0), 0),
     [cart],
   );
-
-  useEffect(() => {
-    let cancelled = false;
-
-    async function fetchQuote() {
-      if (!cart.length) {
-        setQuote(null);
-        return;
-      }
-
-      const payload = {
-        items: cart.map((item) => ({
-          product_id: item.product_id,
-          variant_id: item.variant_id || null,
-          size: item.size || "",
-          color: item.color || "",
-          quantity: Number(item.quantity || 1),
-        })),
-        address: addressForm.address,
-        promo_code: paymentForm.promo_code,
-      };
-
-      try {
-        const response = await apiRequest("checkout/quote/", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload),
-        });
-        const body = await readJsonSafe(response);
-        if (!response.ok) {
-          setQuote(null);
-          return;
-        }
-        if (!cancelled) {
-          setQuote(body.quote || null);
-        }
-      } catch {
-        if (!cancelled) {
-          setQuote(null);
-        }
-      }
-    }
-
-    fetchQuote();
-    return () => {
-      cancelled = true;
-    };
-  }, [cart, addressForm.address, paymentForm.promo_code]);
 
   if (!user) {
     return <Navigate to="/login?next=%2Fcheckout" replace />;
@@ -126,17 +45,6 @@ export default function CheckoutPage() {
   function handlePaymentChange(event) {
     const { name, value } = event.target;
     setPaymentForm((prev) => ({ ...prev, [name]: value }));
-  }
-
-  function pickSavedAddress(addressId) {
-    const selected = savedAddresses.find((item) => String(item.id) === String(addressId));
-    if (!selected) return;
-    setAddressForm((prev) => ({
-      ...prev,
-      full_name: selected.full_name || "",
-      phone: selected.phone || "",
-      address: selected.address || "",
-    }));
   }
 
   function removeItem(item) {
@@ -160,29 +68,6 @@ export default function CheckoutPage() {
     return true;
   }
 
-  async function maybeSaveAddress() {
-    if (!addressForm.save_address) return;
-
-    const existing = savedAddresses.find(
-      (item) =>
-        item.full_name === addressForm.full_name &&
-        item.phone === addressForm.phone &&
-        item.address === addressForm.address,
-    );
-    if (existing) return;
-
-    await apiRequest("addresses/create/", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        full_name: addressForm.full_name,
-        phone: addressForm.phone,
-        address: addressForm.address,
-        is_default: savedAddresses.length === 0,
-      }),
-    });
-  }
-
   async function placeOrder() {
     if (!cart.length) {
       setMessage("Your cart is empty.");
@@ -193,11 +78,8 @@ export default function CheckoutPage() {
     setMessage("Placing order...");
 
     const payload = {
-      ...addressForm,
-      ...paymentForm,
       items: cart.map((item) => ({
-        product_id: item.product_id,
-        variant_id: item.variant_id || null,
+        productId: item.product_id,
         size: item.size || "",
         color: item.color || "",
         quantity: Number(item.quantity || 1),
@@ -205,7 +87,6 @@ export default function CheckoutPage() {
     };
 
     try {
-      await maybeSaveAddress();
       const response = await apiRequest("orders/", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -218,14 +99,9 @@ export default function CheckoutPage() {
 
       saveCart([]);
       setCart([]);
-      setMessage(`Order #${body.order_id} created successfully.`);
-
-      if (body.redirect_url) {
-        window.location.href = body.redirect_url;
-        return;
-      }
-
-      navigate(`/tracking?placed_order=${encodeURIComponent(String(body.order_id || ""))}`);
+      const orderId = body._id || body.id || "";
+      setMessage(`Order #${orderId} created successfully.`);
+      navigate(`/tracking?placed_order=${encodeURIComponent(String(orderId))}`);
     } catch (orderError) {
       setMessage(orderError.message || "Could not place order.");
     } finally {
@@ -288,20 +164,6 @@ export default function CheckoutPage() {
       {step === 2 ? (
         <section className="panel">
           <h3>Address</h3>
-          {savedAddresses.length ? (
-            <>
-              <label htmlFor="savedAddress">Saved addresses</label>
-              <select id="savedAddress" onChange={(event) => pickSavedAddress(event.target.value)}>
-                <option value="">Select saved address</option>
-                {savedAddresses.map((addr) => (
-                  <option key={addr.id} value={addr.id}>
-                    {addr.full_name} - {addr.address}
-                  </option>
-                ))}
-              </select>
-            </>
-          ) : null}
-
           <div className="form-grid" style={{ marginTop: "0.6rem" }}>
             <label htmlFor="full_name">Full Name</label>
             <input id="full_name" name="full_name" value={addressForm.full_name} onChange={handleAddressChange} required />
@@ -311,10 +173,6 @@ export default function CheckoutPage() {
             <input id="phone" name="phone" value={addressForm.phone} onChange={handleAddressChange} required />
             <label htmlFor="address">Delivery Address</label>
             <textarea id="address" name="address" rows={3} value={addressForm.address} onChange={handleAddressChange} required />
-            <label className="password-toggle">
-              <input type="checkbox" name="save_address" checked={addressForm.save_address} onChange={handleAddressChange} />
-              Save this address for next time
-            </label>
           </div>
           <div className="row-actions">
             <button className="btn secondary" type="button" onClick={() => setStep(1)}>
@@ -399,7 +257,7 @@ export default function CheckoutPage() {
               <strong>Subtotal:</strong> {formatPrice(subtotal)}
             </p>
             <p>
-              <strong>Total:</strong> {formatPrice(quote?.total_amount || subtotal)}
+              <strong>Total:</strong> {formatPrice(subtotal)}
             </p>
           </div>
           <div className="row-actions">
@@ -416,29 +274,11 @@ export default function CheckoutPage() {
       {message ? <p className="status-text">{message}</p> : null}
 
       <aside className="panel" style={{ marginTop: "1rem" }}>
-        <h3>Delivery Quote</h3>
-        {quote ? (
-          <div className="checkout-review">
-            <p>
-              <strong>Subtotal:</strong> {formatPrice(quote.subtotal_amount)}
-            </p>
-            <p>
-              <strong>Bundle discount:</strong> -{formatPrice(quote.bundle_discount_amount)}
-            </p>
-            <p>
-              <strong>Promo discount:</strong> -{formatPrice(quote.promo_discount_amount)}
-            </p>
-            <p>
-              <strong>Shipping fee:</strong> {formatPrice(quote.shipping_fee)}
-            </p>
-            <p>
-              <strong>Total:</strong> {formatPrice(quote.total_amount)}
-            </p>
-            <p className="meta">Estimated delivery: {quote.delivery_eta_text || quote.estimated_delivery_days + " days"}</p>
-          </div>
-        ) : (
-          <p className="meta">Fill in address to calculate delivery.</p>
-        )}
+        <h3>Order Total</h3>
+        <p className="meta">Shipping and payment collection can be finalized by staff after order placement.</p>
+        <p>
+          <strong>Total:</strong> {formatPrice(subtotal)}
+        </p>
       </aside>
     </section>
   );

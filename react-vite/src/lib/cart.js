@@ -1,7 +1,7 @@
 const CART_KEY = "tt_cart_v2";
 
 function normalizeItem(item) {
-  const productId = Number(item.product_id || item.productId || item.id);
+  const productId = String(item.product_id || item.productId || item.id || "");
   return {
     key: item.key || `${productId}|${item.size || "M"}|${item.color || "Black"}`,
     product_id: productId,

@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { apiRequest, normalizeApiError, readJsonSafe } from "../lib/api";
 import { formatPrice, escapeCsv } from "../lib/format";
+import { normalizeOrders } from "../lib/normalize";
 
 function toIsoDate(date) {
   return date.toISOString().split("T")[0];
@@ -12,13 +13,19 @@ function defaultRange() {
   return { from: toIsoDate(start), to: toIsoDate(today) };
 }
 
+function inRange(order, from, to) {
+  const created = new Date(order.created_at || order.createdAt || Date.now());
+  if (Number.isNaN(created.getTime())) return true;
+  return toIsoDate(created) >= from && toIsoDate(created) <= to;
+}
+
 export default function AnalyticsPage() {
   const range = useMemo(() => defaultRange(), []);
   const [dateFrom, setDateFrom] = useState(range.from);
   const [dateTo, setDateTo] = useState(range.to);
+  const [orders, setOrders] = useState([]);
   const [status, setStatus] = useState("Loading analytics report...");
   const [error, setError] = useState("");
-  const [data, setData] = useState(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -28,16 +35,13 @@ export default function AnalyticsPage() {
       setStatus("Loading analytics report...");
 
       try {
-        const query = new URLSearchParams({ date_from: dateFrom, date_to: dateTo });
-        const response = await apiRequest(`admin/analytics/?${query.toString()}`);
+        const response = await apiRequest("orders/");
         const body = await readJsonSafe(response);
-
         if (!response.ok) {
           throw new Error(normalizeApiError(body, "Could not load analytics report."));
         }
-
         if (!cancelled) {
-          setData(body);
+          setOrders(normalizeOrders(body));
           setStatus(`Report ready for ${dateFrom} to ${dateTo}.`);
         }
       } catch (loadError) {
@@ -54,12 +58,31 @@ export default function AnalyticsPage() {
     };
   }, [dateFrom, dateTo]);
 
-  const metrics = data?.metrics || {
-    total_revenue: 0,
-    total_orders: 0,
-    completed_orders: 0,
-    average_order_value: 0,
+  const reportOrders = useMemo(
+    () => orders.filter((order) => inRange(order, dateFrom, dateTo)),
+    [orders, dateFrom, dateTo],
+  );
+
+  const metrics = {
+    total_revenue: reportOrders.reduce((sum, order) => sum + Number(order.total_amount || 0), 0),
+    total_orders: reportOrders.length,
+    completed_orders: reportOrders.filter((order) => String(order.status || "").toLowerCase() === "completed").length,
   };
+  metrics.average_order_value = metrics.total_orders ? metrics.total_revenue / metrics.total_orders : 0;
+
+  const topProducts = useMemo(() => {
+    const totals = new Map();
+    reportOrders.forEach((order) => {
+      (order.items || []).forEach((item) => {
+        const name = item.product_name || item.productId?.name || "Product";
+        const existing = totals.get(name) || { product_name: name, quantity_sold: 0, revenue: 0 };
+        existing.quantity_sold += Number(item.quantity || 0);
+        existing.revenue += Number(item.subtotal || 0);
+        totals.set(name, existing);
+      });
+    });
+    return [...totals.values()].sort((a, b) => b.quantity_sold - a.quantity_sold);
+  }, [reportOrders]);
 
   function resetRange() {
     const fallback = defaultRange();
@@ -68,8 +91,6 @@ export default function AnalyticsPage() {
   }
 
   function exportCsv() {
-    if (!data) return;
-
     const lines = [];
     lines.push("AnyPrint Sales Report");
     lines.push(`Date Range,${escapeCsv(dateFrom)} to ${escapeCsv(dateTo)}`);
@@ -82,23 +103,13 @@ export default function AnalyticsPage() {
         metrics.total_orders,
         metrics.completed_orders,
         metrics.average_order_value,
-      ]
-        .map(escapeCsv)
-        .join(","),
+      ].map(escapeCsv).join(","),
     );
-
-    lines.push("");
-    lines.push("Payment Breakdown");
-    lines.push("Payment Method,Order Count,Total Amount");
-    (data.payment_breakdown || []).forEach((item) => {
-      lines.push([item.payment_method, item.count, item.total].map(escapeCsv).join(","));
-    });
-
     lines.push("");
     lines.push("Top Products");
     lines.push("Product Name,Quantity Sold,Revenue");
-    (data.top_products || []).forEach((item) => {
-      lines.push([item.product__name, item.quantity_sold, item.revenue].map(escapeCsv).join(","));
+    topProducts.forEach((item) => {
+      lines.push([item.product_name, item.quantity_sold, item.revenue].map(escapeCsv).join(","));
     });
 
     const blob = new Blob([lines.join("\n")], { type: "text/csv;charset=utf-8;" });
@@ -116,48 +127,18 @@ export default function AnalyticsPage() {
     ? ((Number(metrics.completed_orders || 0) / Number(metrics.total_orders || 1)) * 100).toFixed(1)
     : "0.0";
 
-  const topPayment = data?.payment_breakdown?.[0]?.payment_method || "N/A";
-  const topProduct = data?.top_products?.[0]?.product__name || "N/A";
+  const topProduct = topProducts[0]?.product_name || "N/A";
 
   return (
-    <section className="analytics-page">
-      <div className="page-intro">
-        <p className="page-kicker">Reports</p>
-        <h2 className="page-title">Sales Analytics</h2>
-        <p className="page-lead">Analyze revenue, order completion, top products, and payment trends.</p>
-      </div>
-
+    <section>
       <div className="row-between">
+        <h2>Sales Analytics</h2>
         <div className="inline-form wrap">
-          <label htmlFor="dateFrom" className="sr-only">
-            From date
-          </label>
-          <input
-            id="dateFrom"
-            type="date"
-            title="From date"
-            value={dateFrom}
-            onChange={(event) => setDateFrom(event.target.value)}
-          />
-          <label htmlFor="dateTo" className="sr-only">
-            To date
-          </label>
-          <input
-            id="dateTo"
-            type="date"
-            title="To date"
-            value={dateTo}
-            onChange={(event) => setDateTo(event.target.value)}
-          />
-          <button className="btn secondary" type="button" onClick={resetRange}>
-            Reset
-          </button>
-          <button className="btn" type="button" onClick={exportCsv} disabled={!data}>
-            Export CSV
-          </button>
-          <button className="btn" type="button" onClick={() => window.print()} disabled={!data}>
-            Print
-          </button>
+          <input id="dateFrom" type="date" title="From date" value={dateFrom} onChange={(event) => setDateFrom(event.target.value)} />
+          <input id="dateTo" type="date" title="To date" value={dateTo} onChange={(event) => setDateTo(event.target.value)} />
+          <button className="btn secondary" type="button" onClick={resetRange}>Reset</button>
+          <button className="btn" type="button" onClick={exportCsv}>Export CSV</button>
+          <button className="btn" type="button" onClick={() => window.print()}>Print</button>
         </div>
       </div>
 
@@ -167,42 +148,18 @@ export default function AnalyticsPage() {
       <section className="panel">
         <h3>Report Summary</h3>
         <ul>
-          <li>
-            Date range: <strong>{dateFrom}</strong> to <strong>{dateTo}</strong>
-          </li>
-          <li>
-            Revenue: <strong>{formatPrice(metrics.total_revenue)}</strong> from{" "}
-            <strong>{metrics.total_orders}</strong> orders
-          </li>
-          <li>
-            Completion rate: <strong>{completionRate}%</strong>
-          </li>
-          <li>
-            Top payment method: <strong>{topPayment}</strong>
-          </li>
-          <li>
-            Top product: <strong>{topProduct}</strong>
-          </li>
+          <li>Date range: <strong>{dateFrom}</strong> to <strong>{dateTo}</strong></li>
+          <li>Revenue: <strong>{formatPrice(metrics.total_revenue)}</strong> from <strong>{metrics.total_orders}</strong> orders</li>
+          <li>Completion rate: <strong>{completionRate}%</strong></li>
+          <li>Top product: <strong>{topProduct}</strong></li>
         </ul>
       </section>
 
       <section className="metrics-grid">
-        <article className="metric-card">
-          <span>Total Revenue</span>
-          <strong>{formatPrice(metrics.total_revenue)}</strong>
-        </article>
-        <article className="metric-card">
-          <span>Total Orders</span>
-          <strong>{metrics.total_orders || 0}</strong>
-        </article>
-        <article className="metric-card">
-          <span>Completed Orders</span>
-          <strong>{metrics.completed_orders || 0}</strong>
-        </article>
-        <article className="metric-card">
-          <span>Average Order Value</span>
-          <strong>{formatPrice(metrics.average_order_value)}</strong>
-        </article>
+        <article className="metric-card"><span>Total Revenue</span><strong>{formatPrice(metrics.total_revenue)}</strong></article>
+        <article className="metric-card"><span>Total Orders</span><strong>{metrics.total_orders || 0}</strong></article>
+        <article className="metric-card"><span>Completed Orders</span><strong>{metrics.completed_orders || 0}</strong></article>
+        <article className="metric-card"><span>Average Order Value</span><strong>{formatPrice(metrics.average_order_value)}</strong></article>
       </section>
 
       <section className="panel">
@@ -210,25 +167,17 @@ export default function AnalyticsPage() {
         <div className="table-wrap">
           <table>
             <thead>
-              <tr>
-                <th>Product</th>
-                <th>Qty Sold</th>
-                <th>Revenue</th>
-              </tr>
+              <tr><th>Product</th><th>Qty Sold</th><th>Revenue</th></tr>
             </thead>
             <tbody>
-              {(data?.top_products || []).map((item) => (
-                <tr key={item.product_id}>
-                  <td>{item.product__name}</td>
+              {topProducts.map((item) => (
+                <tr key={item.product_name}>
+                  <td>{item.product_name}</td>
                   <td>{item.quantity_sold}</td>
                   <td>{formatPrice(item.revenue)}</td>
                 </tr>
               ))}
-              {!(data?.top_products || []).length ? (
-                <tr>
-                  <td colSpan={3}>No product sales in this period.</td>
-                </tr>
-              ) : null}
+              {!topProducts.length ? <tr><td colSpan={3}>No product sales in this period.</td></tr> : null}
             </tbody>
           </table>
         </div>

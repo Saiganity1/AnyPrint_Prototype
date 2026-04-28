@@ -840,6 +840,274 @@ select {
   margin-top: 0.45rem;
 }
 
+.tracking-redesign {
+  gap: 0.75rem;
+}
+
+.tracking-hero {
+  background: #f8f9fc;
+  border: 1px solid #dfe3ea;
+}
+
+.tracking-stage-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.4rem;
+}
+
+.tracking-stage-card {
+  border: 1px solid #dfe3ea;
+  border-radius: 8px;
+  background: #fff;
+  padding: 0.8rem 0.55rem;
+  display: grid;
+  justify-items: center;
+  gap: 0.18rem;
+  cursor: pointer;
+  text-align: center;
+}
+
+.tracking-stage-card.is-active {
+  border-color: #f6b8ab;
+  background: #fff6f3;
+}
+
+.tracking-stage-icon {
+  width: 28px;
+  height: 28px;
+  border-radius: 999px;
+  background: #fff1ed;
+  display: grid;
+  place-items: center;
+  font-size: 0.88rem;
+}
+
+.tracking-stage-label {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #263247;
+}
+
+.tracking-stage-count {
+  color: #5f6d84;
+  font-size: 0.86rem;
+}
+
+.tracking-order-list {
+  gap: 0.9rem;
+}
+
+.tracking-order-card {
+  border-radius: 8px;
+  border-color: #dfe3ea;
+  padding: 0.9rem;
+}
+
+.tracking-order-header {
+  align-items: center;
+  margin-bottom: 0.7rem;
+  gap: 0.7rem;
+}
+
+.tracking-order-header h3 {
+  margin: 0;
+  font-size: 1.18rem;
+}
+
+.tracking-status-pill {
+  border: 1px solid #ffc8be;
+  background: #fff4f1;
+  color: #d65239;
+  border-radius: 999px;
+  padding: 0.2rem 0.6rem;
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.tracking-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.45rem;
+  margin-bottom: 0.75rem;
+}
+
+.tracking-summary-cell {
+  border: 1px solid #dfe3ea;
+  border-radius: 6px;
+  padding: 0.5rem 0.65rem;
+  background: #fff;
+  display: grid;
+  gap: 0.15rem;
+}
+
+.tracking-stepper {
+  margin: 0.2rem 0 0.75rem;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.15rem;
+  align-items: end;
+}
+
+.tracking-step {
+  position: relative;
+  text-align: center;
+  color: #8b97ab;
+  font-size: 0.82rem;
+  padding-top: 0.7rem;
+}
+
+.tracking-step:not(:first-child)::before {
+  content: "";
+  position: absolute;
+  top: 0.28rem;
+  left: -50%;
+  width: 100%;
+  border-top: 2px solid #dce2ea;
+}
+
+.tracking-step-dot {
+  width: 12px;
+  height: 12px;
+  border: 2px solid #dce2ea;
+  background: #fff;
+  border-radius: 999px;
+  display: inline-block;
+  margin-bottom: 0.22rem;
+}
+
+.tracking-step.is-active {
+  color: #1d2b40;
+  font-weight: 700;
+}
+
+.tracking-step.is-active::before {
+  border-top-color: #ef6a4a;
+}
+
+.tracking-step.is-active .tracking-step-dot {
+  border-color: #ef6a4a;
+  background: #ef6a4a;
+}
+
+.tracking-actions {
+  margin: 0;
+}
+
+.tracking-detail-wrap {
+  margin-top: 0.75rem;
+  border-top: 1px solid #e1e6ef;
+  padding-top: 0.8rem;
+  display: grid;
+  gap: 0.75rem;
+}
+
+.tracking-micro-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.45rem;
+}
+
+.tracking-micro-cell {
+  border: 1px solid #dfe3ea;
+  border-radius: 6px;
+  padding: 0.5rem 0.65rem;
+  background: #fff;
+  display: grid;
+  gap: 0.15rem;
+}
+
+.tracking-amount-box {
+  border: 1px solid #dfe3ea;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.tracking-amount-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.7rem;
+  padding: 0.58rem 0.75rem;
+  border-top: 1px solid #edf1f6;
+}
+
+.tracking-amount-row:first-child {
+  border-top: 0;
+}
+
+.tracking-total-row {
+  background: #f0f3fb;
+  font-size: 1.06rem;
+}
+
+.tracking-items-block h4,
+.tracking-timeline-block h4 {
+  margin: 0;
+}
+
+.tracking-items-stack {
+  margin-top: 0.4rem;
+  display: grid;
+  gap: 0.45rem;
+}
+
+.tracking-item-row {
+  border: 1px solid #dfe3ea;
+  border-radius: 8px;
+  padding: 0.5rem 0.65rem;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.tracking-item-avatar {
+  width: 30px;
+  height: 30px;
+  border-radius: 6px;
+  background: #fff0ea;
+  color: #cc593f;
+  font-weight: 700;
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+}
+
+.tracking-item-main {
+  flex: 1;
+  min-width: 0;
+}
+
+.tracking-item-main strong {
+  display: block;
+}
+
+.tracking-item-main p {
+  margin: 0;
+}
+
+.tracking-item-price {
+  color: #cc593f;
+}
+
+.tracking-timeline-stack {
+  margin-top: 0.42rem;
+}
+
+.timeline-row {
+  display: flex;
+  gap: 0.55rem;
+  align-items: flex-start;
+}
+
+.tracking-event-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  margin-top: 0.3rem;
+  background: #ef6a4a;
+  flex: 0 0 auto;
+}
+
 textarea {
   border: 1px solid var(--line);
   border-radius: 10px;
@@ -900,8 +1168,16 @@ td {
   }
 
   .shop-highlights,
-  .variant-grid {
+  .variant-grid,
+  .tracking-stage-grid,
+  .tracking-summary-grid,
+  .tracking-micro-grid,
+  .tracking-stepper {
     grid-template-columns: 1fr;
+  }
+
+  .tracking-step:not(:first-child)::before {
+    display: none;
   }
 
   .analytics-page .row-between {

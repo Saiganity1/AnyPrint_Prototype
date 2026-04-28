@@ -5,7 +5,7 @@ import { setStoredSession } from "../lib/auth";
 
 export default function RegisterPage() {
   const navigate = useNavigate();
-  const [form, setForm] = useState({ username: "", email: "", password: "", confirm_password: "" });
+  const [form, setForm] = useState({ name: "", email: "", password: "", confirm_password: "" });
   const [showPassword, setShowPassword] = useState(false);
   const [status, setStatus] = useState("");
   const [error, setError] = useState("");
@@ -21,13 +21,13 @@ export default function RegisterPage() {
     setStatus("");
     setError("");
 
-    if (!form.username.trim() || !form.password || !form.confirm_password) {
-      setError("Username and password are required.");
+    if (!form.name.trim() || !form.email.trim() || !form.password || !form.confirm_password) {
+      setError("Name, email, and password are required.");
       return;
     }
 
-    if (form.password.length < 8) {
-      setError("Password must be at least 8 characters.");
+    if (form.password.length < 6) {
+      setError("Password must be at least 6 characters.");
       return;
     }
 
@@ -41,14 +41,18 @@ export default function RegisterPage() {
       const response = await apiRequest("auth/register/", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
+        body: JSON.stringify({
+          name: form.name,
+          email: form.email,
+          password: form.password,
+        }),
       });
       const body = await readJsonSafe(response);
       if (!response.ok) {
         throw new Error(normalizeApiError(body, "Registration failed."));
       }
 
-      setStoredSession({ user: body.user, tokens: body.tokens });
+      setStoredSession({ user: body.user, token: body.token, tokens: body.tokens });
       setStatus("Account created. Redirecting...");
       navigate("/account", { replace: true });
     } catch (registerError) {
@@ -69,11 +73,11 @@ export default function RegisterPage() {
       <section className="panel auth-panel">
 
       <form className="form-grid" onSubmit={onSubmit}>
-        <label htmlFor="username">Username</label>
-        <input id="username" name="username" value={form.username} onChange={onChange} autoComplete="username" required />
+        <label htmlFor="name">Name</label>
+        <input id="name" name="name" value={form.name} onChange={onChange} autoComplete="name" required />
 
         <label htmlFor="email">Email</label>
-        <input id="email" name="email" type="email" value={form.email} onChange={onChange} autoComplete="email" />
+        <input id="email" name="email" type="email" value={form.email} onChange={onChange} autoComplete="email" required />
 
         <label htmlFor="password">Password</label>
         <input
