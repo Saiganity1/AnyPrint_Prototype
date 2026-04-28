@@ -6,6 +6,7 @@ import { formatPrice } from "../lib/format";
 import { normalizeOrders, normalizeProducts } from "../lib/normalize";
 
 const ORDER_STATUS_OPTIONS = ["pending", "paid", "shipped", "completed", "cancelled"];
+const SIZE_OPTIONS = ["S", "M", "L", "XL", "2XL", "3XL"];
 
 export default function OwnerDashboardPage() {
   const user = getStoredUser();
@@ -107,6 +108,23 @@ export default function OwnerDashboardPage() {
     }
   }
 
+  async function deleteProduct(productId, productName) {
+    if (!window.confirm(`Delete ${productName}? This cannot be undone.`)) {
+      return;
+    }
+
+    try {
+      const response = await apiRequest(`products/${productId}`, {
+        method: "DELETE",
+      });
+      const body = await readJsonSafe(response);
+      if (!response.ok) throw new Error(normalizeApiError(body, "Could not delete product."));
+      await reloadData();
+    } catch (deleteError) {
+      setError(deleteError.message || "Could not delete product.");
+    }
+  }
+
   async function createProduct(event) {
     event.preventDefault();
     setError("");
@@ -204,12 +222,27 @@ export default function OwnerDashboardPage() {
             <div className="variant-builder-list">
               {variants.map((variant, index) => (
                 <div className="variant-builder-row" key={`variant-${index}`}>
-                  <input
-                    placeholder="Size"
-                    value={variant.size}
-                    onChange={(e) => setVariants((current) => current.map((item, itemIndex) => (itemIndex === index ? { ...item, size: e.target.value } : item)))}
-                    required
-                  />
+                    <div className="variant-size-picker">
+                      <span className="variant-size-label">Size</span>
+                      <div className="size-chip-row">
+                        {SIZE_OPTIONS.map((sizeOption) => (
+                          <button
+                            key={`${index}-${sizeOption}`}
+                            type="button"
+                            className={`size-chip ${variant.size === sizeOption ? "active" : ""}`}
+                            onClick={() =>
+                              setVariants((current) =>
+                                current.map((item, itemIndex) =>
+                                  itemIndex === index ? { ...item, size: sizeOption } : item,
+                                ),
+                              )
+                            }
+                          >
+                            {sizeOption}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
                   <input
                     placeholder="Color"
                     value={variant.color}
@@ -293,6 +326,9 @@ export default function OwnerDashboardPage() {
                   const qty = Number(prompt("Set stock quantity:", String(product.stock_quantity || 0)));
                   if (Number.isFinite(qty) && qty >= 0) updateProduct(product.id, { stock: qty });
                 }}>Set</button>
+                <button className="btn secondary danger" type="button" onClick={() => deleteProduct(product.id, product.name)}>
+                  Delete
+                </button>
               </div>
             </article>
           )) : <p className="meta">No products found.</p>}

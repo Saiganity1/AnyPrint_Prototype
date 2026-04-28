@@ -6,6 +6,8 @@ import { formatPrice } from "../lib/format";
 import { normalizeProduct } from "../lib/normalize";
 import { addRecentlyViewed } from "../lib/recent";
 
+const SIZE_ORDER = ["S", "M", "L", "XL", "2XL", "3XL"];
+
 export default function ProductPage() {
   const { slug } = useParams();
   const [product, setProduct] = useState(null);
@@ -83,9 +85,14 @@ export default function ProductPage() {
   const activeImage = images[activeImageIndex] || product.image_url || "";
   const selectedVariant =
     product.variants?.find((variant) => variant.size === selectedSize && variant.color === selectedColor) || null;
-  const availableStock = selectedVariant?.stock ?? product.stock_quantity ?? 0;
+  const availableStock = selectedVariant?.stock ?? null;
 
   function addToCart() {
+    if (!selectedVariant) {
+      setMessage("Please choose a valid size and color combination first.");
+      return;
+    }
+
     const key = `${product.id}|${selectedSize || "M"}|${selectedColor || "Black"}`;
 
     upsertCartItem({
@@ -149,30 +156,42 @@ export default function ProductPage() {
             <p className="price large">{formatPrice(product.price)}</p>
             <p className="lead">{product.description || "No description yet."}</p>
             <p className="meta">Print style: {product.print_style || "Standard"}</p>
-            <p className="meta">Stock: {availableStock}</p>
+            <p className="meta">
+              {selectedVariant ? `Stock: ${availableStock}` : "Select a size and color to view stock."}
+            </p>
 
             {sizes.length ? (
               <div className="variant-grid">
                 <div className="form-grid">
                   <label htmlFor="size">Size</label>
-                  <select id="size" value={selectedSize} onChange={(event) => setSelectedSize(event.target.value)}>
-                    {sizes.map((size) => (
-                      <option key={size} value={size}>
-                        {size}
-                      </option>
+                  <div className="size-chip-row compact">
+                    {(sizes.length ? sizes : SIZE_ORDER).map((sizeOption) => (
+                      <button
+                        type="button"
+                        key={sizeOption}
+                        className={`size-chip ${selectedSize === sizeOption ? "active" : ""}`}
+                        onClick={() => setSelectedSize(sizeOption)}
+                      >
+                        {sizeOption}
+                      </button>
                     ))}
-                  </select>
+                  </div>
                 </div>
 
                 <div className="form-grid">
                   <label htmlFor="color">Color</label>
-                  <select id="color" value={selectedColor} onChange={(event) => setSelectedColor(event.target.value)}>
-                    {colors.map((color) => (
-                      <option key={color} value={color}>
-                        {color}
-                      </option>
+                  <div className="size-chip-row compact">
+                    {colors.map((colorOption) => (
+                      <button
+                        type="button"
+                        key={colorOption}
+                        className={`size-chip ${selectedColor === colorOption ? "active" : ""}`}
+                        onClick={() => setSelectedColor(colorOption)}
+                      >
+                        {colorOption}
+                      </button>
                     ))}
-                  </select>
+                  </div>
                 </div>
               </div>
             ) : null}
@@ -188,17 +207,13 @@ export default function ProductPage() {
                 Back to Shop
               </Link>
             </div>
-            {Array.isArray(product.variants) && product.variants.length ? (
-              <div className="variant-table-wrap">
-                <h3 className="variant-title">Variant Stock</h3>
-                <div className="variant-table">
-                  {product.variants.map((variant, index) => (
-                    <div className="variant-row-view" key={`${variant.size}-${variant.color}-${index}`}>
-                      <span>{variant.size || "-"}</span>
-                      <span>{variant.color || "-"}</span>
-                      <strong>{Number(variant.stock || 0)}</strong>
-                    </div>
-                  ))}
+            {selectedVariant ? (
+              <div className="variant-stock-panel">
+                <h3 className="variant-title">Selected Variant</h3>
+                <div className="variant-row-view selected">
+                  <span>{selectedVariant.size}</span>
+                  <span>{selectedVariant.color}</span>
+                  <strong>{Number(selectedVariant.stock || 0)}</strong>
                 </div>
               </div>
             ) : null}

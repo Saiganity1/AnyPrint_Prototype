@@ -865,9 +865,58 @@ select {
 
 .variant-builder-row {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) 120px auto;
+  grid-template-columns: minmax(220px, 1.6fr) minmax(0, 1fr) 120px auto;
   gap: 0.55rem;
   align-items: center;
+}
+
+.variant-size-picker {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.variant-size-label {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--muted);
+}
+
+.size-chip-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.size-chip-row.compact {
+  gap: 0.3rem;
+}
+
+.size-chip {
+  border: 1px solid var(--line);
+  background: #fff;
+  color: var(--ink);
+  border-radius: 999px;
+  padding: 0.42rem 0.72rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.size-chip.active {
+  background: #e8f0ff;
+  color: var(--brand-deep);
+  border-color: #b9cdfd;
+}
+
+.size-chip:hover {
+  border-color: #b9cdfd;
+}
+
+.variant-stock-panel {
+  margin-top: 1rem;
+  padding-top: 0.85rem;
+  border-top: 1px solid var(--line);
+  display: grid;
+  gap: 0.55rem;
 }
 
 .upload-panel {
@@ -933,6 +982,21 @@ select {
   border: 1px solid var(--line);
   border-radius: 12px;
   background: #fff;
+}
+
+.variant-row-view.selected {
+  border-color: #b9cdfd;
+  background: #f5f8ff;
+}
+
+.btn.secondary.danger {
+  border-color: #f1b5b5;
+  color: #b42318;
+  background: #fff7f7;
+}
+
+.btn.secondary.danger:hover {
+  background: #ffecec;
 }
 
 .order-meta-grid {
@@ -1308,5 +1372,14 @@ td {
   .product-detail-media {
     min-height: 280px;
     max-height: 420px;
+  }
+
+  .variant-builder-row {
+    grid-template-columns: 1fr;
+  }
+
+  .row-actions,
+  .inline-form.wrap {
+    flex-wrap: wrap;
   }
 }
