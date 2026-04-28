@@ -144,11 +144,13 @@ export default function ShopPage() {
             {products.map((product) => (
               <article className="product-card premium-card" key={product.id}>
                 <Link to={`/products/${encodeURIComponent(product.id)}`} className="product-image-link">
-                  {product.image_url ? (
-                    <img src={product.image_url} alt={product.name} loading="lazy" />
-                  ) : (
-                    <div className="image-fallback">No image</div>
-                  )}
+                  <div className="product-card-media">
+                    {product.image_url ? (
+                      <img src={product.image_url} alt={product.name} loading="lazy" />
+                    ) : (
+                      <div className="image-fallback">No image</div>
+                    )}
+                  </div>
                 </Link>
                 <div className="card-body">
                   <p className="meta small">{product.category || "Uncategorized"}</p>

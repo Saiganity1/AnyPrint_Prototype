@@ -111,11 +111,13 @@ export default function ProductPage() {
 
       <section className="panel product-detail-shell">
         <div className="product-detail-grid">
-          <div>
+          <div className="product-media-panel">
             {product.image_url ? (
-              <img className="product-detail-image" src={product.image_url} alt={product.name} />
+              <div className="product-detail-media">
+                <img className="product-detail-image" src={product.image_url} alt={product.name} />
+              </div>
             ) : (
-              <div className="image-fallback">No image</div>
+              <div className="product-detail-media image-fallback">No image</div>
             )}
           </div>
 
