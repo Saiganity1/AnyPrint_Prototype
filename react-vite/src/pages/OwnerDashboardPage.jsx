@@ -22,8 +22,8 @@ export default function OwnerDashboardPage() {
     stock: "",
     sizes: "S,M,L,XL",
     colors: "Black,White",
-    imageUrl: "",
   });
+  const [imageFile, setImageFile] = useState(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -111,21 +111,24 @@ export default function OwnerDashboardPage() {
     event.preventDefault();
     setError("");
 
-    const payload = {
-      name: newProduct.name.trim(),
-      description: newProduct.description.trim(),
-      price: Number(newProduct.price || 0),
-      stock: Number(newProduct.stock || 0),
-      sizes: newProduct.sizes.split(",").map((value) => value.trim()).filter(Boolean),
-      colors: newProduct.colors.split(",").map((value) => value.trim()).filter(Boolean),
-      imageUrl: newProduct.imageUrl.trim(),
-    };
+    if (!imageFile) {
+      setError("Please choose an image file.");
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append("name", newProduct.name.trim());
+    formData.append("description", newProduct.description.trim());
+    formData.append("price", String(Number(newProduct.price || 0)));
+    formData.append("stock", String(Number(newProduct.stock || 0)));
+    formData.append("sizes", newProduct.sizes);
+    formData.append("colors", newProduct.colors);
+    formData.append("image", imageFile);
 
     try {
       const response = await apiRequest("products/", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
+        body: formData,
       });
       const body = await readJsonSafe(response);
       if (!response.ok) throw new Error(normalizeApiError(body, "Could not create product."));
@@ -136,8 +139,8 @@ export default function OwnerDashboardPage() {
         stock: "",
         sizes: "S,M,L,XL",
         colors: "Black,White",
-        imageUrl: "",
       });
+      setImageFile(null);
       await reloadData();
     } catch (createError) {
       setError(createError.message || "Could not create product.");
@@ -170,7 +173,13 @@ export default function OwnerDashboardPage() {
             <input placeholder="Initial stock" type="number" min="0" step="1" value={newProduct.stock} onChange={(e) => setNewProduct((p) => ({ ...p, stock: e.target.value }))} required />
             <input placeholder="Sizes: S,M,L,XL" value={newProduct.sizes} onChange={(e) => setNewProduct((p) => ({ ...p, sizes: e.target.value }))} />
             <input placeholder="Colors: Black,White" value={newProduct.colors} onChange={(e) => setNewProduct((p) => ({ ...p, colors: e.target.value }))} />
-            <input placeholder="Image URL" value={newProduct.imageUrl} onChange={(e) => setNewProduct((p) => ({ ...p, imageUrl: e.target.value }))} required />
+            <input
+              key={imageFile ? imageFile.name : "empty"}
+              type="file"
+              accept="image/*"
+              onChange={(e) => setImageFile(e.target.files?.[0] || null)}
+              required
+            />
           </div>
           <textarea rows={3} placeholder="Description" value={newProduct.description} onChange={(e) => setNewProduct((p) => ({ ...p, description: e.target.value }))} required />
           <button className="btn" type="submit">Create Product</button>
