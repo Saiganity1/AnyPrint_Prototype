@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, Navigate, useSearchParams } from "react-router-dom";
 import { apiRequest, normalizeApiError, readJsonSafe } from "../lib/api";
-import { getStoredUser } from "../lib/auth";
+import { getStoredUser, roleCanManage } from "../lib/auth";
 import { formatPrice } from "../lib/format";
 import { normalizeOrders } from "../lib/normalize";
 
@@ -81,6 +81,11 @@ export default function AccountPage() {
       </section>
 
       <div className="row-actions" style={{ marginTop: "1rem" }}>
+        {!roleCanManage(user?.role) ? (
+          <Link className="btn" to="/tracking">
+            Track Order
+          </Link>
+        ) : null}
         <Link className="btn secondary" to="/shop">
           Continue shopping
         </Link>

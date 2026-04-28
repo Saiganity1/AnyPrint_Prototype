@@ -101,7 +101,7 @@ export default function CheckoutPage() {
       setCart([]);
       const orderId = body._id || body.id || "";
       setMessage(`Order #${orderId} created successfully.`);
-      navigate(`/account?placed_order=${encodeURIComponent(String(orderId))}`);
+      navigate(`/tracking?placed_order=${encodeURIComponent(String(orderId))}`);
     } catch (orderError) {
       setMessage(orderError.message || "Could not place order.");
     } finally {
