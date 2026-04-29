@@ -4,6 +4,7 @@ import { apiRequest, normalizeApiError, readJsonSafe } from "../lib/api";
 import { getStoredUser, roleCanManage } from "../lib/auth";
 import { formatPrice } from "../lib/format";
 import { normalizeOrders } from "../lib/normalize";
+import AdminChatPanel from "../components/AdminChatPanel";
 
 const ORDER_STATUS_OPTIONS = ["pending", "packing", "shipped", "delivering", "delivered", "rate", "cancelled"];
 
@@ -164,6 +165,9 @@ export default function AdminPage() {
           <span>Total Sales</span>
           <strong>{formatPrice(metrics.total_sales)}</strong>
         </article>
+      </section>
+      <section className="panel" style={{ marginTop: '1rem' }}>
+        <AdminChatPanel />
       </section>
 
       <section className="panel" style={{ marginBottom: "1rem" }}>

@@ -1,0 +1,149 @@
+import { useEffect, useRef, useState } from 'react';
+import { sendMessage, getMessages, getAdminChat } from '../lib/chat';
+import { initSocket, getSocket } from '../lib/socket';
+
+export default function ChatWindow({ onClose, currentUser }) {
+  const [messages, setMessages] = useState([]);
+  const [adminInfo, setAdminInfo] = useState(null);
+  const [conversationId, setConversationId] = useState(null);
+  const [inputValue, setInputValue] = useState('');
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [sending, setSending] = useState(false);
+  const messagesEndRef = useRef(null);
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
+
+  useEffect(() => {
+    async function loadChat() {
+      try {
+        setLoading(true);
+        setError('');
+        const { conversation_id, admin } = await getAdminChat();
+        setConversationId(conversation_id);
+        setAdminInfo(admin);
+
+        const msgs = await getMessages(conversation_id);
+        setMessages(msgs);
+        try {
+          initSocket();
+          const s = getSocket();
+          s.emit('join', conversation_id);
+          s.on('new_message', (msg) => {
+            if (msg.conversation_id === conversation_id) {
+              setMessages((prev) => [...prev, msg]);
+              // notify other widgets (unread badge)
+              window.dispatchEvent(new Event('anyprint:chat-updated'));
+            }
+          });
+        } catch (e) {}
+      } catch (err) {
+        setError(err.message || 'Failed to load chat');
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    if (currentUser) {
+      loadChat();
+    }
+  }, [currentUser]);
+
+  async function handleSendMessage(e) {
+    e.preventDefault();
+
+    if (!inputValue.trim() || !adminInfo || sending) return;
+
+    try {
+      setSending(true);
+      await sendMessage(adminInfo.id, inputValue);
+      setInputValue('');
+
+      // Reload messages
+      const msgs = await getMessages(conversationId);
+      setMessages(msgs);
+    } catch (err) {
+      setError(err.message || 'Failed to send message');
+    } finally {
+      setSending(false);
+    }
+  }
+
+  if (loading) {
+    return (
+      <div className="chat-window">
+        <div className="chat-header">
+          <h3>Chat with Admin</h3>
+          <button className="chat-close" onClick={onClose}>
+            ✕
+          </button>
+        </div>
+        <div className="chat-loading">Loading chat...</div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="chat-window">
+      <div className="chat-header">
+        <div>
+          <h3>Chat with Admin</h3>
+          {adminInfo && <p className="chat-admin-name">{adminInfo.name}</p>}
+        </div>
+        <button className="chat-close" onClick={onClose}>
+          ✕
+        </button>
+      </div>
+
+      <div className="chat-messages">
+        {error && <div className="chat-error">{error}</div>}
+
+        {messages.length === 0 ? (
+          <div className="chat-empty">
+            <p>No messages yet. Start a conversation!</p>
+          </div>
+        ) : (
+          messages.map((msg) => (
+            <div
+              key={msg._id}
+              className={`chat-message ${
+                msg.sender_id._id === currentUser.id ? 'sent' : 'received'
+              }`}
+            >
+              <div className="message-bubble">
+                <p className="message-content">{msg.content}</p>
+                <span className="message-time">
+                  {new Date(msg.createdAt).toLocaleTimeString([], {
+                    hour: '2-digit',
+                    minute: '2-digit',
+                  })}
+                </span>
+              </div>
+            </div>
+          ))
+        )}
+        <div ref={messagesEndRef} />
+      </div>
+
+      <form className="chat-input-form" onSubmit={handleSendMessage}>
+        <input
+          type="text"
+          value={inputValue}
+          onChange={(e) => setInputValue(e.target.value)}
+          placeholder="Type a message..."
+          disabled={sending}
+          className="chat-input"
+        />
+        <button type="submit" disabled={!inputValue.trim() || sending} className="chat-send-btn">
+          {sending ? 'Sending...' : 'Send'}
+        </button>
+      </form>
+    </div>
+  );
+}
