@@ -5,7 +5,7 @@ import { getStoredUser, roleCanManage } from "../lib/auth";
 import { formatPrice } from "../lib/format";
 import { normalizeOrders } from "../lib/normalize";
 
-const ORDER_STATUS_OPTIONS = ["pending", "paid", "shipped", "completed", "cancelled"];
+const ORDER_STATUS_OPTIONS = ["pending", "packing", "shipped", "delivering", "delivered", "rate", "cancelled"];
 
 export default function AdminPage() {
   const user = getStoredUser();
@@ -14,6 +14,8 @@ export default function AdminPage() {
   const [statusFilter, setStatusFilter] = useState("");
   const [statusText, setStatusText] = useState("Loading orders...");
   const [error, setError] = useState("");
+  const [trackingInputs, setTrackingInputs] = useState({});
+  const [isChecking, setIsChecking] = useState({});
 
   useEffect(() => {
     let cancelled = false;
@@ -91,6 +93,51 @@ export default function AdminPage() {
     }
   }
 
+  async function setTrackingNumber(orderId, trackingNum) {
+    if (!trackingNum.trim()) {
+      setError("Tracking number cannot be empty");
+      return;
+    }
+
+    try {
+      setError("");
+      const response = await apiRequest("tracking/set-tracking-number", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ orderId, tracking_number: trackingNum }),
+      });
+      const body = await readJsonSafe(response);
+      if (!response.ok) {
+        throw new Error(normalizeApiError(body, "Could not set tracking number."));
+      }
+      setTrackingInputs({ ...trackingInputs, [orderId]: "" });
+      await refreshOrders();
+      setStatusText("Tracking number set successfully!");
+    } catch (err) {
+      setError(err.message);
+    }
+  }
+
+  async function checkAndUpdateStatus(orderId) {
+    try {
+      setIsChecking({ ...isChecking, [orderId]: true });
+      setError("");
+      const response = await apiRequest(`tracking/check-status/${orderId}`, {
+        method: "POST",
+      });
+      const body = await readJsonSafe(response);
+      if (!response.ok) {
+        throw new Error(normalizeApiError(body, "Could not check status."));
+      }
+      await refreshOrders();
+      setStatusText(`Status updated: ${body.order.status}`);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setIsChecking({ ...isChecking, [orderId]: false });
+    }
+  }
+
   const metrics = {
     total_orders: orders.length,
     paid_orders: orders.filter((order) =>
@@ -149,15 +196,28 @@ export default function AdminPage() {
         <div className="orders-stack">
           {filteredOrders.length ? (
             filteredOrders.map((order) => (
-              <article className="checkout-item" key={order.id}>
+              <article className="checkout-item" key={order.id} style={{ borderLeft: `4px solid var(--brand)` }}>
                 <div>
                   <strong>
                     #{order.id} {order.userId?.name || ""}
                   </strong>
                   <p className="meta">{order.userId?.email || "No email"}</p>
                   <p className="meta">{order.created_at || ""}</p>
+                  <div style={{ marginTop: "0.75rem" }}>
+                    <p className="meta">Tracking: <strong>{order.tracking_number || "Not set"}</strong></p>
+                    {order.tracking_number && (
+                      <button
+                        className="btn secondary"
+                        onClick={() => checkAndUpdateStatus(order.id)}
+                        disabled={isChecking[order.id]}
+                        style={{ marginTop: "0.5rem", fontSize: "0.9rem", padding: "0.4rem 0.6rem" }}
+                      >
+                        {isChecking[order.id] ? "Checking..." : "🔄 Check Status"}
+                      </button>
+                    )}
+                  </div>
                 </div>
-                <div className="inline-form wrap">
+                <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem", minWidth: 280 }}>
                   <select
                     value={order.status || "pending"}
                     onChange={(event) => updateOrderStatus(order.id, event.target.value)}
@@ -169,6 +229,25 @@ export default function AdminPage() {
                     ))}
                   </select>
                   <strong>{formatPrice(order.total_amount || 0)}</strong>
+                  {!order.tracking_number ? (
+                    <div style={{ display: "flex", gap: "0.5rem" }}>
+                      <input
+                        type="text"
+                        placeholder="JNT tracking #"
+                        value={trackingInputs[order.id] || ""}
+                        onChange={(e) => setTrackingInputs({ ...trackingInputs, [order.id]: e.target.value })}
+                        style={{ flex: 1, fontSize: "0.9rem" }}
+                        className="input"
+                      />
+                      <button
+                        className="btn secondary"
+                        onClick={() => setTrackingNumber(order.id, trackingInputs[order.id] || "")}
+                        style={{ fontSize: "0.9rem", padding: "0.4rem 0.6rem" }}
+                      >
+                        Add
+                      </button>
+                    </div>
+                  ) : null}
                 </div>
               </article>
             ))
