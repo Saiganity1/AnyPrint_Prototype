@@ -5,6 +5,7 @@ import AnalyticsPage from "./pages/AnalyticsPage";
 import AdminPage from "./pages/AdminPage";
 import AccountPage from "./pages/AccountPage";
 import EditProfilePage from "./pages/EditProfilePage";
+import TrackingManagementPage from "./pages/TrackingManagementPage";
 import OwnerDashboardPage from "./pages/OwnerDashboardPage";
 import RegisterPage from "./pages/RegisterPage";
 import HomePage from "./pages/HomePage";
@@ -26,6 +27,14 @@ function App() {
         <Route path="/account" element={<AccountPage />} />
         <Route path="/account/edit" element={<EditProfilePage />} />
         <Route path="/admin" element={<AdminPage />} />
+        <Route
+          path="/admin/tracking"
+          element={
+            <RequireManager>
+              <TrackingManagementPage />
+            </RequireManager>
+          }
+        />
         <Route path="/owner" element={<OwnerDashboardPage />} />
         <Route path="/checkout" element={<CheckoutPage />} />
         <Route path="/tracking" element={<TrackingPage />} />

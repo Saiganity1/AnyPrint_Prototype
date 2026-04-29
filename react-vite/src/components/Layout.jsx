@@ -82,6 +82,11 @@ export default function Layout({ children }) {
               </NavLink>
             ) : null}
             {canManage ? (
+              <NavLink to="/admin/tracking" className={navClass}>
+                Tracking
+              </NavLink>
+            ) : null}
+            {canManage ? (
               <NavLink to="/analytics" className={navClass}>
                 Analytics
               </NavLink>
