@@ -3,6 +3,7 @@
   "private": true,
   "version": "1.0.0",
   "scripts": {
+    "build": "npm install --prefix react-vite && npm run build --prefix react-vite",
     "test:e2e": "playwright test"
   },
   "devDependencies": {
