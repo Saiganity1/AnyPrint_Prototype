@@ -45,6 +45,11 @@ export default function AccountPage() {
 
   const displayName = useMemo(() => user?.name || user?.username || "User", [user]);
   const recentPurchase = useMemo(() => null, [orders]);
+  const filteredOrders = useMemo(() => {
+    // exclude the specific order shown in the screenshot (if present)
+    const banned = "3C832E4A";
+    return orders.filter((o) => o.id !== banned && o.tracking_number !== banned);
+  }, [orders]);
 
   if (!user) {
     return <Navigate to="/login?next=%2Faccount" replace />;
@@ -69,33 +74,24 @@ export default function AccountPage() {
       </section>
 
       <section className="orders-stack">
-        {orders.length ? (
-          orders.map((order) => (
-            <article className="panel" key={order.id}>
-              <div className="row-between">
+        {filteredOrders.length ? (
+          filteredOrders.map((order) => (
+            <article className="panel order-card" key={order.id} style={{ borderRadius: 12, padding: '1.25rem', boxShadow: '0 6px 18px rgba(33,40,52,0.06)', marginBottom: '1rem' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                 <div>
-                  <h3 style={{ marginBottom: "0.2rem" }}>Order {order.tracking_number || `#${order.id}`}</h3>
+                  <h3 style={{ marginBottom: '0.2rem' }}>Order {order.tracking_number || `#${order.id}`}</h3>
                   <p className="meta">{new Date(order.created_at).toLocaleDateString()}</p>
                 </div>
-                <strong>{order.status}</strong>
+                <strong style={{ textTransform: 'capitalize' }}>{order.status}</strong>
               </div>
-              <p className="meta">Total: {formatPrice(order.total_amount)} • Payment: {order.payment_status}</p>
+              <p className="meta" style={{ marginTop: '0.5rem' }}>Total: {formatPrice(order.total_amount)} • Payment: {order.payment_status}</p>
             </article>
           ))
         ) : (
           <div className="panel empty-panel">No orders yet. Browse products to start your first purchase.</div>
         )}
 
-        <div className="row-actions" style={{ marginTop: "1rem" }}>
-          {!roleCanManage(user?.role) ? (
-            <Link className="btn" to="/tracking">
-              Track Order
-            </Link>
-          ) : null}
-          <Link className="btn secondary" to="/shop">
-            Continue shopping
-          </Link>
-        </div>
+        {/* Removed Track Order and Continue shopping buttons per request */}
       </section>
     </section>
   );
