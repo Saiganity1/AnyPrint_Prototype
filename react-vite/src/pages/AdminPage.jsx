@@ -29,7 +29,14 @@ export default function AdminPage() {
           throw new Error(normalizeApiError(body, "Could not load orders."));
         }
         if (!cancelled) {
-          setOrders(normalizeOrders(body));
+          const normalizedOrders = normalizeOrders(body);
+          setOrders(normalizedOrders);
+          setTrackingInputs(
+            normalizedOrders.reduce((inputs, order) => {
+              inputs[order.id] = order.tracking_number || "";
+              return inputs;
+            }, {}),
+          );
           setStatusText("Orders loaded.");
         }
       } catch (loadError) {
@@ -72,7 +79,16 @@ export default function AdminPage() {
   async function refreshOrders() {
     const response = await apiRequest("orders/");
     const body = await readJsonSafe(response);
-    if (response.ok) setOrders(normalizeOrders(body));
+    if (response.ok) {
+      const normalizedOrders = normalizeOrders(body);
+      setOrders(normalizedOrders);
+      setTrackingInputs(
+        normalizedOrders.reduce((inputs, order) => {
+          inputs[order.id] = order.tracking_number || "";
+          return inputs;
+        }, {}),
+      );
+    }
   }
 
   async function updateOrderStatus(orderId, status) {
@@ -203,24 +219,27 @@ export default function AdminPage() {
                     ))}
                   </select>
                   <strong>{formatPrice(order.total_amount || 0)}</strong>
-                  {!order.tracking_number ? (
-                    <div style={{ display: "flex", gap: "0.5rem" }}>
-                      <input
-                        type="text"
-                        placeholder="JNT tracking #"
-                        value={trackingInputs[order.id] || ""}
-                        onChange={(e) => setTrackingInputs({ ...trackingInputs, [order.id]: e.target.value })}
-                        style={{ flex: 1, fontSize: "0.9rem" }}
-                        className="input"
-                      />
-                      <button
-                        className="btn secondary"
-                        onClick={() => setTrackingNumber(order.id, trackingInputs[order.id] || "")}
-                        style={{ fontSize: "0.9rem", padding: "0.4rem 0.6rem" }}
-                      >
-                        Add
-                      </button>
-                    </div>
+                  <div style={{ display: "flex", gap: "0.5rem" }}>
+                    <input
+                      type="text"
+                      placeholder="JNT tracking #"
+                      value={trackingInputs[order.id] ?? order.tracking_number ?? ""}
+                      onChange={(e) => setTrackingInputs({ ...trackingInputs, [order.id]: e.target.value })}
+                      style={{ flex: 1, fontSize: "0.9rem" }}
+                      className="input"
+                    />
+                    <button
+                      className="btn secondary"
+                      onClick={() => setTrackingNumber(order.id, trackingInputs[order.id] ?? order.tracking_number ?? "")}
+                      style={{ fontSize: "0.9rem", padding: "0.4rem 0.6rem" }}
+                    >
+                      {order.tracking_number ? "Update" : "Add"}
+                    </button>
+                  </div>
+                  {order.tracking_number ? (
+                    <p className="meta" style={{ fontSize: "0.85rem", color: "var(--muted)" }}>
+                      Edit the tracking number here if JNT issued a new one.
+                    </p>
                   ) : null}
                 </div>
               </article>
