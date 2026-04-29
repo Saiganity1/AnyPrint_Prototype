@@ -44,6 +44,13 @@ export default function AccountPage() {
   }, [searchParams]);
 
   const displayName = useMemo(() => user?.name || user?.username || "User", [user]);
+  const recentPurchase = useMemo(() => {
+    return [...orders].sort((left, right) => {
+      const leftTime = new Date(left.created_at || 0).getTime();
+      const rightTime = new Date(right.created_at || 0).getTime();
+      return rightTime - leftTime;
+    })[0] || null;
+  }, [orders]);
 
   if (!user) {
     return <Navigate to="/login?next=%2Faccount" replace />;
@@ -64,6 +71,13 @@ export default function AccountPage() {
         <p className="meta">Name: {user.name || user.username || "User"}</p>
         <p className="meta">Email: {user.email || "Not set"}</p>
         <p className="meta">Role: {user.role || "USER"}</p>
+        {recentPurchase ? (
+          <div className="row-actions" style={{ marginTop: "1rem" }}>
+            <Link className="btn" to={`/tracking?placed_order=${encodeURIComponent(recentPurchase.id)}`}>
+              Recent Purchase
+            </Link>
+          </div>
+        ) : null}
       </section>
 
       <section className="orders-stack">
