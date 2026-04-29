@@ -9,6 +9,7 @@ export default function AccountPage() {
   const user = getStoredUser();
   const [searchParams] = useSearchParams();
   const [orders, setOrders] = useState([]);
+  const [showAll, setShowAll] = useState(false);
   const [status, setStatus] = useState("");
   const [error, setError] = useState("");
 
@@ -81,36 +82,59 @@ export default function AccountPage() {
       </section>
 
       <section className="orders-stack">
-        {orders.length ? (
-          orders.map((order) => (
-            <article className="panel" key={order.id}>
-              <div className="row-between">
-                <div>
-                  <h3 style={{ marginBottom: "0.2rem" }}>Order {order.tracking_number || `#${order.id}`}</h3>
-                  <p className="meta">{new Date(order.created_at).toLocaleDateString()}</p>
-                </div>
-                <strong>{order.status}</strong>
+        {recentPurchase ? (
+          <article className="panel">
+            <div className="row-between">
+              <div>
+                <h3 style={{ marginBottom: "0.2rem" }}>Recent Purchase</h3>
+                <p className="meta">{new Date(recentPurchase.created_at).toLocaleDateString()}</p>
               </div>
-              <p className="meta">
-                Total: {formatPrice(order.total_amount)} • Payment: {order.payment_status}
-              </p>
-            </article>
-          ))
-        ) : (
-          <div className="panel empty-panel">No orders yet. Browse products to start your first purchase.</div>
-        )}
-      </section>
-
-      <div className="row-actions" style={{ marginTop: "1rem" }}>
-        {!roleCanManage(user?.role) ? (
-          <Link className="btn" to="/tracking">
-            Track Order
-          </Link>
+              <strong>{recentPurchase.status}</strong>
+            </div>
+            <p className="meta">Total: {formatPrice(recentPurchase.total_amount)} • Payment: {recentPurchase.payment_status}</p>
+            <div style={{ marginTop: "1rem" }}>
+              <Link className="btn" to={`/tracking?placed_order=${encodeURIComponent(recentPurchase.id)}`}>
+                View in Tracking
+              </Link>
+              <button className="btn secondary" style={{ marginLeft: "0.6rem" }} onClick={() => setShowAll(true)}>
+                Show All Purchases
+              </button>
+            </div>
+          </article>
         ) : null}
-        <Link className="btn secondary" to="/shop">
-          Continue shopping
-        </Link>
-      </div>
+
+        {(!orders.length && !recentPurchase) ? (
+          <div className="panel empty-panel">No orders yet. Browse products to start your first purchase.</div>
+        ) : null}
+
+        {showAll ? (
+          orders
+            .filter((o) => !(recentPurchase && o.id === recentPurchase.id))
+            .map((order) => (
+              <article className="panel" key={order.id}>
+                <div className="row-between">
+                  <div>
+                    <h3 style={{ marginBottom: "0.2rem" }}>Order {order.tracking_number || `#${order.id}`}</h3>
+                    <p className="meta">{new Date(order.created_at).toLocaleDateString()}</p>
+                  </div>
+                  <strong>{order.status}</strong>
+                </div>
+                <p className="meta">Total: {formatPrice(order.total_amount)} • Payment: {order.payment_status}</p>
+              </article>
+            ))
+        ) : null}
+
+        <div className="row-actions" style={{ marginTop: "1rem" }}>
+          {!roleCanManage(user?.role) ? (
+            <Link className="btn" to="/tracking">
+              Track Order
+            </Link>
+          ) : null}
+          <Link className="btn secondary" to="/shop">
+            Continue shopping
+          </Link>
+        </div>
+      </section>
     </section>
   );
 }
