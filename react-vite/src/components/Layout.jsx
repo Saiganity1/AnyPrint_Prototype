@@ -101,7 +101,9 @@ export default function Layout({ children }) {
               Cart ({count})
             </NavLink>
             {currentUser ? (
-              <span className="user-chip">{currentUser.name || currentUser.username || "User"}</span>
+              <NavLink to="/account" className="user-chip">
+                {currentUser.name || currentUser.username || "User"}
+              </NavLink>
             ) : null}
           </div>
         </div>

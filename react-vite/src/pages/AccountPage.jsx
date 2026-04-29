@@ -52,12 +52,19 @@ export default function AccountPage() {
   return (
     <section className="account-page">
       <div className="page-intro">
-        <p className="page-kicker">User Dashboard</p>
-        <h2 className="page-title">My Orders</h2>
-        <p className="page-lead">Welcome, {displayName}. Review your recent purchases here.</p>
+        <p className="page-kicker">User Profile</p>
+        <h2 className="page-title">My Account</h2>
+        <p className="page-lead">Welcome, {displayName}. Review your profile and recent purchases here.</p>
       </div>
       <p className="status-text">{status}</p>
       {error ? <p className="error-text">{error}</p> : null}
+
+      <section className="panel" style={{ marginBottom: "1rem" }}>
+        <h3>Profile</h3>
+        <p className="meta">Name: {user.name || user.username || "User"}</p>
+        <p className="meta">Email: {user.email || "Not set"}</p>
+        <p className="meta">Role: {user.role || "USER"}</p>
+      </section>
 
       <section className="orders-stack">
         {orders.length ? (
