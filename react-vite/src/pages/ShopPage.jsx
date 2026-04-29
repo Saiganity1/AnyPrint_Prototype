@@ -1,15 +1,17 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { apiRequest, readJsonSafe } from "../lib/api";
-import { upsertCartItem } from "../lib/cart";
 import { formatPrice } from "../lib/format";
 import { normalizeProducts } from "../lib/normalize";
+import AddToCartModal from "../components/AddToCartModal";
 
 export default function ShopPage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [selectedProduct, setSelectedProduct] = useState(null);
+  const [modalOpen, setModalOpen] = useState(false);
 
   const initialSearch = searchParams.get("search") || "";
   const [search, setSearch] = useState(initialSearch);
@@ -75,17 +77,8 @@ export default function ShopPage() {
   }
 
   function addToCart(product) {
-    upsertCartItem({
-      key: `${product.id}|M|Black`,
-      product_id: product.id,
-      variant_id: null,
-      quantity: 1,
-      size: "M",
-      color: "Black",
-      product_name: product.name,
-      unit_price: product.price,
-      image_url: product.image_url || "",
-    });
+    setSelectedProduct(product);
+    setModalOpen(true);
   }
 
   const summary = useMemo(() => {
@@ -170,6 +163,15 @@ export default function ShopPage() {
           </div>
         ) : null}
       </section>
+
+      <AddToCartModal
+        product={selectedProduct}
+        isOpen={modalOpen}
+        onClose={() => {
+          setModalOpen(false);
+          setSelectedProduct(null);
+        }}
+      />
     </section>
   );
 }

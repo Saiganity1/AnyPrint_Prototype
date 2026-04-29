@@ -244,3 +244,163 @@
 .qty-input[type='number'] {
   -moz-appearance: textfield;
 }
+
+/* Modal Styles */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.modal-content {
+  background: var(--bg);
+  border-radius: 8px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+  max-width: 500px;
+  width: 90%;
+  max-height: 90vh;
+  overflow-y: auto;
+  animation: slideUp 0.3s ease;
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 24px;
+  border-bottom: 1px solid var(--border);
+}
+
+.modal-header h2 {
+  margin: 0;
+  font-size: 20px;
+}
+
+.modal-close {
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  padding: 0;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text);
+  transition: color 0.2s;
+}
+
+.modal-close:hover {
+  color: var(--accent);
+}
+
+.modal-body {
+  padding: 24px;
+}
+
+.modal-product-info {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 24px;
+  padding-bottom: 24px;
+  border-bottom: 1px solid var(--border);
+}
+
+.modal-product-image {
+  width: 100px;
+  height: 100px;
+  object-fit: cover;
+  border-radius: 4px;
+}
+
+.modal-product-details {
+  flex: 1;
+}
+
+.modal-product-details h3 {
+  margin: 8px 0;
+  font-size: 16px;
+}
+
+.modal-product-details .price {
+  margin: 8px 0 0 0;
+  font-weight: 600;
+}
+
+.modal-options {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.modal-options .form-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.modal-options label {
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.variant-stock-info {
+  padding: 12px;
+  background: var(--accent-bg);
+  border-radius: 4px;
+  border-left: 3px solid var(--accent);
+}
+
+.variant-stock-info .meta {
+  margin: 0;
+  color: var(--accent);
+}
+
+.modal-footer {
+  display: flex;
+  gap: 12px;
+  padding: 24px;
+  border-top: 1px solid var(--border);
+  justify-content: flex-end;
+}
+
+.modal-footer .btn {
+  min-width: 120px;
+}
+
+.status-text.success {
+  color: #22c55e;
+}
+
+.status-text.error {
+  color: #ef4444;
+}
