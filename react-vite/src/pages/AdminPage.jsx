@@ -15,7 +15,6 @@ export default function AdminPage() {
   const [statusText, setStatusText] = useState("Loading orders...");
   const [error, setError] = useState("");
   const [trackingInputs, setTrackingInputs] = useState({});
-  const [isChecking, setIsChecking] = useState({});
 
   useEffect(() => {
     let cancelled = false;
@@ -112,29 +111,9 @@ export default function AdminPage() {
       }
       setTrackingInputs({ ...trackingInputs, [orderId]: "" });
       await refreshOrders();
-      setStatusText("Tracking number set successfully!");
+      setStatusText("Tracking number set. Gemini AI will automatically check status every hour.");
     } catch (err) {
       setError(err.message);
-    }
-  }
-
-  async function checkAndUpdateStatus(orderId) {
-    try {
-      setIsChecking({ ...isChecking, [orderId]: true });
-      setError("");
-      const response = await apiRequest(`tracking/check-status/${orderId}`, {
-        method: "POST",
-      });
-      const body = await readJsonSafe(response);
-      if (!response.ok) {
-        throw new Error(normalizeApiError(body, "Could not check status."));
-      }
-      await refreshOrders();
-      setStatusText(`Status updated: ${body.order.status}`);
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setIsChecking({ ...isChecking, [orderId]: false });
     }
   }
 
@@ -206,14 +185,9 @@ export default function AdminPage() {
                   <div style={{ marginTop: "0.75rem" }}>
                     <p className="meta">Tracking: <strong>{order.tracking_number || "Not set"}</strong></p>
                     {order.tracking_number && (
-                      <button
-                        className="btn secondary"
-                        onClick={() => checkAndUpdateStatus(order.id)}
-                        disabled={isChecking[order.id]}
-                        style={{ marginTop: "0.5rem", fontSize: "0.9rem", padding: "0.4rem 0.6rem" }}
-                      >
-                        {isChecking[order.id] ? "Checking..." : "🔄 Check Status"}
-                      </button>
+                      <p className="meta" style={{ fontSize: "0.85rem", color: "var(--brand)" }}>
+                        ✓ Gemini AI checks status hourly
+                      </p>
                     )}
                   </div>
                 </div>
