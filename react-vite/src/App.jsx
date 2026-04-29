@@ -4,6 +4,7 @@ import RequireManager from "./components/RequireManager";
 import AnalyticsPage from "./pages/AnalyticsPage";
 import AdminPage from "./pages/AdminPage";
 import AccountPage from "./pages/AccountPage";
+import EditProfilePage from "./pages/EditProfilePage";
 import OwnerDashboardPage from "./pages/OwnerDashboardPage";
 import RegisterPage from "./pages/RegisterPage";
 import HomePage from "./pages/HomePage";
@@ -23,6 +24,7 @@ function App() {
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/account" element={<AccountPage />} />
+        <Route path="/account/edit" element={<EditProfilePage />} />
         <Route path="/admin" element={<AdminPage />} />
         <Route path="/owner" element={<OwnerDashboardPage />} />
         <Route path="/checkout" element={<CheckoutPage />} />

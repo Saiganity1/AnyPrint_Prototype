@@ -68,7 +68,7 @@ export default function AccountPage() {
       <div style={{ display: 'grid', gridTemplateColumns: '320px 1fr', gap: '1.5rem', alignItems: 'start' }}>
         <aside className="panel" style={{ borderRadius: 12, padding: '1.25rem' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.9rem' }}>
-            <div style={{ width: 56, height: 56, borderRadius: 28, background: '#eef2ff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700 }}>{(user.name||'U')[0].toUpperCase()}</div>
+            <div style={{ width: 56, height: 56, borderRadius: 28, background: 'linear-gradient(180deg, rgba(11,98,255,0.12), rgba(11,98,255,0.04))', border: '1px solid var(--brand)', color: 'var(--brand-deep)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700 }}>{(user.name||'U')[0].toUpperCase()}</div>
             <div>
               <h3 style={{ margin: 0 }}>{displayName}</h3>
               <p className="meta" style={{ margin: 0 }}>{user.email || 'Not set'}</p>
