@@ -14,6 +14,7 @@ export default function ProductPage() {
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const [selectedSize, setSelectedSize] = useState("M");
   const [selectedColor, setSelectedColor] = useState("Black");
+  const [selectedQuantity, setSelectedQuantity] = useState(1);
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -93,20 +94,31 @@ export default function ProductPage() {
       return;
     }
 
+    if (selectedQuantity < 1) {
+      setMessage("Please select a valid quantity.");
+      return;
+    }
+
+    if (availableStock !== null && selectedQuantity > availableStock) {
+      setMessage(`Cannot add more than ${availableStock} items available.`);
+      return;
+    }
+
     const key = `${product.id}|${selectedSize || "M"}|${selectedColor || "Black"}`;
 
     upsertCartItem({
       key,
       product_id: product.id,
       variant_id: null,
-      quantity: 1,
+      quantity: selectedQuantity,
       size: selectedSize || "M",
       color: selectedColor || "Black",
       product_name: product.name,
       unit_price: product.price,
       image_url: product.image_url || "",
     });
-    setMessage("Added to cart.");
+    setMessage(`Added ${selectedQuantity} item(s) to cart.`);
+    setSelectedQuantity(1);
   }
 
   return (
@@ -195,6 +207,50 @@ export default function ProductPage() {
                 </div>
               </div>
             ) : null}
+
+            <div className="form-grid">
+              <label htmlFor="quantity">Quantity</label>
+              <div className="quantity-selector">
+                <button
+                  type="button"
+                  className="qty-btn"
+                  onClick={() => setSelectedQuantity(Math.max(1, selectedQuantity - 1))}
+                >
+                  -
+                </button>
+                <input
+                  id="quantity"
+                  type="number"
+                  min="1"
+                  max={availableStock ?? 999}
+                  value={selectedQuantity}
+                  onChange={(e) => {
+                    const val = parseInt(e.target.value, 10);
+                    if (!isNaN(val) && val > 0) {
+                      if (availableStock !== null) {
+                        setSelectedQuantity(Math.min(val, availableStock));
+                      } else {
+                        setSelectedQuantity(val);
+                      }
+                    }
+                  }}
+                  className="qty-input"
+                />
+                <button
+                  type="button"
+                  className="qty-btn"
+                  onClick={() => {
+                    if (availableStock !== null) {
+                      setSelectedQuantity(Math.min(selectedQuantity + 1, availableStock));
+                    } else {
+                      setSelectedQuantity(selectedQuantity + 1);
+                    }
+                  }}
+                >
+                  +
+                </button>
+              </div>
+            </div>
 
             <div className="row-actions">
               <button type="button" className="btn" onClick={addToCart}>
