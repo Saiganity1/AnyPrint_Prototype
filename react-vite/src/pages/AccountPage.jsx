@@ -9,7 +9,6 @@ export default function AccountPage() {
   const user = getStoredUser();
   const [searchParams] = useSearchParams();
   const [orders, setOrders] = useState([]);
-  const [showAll, setShowAll] = useState(false);
   const [status, setStatus] = useState("");
   const [error, setError] = useState("");
 
@@ -45,13 +44,7 @@ export default function AccountPage() {
   }, [searchParams]);
 
   const displayName = useMemo(() => user?.name || user?.username || "User", [user]);
-  const recentPurchase = useMemo(() => {
-    return [...orders].sort((left, right) => {
-      const leftTime = new Date(left.created_at || 0).getTime();
-      const rightTime = new Date(right.created_at || 0).getTime();
-      return rightTime - leftTime;
-    })[0] || null;
-  }, [orders]);
+  const recentPurchase = useMemo(() => null, [orders]);
 
   if (!user) {
     return <Navigate to="/login?next=%2Faccount" replace />;
@@ -72,57 +65,26 @@ export default function AccountPage() {
         <p className="meta">Name: {user.name || user.username || "User"}</p>
         <p className="meta">Email: {user.email || "Not set"}</p>
         <p className="meta">Role: {user.role || "USER"}</p>
-        {recentPurchase ? (
-          <div className="row-actions" style={{ marginTop: "1rem" }}>
-            <Link className="btn" to={`/tracking?placed_order=${encodeURIComponent(recentPurchase.id)}`}>
-              Recent Purchase
-            </Link>
-          </div>
-        ) : null}
+        {/* recent purchase removed per request */}
       </section>
 
       <section className="orders-stack">
-        {recentPurchase ? (
-          <article className="panel">
-            <div className="row-between">
-              <div>
-                <h3 style={{ marginBottom: "0.2rem" }}>Recent Purchase</h3>
-                <p className="meta">{new Date(recentPurchase.created_at).toLocaleDateString()}</p>
-              </div>
-              <strong>{recentPurchase.status}</strong>
-            </div>
-            <p className="meta">Total: {formatPrice(recentPurchase.total_amount)} • Payment: {recentPurchase.payment_status}</p>
-            <div style={{ marginTop: "1rem" }}>
-              <Link className="btn" to={`/tracking?placed_order=${encodeURIComponent(recentPurchase.id)}`}>
-                View in Tracking
-              </Link>
-              <button className="btn secondary" style={{ marginLeft: "0.6rem" }} onClick={() => setShowAll(true)}>
-                Show All Purchases
-              </button>
-            </div>
-          </article>
-        ) : null}
-
-        {(!orders.length && !recentPurchase) ? (
-          <div className="panel empty-panel">No orders yet. Browse products to start your first purchase.</div>
-        ) : null}
-
-        {showAll ? (
-          orders
-            .filter((o) => !(recentPurchase && o.id === recentPurchase.id))
-            .map((order) => (
-              <article className="panel" key={order.id}>
-                <div className="row-between">
-                  <div>
-                    <h3 style={{ marginBottom: "0.2rem" }}>Order {order.tracking_number || `#${order.id}`}</h3>
-                    <p className="meta">{new Date(order.created_at).toLocaleDateString()}</p>
-                  </div>
-                  <strong>{order.status}</strong>
+        {orders.length ? (
+          orders.map((order) => (
+            <article className="panel" key={order.id}>
+              <div className="row-between">
+                <div>
+                  <h3 style={{ marginBottom: "0.2rem" }}>Order {order.tracking_number || `#${order.id}`}</h3>
+                  <p className="meta">{new Date(order.created_at).toLocaleDateString()}</p>
                 </div>
-                <p className="meta">Total: {formatPrice(order.total_amount)} • Payment: {order.payment_status}</p>
-              </article>
-            ))
-        ) : null}
+                <strong>{order.status}</strong>
+              </div>
+              <p className="meta">Total: {formatPrice(order.total_amount)} • Payment: {order.payment_status}</p>
+            </article>
+          ))
+        ) : (
+          <div className="panel empty-panel">No orders yet. Browse products to start your first purchase.</div>
+        )}
 
         <div className="row-actions" style={{ marginTop: "1rem" }}>
           {!roleCanManage(user?.role) ? (
