@@ -113,9 +113,9 @@ export default function ChatWindow({ onClose, currentUser, initialProduct = null
       <div className="chat-messages">
         {error && <div className="chat-error">{error}</div>}
 
-        {messages.length === 0 ? (
+        {!error && messages.length === 0 ? (
           <div className="chat-empty">
-            <p>No messages yet. Start a conversation!</p>
+            <p>Start a conversation with our support team!</p>
           </div>
         ) : (
           messages.map((msg) => (

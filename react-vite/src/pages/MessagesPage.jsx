@@ -19,11 +19,11 @@ export default function MessagesPage() {
     <section className="dashboard-page">
       <div className="page-intro">
         <p className="page-kicker">Messages</p>
-        <h2 className="page-title">Customer Chat</h2>
+        <h2 className="page-title">Customer Support</h2>
         <p className="page-lead">
           {canManage
-            ? "View and reply to customer messages from a dedicated inbox."
-            : "Send a message to admin or owner and follow the conversation here."}
+            ? "View and reply to customer messages. Customers can contact you through product inquiries."
+            : "Chat with our support team about products or orders."}
         </p>
       </div>
 
