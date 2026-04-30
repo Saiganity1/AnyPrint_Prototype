@@ -1,23 +1,31 @@
 #!/bin/bash
-# Build script for Render static site deployment
-# Ensures all React routes redirect to index.html
+set -euo pipefail
 
-# Verify public folder exists
-if [ ! -d "public" ]; then
-  echo "Error: public folder not found"
+# Build the React app, then publish the generated static output into public/.
+# Render serves the contents of public/, so this keeps deployed assets in sync.
+
+npm run build
+
+if [ ! -d "react-vite/dist" ]; then
+  echo "Error: react-vite/dist not found after build"
   exit 1
 fi
 
-# Verify index.html exists
-if [ ! -f "public/index.html" ]; then
-  echo "Error: public/index.html not found"
-  exit 1
-fi
+mkdir -p public
 
-# Ensure _redirects file exists for SPA routing (Netlify/Render compatible)
-cat > public/_redirects << 'EOF'
+# Preserve static header/config files while replacing the app bundle.
+find public -mindepth 1 -maxdepth 1 \
+  ! -name '_headers' \
+  ! -name 'static.json' \
+  -exec rm -rf {} +
+
+cp -R react-vite/dist/. public/
+
+if [ ! -f "public/_redirects" ]; then
+  cat > public/_redirects << 'EOF'
 /*    /index.html   200
 EOF
+fi
 
-echo "Build complete. Static files ready in public/ folder."
+echo "Build complete. Static files published to public/."
 echo "SPA routing configured with _redirects"
