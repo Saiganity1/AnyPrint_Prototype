@@ -1,10 +1,9 @@
 import { useEffect, useMemo, useState } from "react";
-import { Navigate } from "react-router-dom";
+import { Link, Navigate } from "react-router-dom";
 import { apiRequest, normalizeApiError, readJsonSafe } from "../lib/api";
 import { getStoredUser, roleCanManage } from "../lib/auth";
 import { formatPrice } from "../lib/format";
 import { normalizeOrders } from "../lib/normalize";
-import AdminChatPanel from "../components/AdminChatPanel";
 
 const ORDER_STATUS_OPTIONS = ["pending", "packing", "shipped", "delivering", "delivered", "rate", "cancelled"];
 
@@ -166,8 +165,17 @@ export default function AdminPage() {
           <strong>{formatPrice(metrics.total_sales)}</strong>
         </article>
       </section>
-      <section className="panel" style={{ marginTop: '1rem' }}>
-        <AdminChatPanel />
+
+      <section className="panel" style={{ marginTop: '1rem', marginBottom: '1rem' }}>
+        <div className="row-between">
+          <div>
+            <h3>Messages</h3>
+            <p className="meta">Customer chat has moved to a dedicated messages page.</p>
+          </div>
+          <Link className="btn" to="/messages">
+            Open Messages
+          </Link>
+        </div>
       </section>
 
       <section className="panel" style={{ marginBottom: "1rem" }}>

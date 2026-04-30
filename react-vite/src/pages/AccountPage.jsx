@@ -79,6 +79,9 @@ export default function AccountPage() {
             <Link className="btn" to="/account/edit" style={{ marginTop: '0.75rem', display: 'inline-block' }}>
               Edit profile
             </Link>
+            <Link className="btn secondary" to="/messages" style={{ marginTop: '0.75rem', display: 'inline-block', marginLeft: '0.5rem' }}>
+              Messages
+            </Link>
           </div>
         </aside>
 

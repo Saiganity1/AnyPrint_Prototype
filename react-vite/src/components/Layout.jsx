@@ -71,6 +71,11 @@ export default function Layout({ children }) {
                 Track Order
               </NavLink>
             ) : null}
+            {currentUser ? (
+              <NavLink to="/messages" className={navClass}>
+                Messages
+              </NavLink>
+            ) : null}
             {isOwner ? (
               <NavLink to="/owner" className={navClass}>
                 Owner
