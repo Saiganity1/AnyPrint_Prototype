@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useParams, useNavigate } from "react-router-dom";
 import { apiRequest, readJsonSafe } from "../lib/api";
 import { upsertCartItem } from "../lib/cart";
 import { formatPrice } from "../lib/format";
@@ -10,6 +10,7 @@ const SIZE_ORDER = ["S", "M", "L", "XL", "2XL", "3XL"];
 
 export default function ProductPage() {
   const { slug } = useParams();
+  const navigate = useNavigate();
   const [product, setProduct] = useState(null);
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const [selectedSize, setSelectedSize] = useState("M");
@@ -119,6 +120,10 @@ export default function ProductPage() {
     });
     setMessage(`Added ${selectedQuantity} item(s) to cart.`);
     setSelectedQuantity(1);
+  }
+
+  function contactSeller() {
+    navigate('/messages', { state: { productId: product.id, productName: product.name } });
   }
 
   return (
@@ -259,6 +264,9 @@ export default function ProductPage() {
               <Link className="btn secondary" to="/checkout">
                 Go to Checkout
               </Link>
+              <button type="button" className="btn secondary" onClick={contactSeller}>
+                Contact Seller
+              </button>
               <Link className="btn secondary" to="/shop">
                 Back to Shop
               </Link>
