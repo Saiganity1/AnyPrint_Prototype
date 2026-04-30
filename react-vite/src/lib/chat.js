@@ -1,10 +1,15 @@
 import { apiRequest, readJsonSafe } from './api';
 
 export async function sendMessage(recipientId, content) {
+  const recipient = String(recipientId || '').trim();
+  if (!recipient) {
+    throw new Error('Recipient is required');
+  }
+
   const response = await apiRequest('chat/send', {
     method: 'POST',
     body: JSON.stringify({
-      recipient_id: recipientId,
+      recipient_id: recipient,
       content,
     }),
   });

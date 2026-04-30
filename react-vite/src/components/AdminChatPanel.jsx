@@ -75,8 +75,13 @@ export default function AdminChatPanel() {
 
     try {
       setSending(true);
+      setError('');
       // recipient is the other user in the conversation
-      const recipientId = selected.other_user.id;
+      const recipientId = String(selected.other_user?.id || selected.other_user?._id || '').trim();
+      if (!recipientId) {
+        throw new Error('Could not resolve recipient for this conversation');
+      }
+
       await sendMessage(recipientId, inputValue.trim());
       setInputValue('');
       await loadMessages(selected.conversation_id);
@@ -99,85 +104,103 @@ export default function AdminChatPanel() {
   }
 
   return (
-    <section className="panel" style={{ display: 'flex', gap: '1rem' }}>
-      <div style={{ width: 280 }}>
-        <div className="row-between">
-          <h3>Customer Chats</h3>
-          <button className="btn" onClick={loadConversations}>Refresh</button>
+    <section className="chat-window admin-chat-window">
+      <div className="chat-header">
+        <div>
+          <h3>Customer Support Inbox</h3>
+          <p className="chat-admin-name">Reply to customers in real time</p>
         </div>
-        {error && <p className="error-text">{error}</p>}
-        <div style={{ marginTop: '0.5rem' }}>
-          {conversations.length === 0 ? (
-            <p className="meta">No conversations</p>
-          ) : (
-            conversations.map((c) => (
-              <button
-                key={c.conversation_id}
-                className={`checkout-item ${selected?.conversation_id === c.conversation_id ? 'selected' : ''}`}
-                onClick={() => setSelected(c)}
-                style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
-              >
-                <div>
-                  <strong>{c.other_user.name}</strong>
-                  <p className="meta">{c.other_user.email}</p>
-                </div>
-                <div style={{ textAlign: 'right' }}>
-                  <small>{new Date(c.last_message_at).toLocaleString()}</small>
-                  {c.unread_count > 0 && <div className="chat-badge">{c.unread_count}</div>}
-                </div>
-              </button>
-            ))
-          )}
+        <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+          <button className="btn" onClick={loadConversations}>Refresh</button>
         </div>
       </div>
 
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <h3>Conversation</h3>
-          <div>
+      <div className="admin-chat-layout">
+        <aside className="admin-chat-sidebar">
+          <div className="admin-chat-sidebar-header">
+            <h4>Customer Chats</h4>
+            <span className="chat-badge">{conversations.length}</span>
+          </div>
+
+          {error && <p className="error-text">{error}</p>}
+
+          <div className="admin-chat-conversation-list">
+            {conversations.length === 0 ? (
+              <p className="meta">No conversations</p>
+            ) : (
+              conversations.map((c) => (
+                <button
+                  key={c.conversation_id}
+                  className={`admin-chat-conversation ${selected?.conversation_id === c.conversation_id ? 'selected' : ''}`}
+                  onClick={() => setSelected(c)}
+                >
+                  <div className="admin-chat-conversation-main">
+                    <strong>{c.other_user.name}</strong>
+                    <p className="meta">{c.other_user.email}</p>
+                  </div>
+                  <div className="admin-chat-conversation-meta">
+                    <small>{new Date(c.last_message_at).toLocaleString()}</small>
+                    {c.unread_count > 0 && <div className="chat-badge">{c.unread_count}</div>}
+                  </div>
+                </button>
+              ))
+            )}
+          </div>
+        </aside>
+
+        <div className="admin-chat-thread">
+          <div className="admin-chat-thread-header">
+            <div>
+              <h4>Conversation</h4>
+              <p className="chat-admin-name">
+                {selected ? `Replying to ${selected.other_user.name}` : 'Select a customer conversation'}
+              </p>
+            </div>
             <button className="btn" onClick={() => selected && loadMessages(selected.conversation_id)}>Reload</button>
           </div>
-        </div>
 
-        <div className="chat-messages" style={{ flex: 1, overflowY: 'auto', padding: '0.5rem', border: '1px solid var(--muted)', borderRadius: 6 }}>
-          {loading ? (
-            <p className="meta">Loading messages...</p>
-          ) : !selected ? (
-            <p className="meta">Select a conversation to view messages.</p>
-          ) : messages.length === 0 ? (
-            <p className="meta">No messages yet.</p>
-          ) : (
-            messages.map((m) => (
-              <div key={m._id} className={`chat-message ${m.sender_id._id === admin.id ? 'sent' : 'received'}`} style={{ marginBottom: 8 }}>
-                <div className="message-bubble">
-                  <p className="message-content">{m.content}</p>
-                  <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-                    <small className="message-time">{new Date(m.createdAt).toLocaleString()}</small>
-                    {m.sender_id._id === admin.id && (
-                      <button className="btn small" onClick={() => handleDelete(m._id)}>Delete</button>
-                    )}
+          <div className="chat-messages admin-chat-messages">
+            {loading ? (
+              <p className="meta">Loading messages...</p>
+            ) : !selected ? (
+              <p className="meta">Select a conversation to view messages.</p>
+            ) : messages.length === 0 ? (
+              <p className="meta">No messages yet.</p>
+            ) : (
+              messages.map((m) => {
+                const isSentByAdmin = String(m.sender_id?._id || m.sender_id) === String(admin.id);
+                return (
+                  <div key={m._id} className={`chat-message ${isSentByAdmin ? 'sent' : 'received'}`}>
+                    <div className="message-bubble">
+                      <p className="message-content">{m.content}</p>
+                      <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                        <small className="message-time">{new Date(m.createdAt).toLocaleString()}</small>
+                        {isSentByAdmin && (
+                          <button className="btn small" onClick={() => handleDelete(m._id)}>Delete</button>
+                        )}
+                      </div>
+                    </div>
                   </div>
-                </div>
-              </div>
-            ))
-          )}
-          <div ref={messagesEndRef} />
-        </div>
+                );
+              })
+            )}
+            <div ref={messagesEndRef} />
+          </div>
 
-        <form className="chat-input-form" onSubmit={handleSend} style={{ marginTop: '0.5rem', display: 'flex', gap: '0.5rem' }}>
-          <input
-            type="text"
-            placeholder={selected ? `Message ${selected.other_user.name}` : 'Select a conversation'}
-            value={inputValue}
-            onChange={(e) => setInputValue(e.target.value)}
-            disabled={!selected || sending}
-            className="chat-input"
-            style={{ flex: 1 }}
-          />
-          <button className="btn" type="submit" disabled={!inputValue.trim() || !selected || sending}>
-            {sending ? 'Sending...' : 'Send'}
-          </button>
-        </form>
+          <form className="chat-input-form admin-chat-input-form" onSubmit={handleSend}>
+            <input
+              type="text"
+              placeholder={selected ? `Message ${selected.other_user.name}` : 'Select a conversation'}
+              value={inputValue}
+              onChange={(e) => setInputValue(e.target.value)}
+              disabled={!selected || sending}
+              className="chat-input"
+            />
+            <button className="btn" type="submit" disabled={!inputValue.trim() || !selected || sending}>
+              {sending ? 'Sending...' : 'Send'}
+            </button>
+          </form>
+        </div>
       </div>
     </section>
   );
