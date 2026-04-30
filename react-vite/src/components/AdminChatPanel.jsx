@@ -108,8 +108,22 @@ export default function AdminChatPanel() {
         throw new Error('Could not resolve recipient for this conversation');
       }
 
-      await sendMessage(recipientId, inputValue.trim());
+      const message = await sendMessage(recipientId, inputValue.trim());
       setInputValue('');
+
+      // Add the new message to the UI immediately so the admin sees it instantly.
+      if (message) {
+        setMessages((prev) => [...prev, message]);
+      }
+
+      // Ensure the room is still joined after sending.
+      try {
+        const s = getSocket();
+        if (!s.connected) initSocket();
+        if (selected?.conversation_id) joinSocketRoom(selected.conversation_id);
+      } catch (e) {
+        console.warn('Socket reconnect failed:', e);
+      }
     } catch (err) {
       setError(err.message || 'Failed to send message');
     } finally {
