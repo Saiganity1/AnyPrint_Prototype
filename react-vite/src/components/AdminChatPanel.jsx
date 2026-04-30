@@ -24,21 +24,29 @@ export default function AdminChatPanel() {
       const s = getSocket();
       const handleNewMessage = (msg) => {
         const activeSelected = selectedRef.current;
+        console.log('[AdminChatPanel] new_message event received:', { msg, activeSelected });
 
         if (activeSelected && msg.conversation_id === activeSelected.conversation_id) {
+          console.log('[AdminChatPanel] Message matches active conversation, updating state');
           setMessages((prev) => {
             if (prev.some((existing) => existing._id === msg._id)) {
+              console.log('[AdminChatPanel] Duplicate message, skipping');
               return prev;
             }
+            console.log('[AdminChatPanel] Appending message to state, new count:', prev.length + 1);
             return [...prev, msg];
           });
+        } else {
+          console.log('[AdminChatPanel] Message is from different conversation, skipping state update');
         }
 
         loadConversations();
       };
 
+      console.log('[AdminChatPanel] Registering new_message listener');
       s.off('new_message', handleNewMessage);
       s.on('new_message', handleNewMessage);
+      console.log('[AdminChatPanel] new_message listener registered');
     } catch (e) {
       // ignore socket errors in environments without socket.io client
     }

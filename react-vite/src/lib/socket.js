@@ -48,8 +48,12 @@ export function joinSocketRoom(room) {
   if (!room) return;
   activeRoom = room;
   const s = getSocket();
+  console.log('[Socket.js] joinSocketRoom called with room:', room, 'socket connected:', s.connected);
   if (s.connected) {
+    console.log('[Socket.js] Emitting join event to room:', room);
     s.emit('join', room);
+  } else {
+    console.log('[Socket.js] Socket not connected yet, will join on reconnect');
   }
 }
 

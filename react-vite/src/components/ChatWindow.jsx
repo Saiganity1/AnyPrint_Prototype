@@ -60,14 +60,19 @@ export default function ChatWindow({ onClose, currentUser, initialProduct = null
 
           const handleNewMessage = (msg) => {
             const activeConversationId = conversationIdRef.current;
+            console.log('[ChatWindow] new_message event received:', { msg, activeConversationId });
             if (!activeConversationId || msg.conversation_id !== activeConversationId) {
+              console.log('[ChatWindow] Ignoring message - wrong conversation or no active conversation');
               return;
             }
 
+            console.log('[ChatWindow] Adding message to state');
             setMessages((prev) => {
               if (prev.some((existing) => existing._id === msg._id)) {
+                console.log('[ChatWindow] Duplicate message, skipping');
                 return prev;
               }
+              console.log('[ChatWindow] Appending message to state, new count:', prev.length + 1);
               return [...prev, msg];
             });
 
@@ -75,8 +80,10 @@ export default function ChatWindow({ onClose, currentUser, initialProduct = null
             window.dispatchEvent(new Event('anyprint:chat-updated'));
           };
 
+          console.log('[ChatWindow] Registering new_message listener for conversation:', conversation_id);
           s.off('new_message', handleNewMessage);
           s.on('new_message', handleNewMessage);
+          console.log('[ChatWindow] new_message listener registered');
 
         } catch (e) {
           console.warn('Socket.IO initialization failed:', e);
