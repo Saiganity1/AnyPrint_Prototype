@@ -12,6 +12,8 @@ export default function ChatWindow({ onClose, currentUser, initialProduct = null
   const [error, setError] = useState('');
   const [sending, setSending] = useState(false);
   const messagesEndRef = useRef(null);
+  const conversationIdRef = useRef(null);
+  const currentUserIdRef = useRef(currentUser?.id);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -22,6 +24,14 @@ export default function ChatWindow({ onClose, currentUser, initialProduct = null
   }, [messages]);
 
   useEffect(() => {
+    conversationIdRef.current = conversationId;
+  }, [conversationId]);
+
+  useEffect(() => {
+    currentUserIdRef.current = currentUser?.id;
+  }, [currentUser]);
+
+  useEffect(() => {
     async function loadChat() {
       try {
         setLoading(true);
@@ -29,7 +39,6 @@ export default function ChatWindow({ onClose, currentUser, initialProduct = null
         const { conversation_id, admin } = await getAdminChat();
         setConversationId(conversation_id);
         setAdminInfo(admin);
-          console.log('Admin info loaded:', admin);
 
         // Try to fetch existing messages, but don't fail if conversation doesn't exist yet
         try {
@@ -47,14 +56,24 @@ export default function ChatWindow({ onClose, currentUser, initialProduct = null
         try {
           initSocket();
           const s = getSocket();
+          s.off('new_message');
           s.emit('join', conversation_id);
-          
+
           s.on('new_message', (msg) => {
-            if (msg.conversation_id === conversation_id) {
-              setMessages((prev) => [...prev, msg]);
-              // notify other widgets (unread badge)
-              window.dispatchEvent(new Event('anyprint:chat-updated'));
+            const activeConversationId = conversationIdRef.current;
+            if (!activeConversationId || msg.conversation_id !== activeConversationId) {
+              return;
             }
+
+            setMessages((prev) => {
+              if (prev.some((existing) => existing._id === msg._id)) {
+                return prev;
+              }
+              return [...prev, msg];
+            });
+
+            // notify other widgets (unread badge)
+            window.dispatchEvent(new Event('anyprint:chat-updated'));
           });
 
           s.on('connect', () => {
@@ -100,30 +119,26 @@ export default function ChatWindow({ onClose, currentUser, initialProduct = null
       setSending(true);
       setError('');
       
-        console.log('===== Sending Message =====');
-        console.log('adminInfo:', adminInfo);
-        console.log('adminInfo.id:', adminInfo?.id);
-        console.log('inputValue:', inputValue.substring(0, 50));
       const message = await sendMessage(adminInfo.id, inputValue);
-      console.log('Message sent successfully:', message);
       setInputValue('');
 
-      // Add the new message to the UI immediately (real-time via socket will also update)
+        // Add the new message to the UI immediately so the sender sees it instantly.
       if (message) {
         setMessages((prev) => [...prev, message]);
       }
 
-      // Make sure socket.io is listening for new messages if not already
+        // Ensure the room is still joined after sending.
       try {
         const s = getSocket();
         if (!s.connected) {
           initSocket();
+          } else if (conversationIdRef.current) {
+            s.emit('join', conversationIdRef.current);
         }
       } catch (e) {
         console.warn('Socket reconnect failed:', e);
       }
     } catch (err) {
-      console.error('Send message error:', err);
       setError(err.message || 'Failed to send message');
     } finally {
       setSending(false);
@@ -168,7 +183,7 @@ export default function ChatWindow({ onClose, currentUser, initialProduct = null
             <div
               key={msg._id}
               className={`chat-message ${
-                msg.sender_id._id === currentUser.id ? 'sent' : 'received'
+                String(msg.sender_id?._id || msg.sender_id) === String(currentUserIdRef.current) ? 'sent' : 'received'
               }`}
             >
               <div className="message-bubble">

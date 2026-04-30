@@ -13,6 +13,8 @@ export default function AdminChatPanel() {
   const [inputValue, setInputValue] = useState('');
   const [error, setError] = useState('');
   const messagesEndRef = useRef(null);
+  const selectedRef = useRef(null);
+  const adminIdRef = useRef(admin?.id);
 
   useEffect(() => {
     loadConversations();
@@ -20,18 +22,33 @@ export default function AdminChatPanel() {
     try {
       initSocket();
       const s = getSocket();
+      s.off('new_message');
       s.on('new_message', (msg) => {
-        // If the new message belongs to currently selected conversation, reload messages
-        if (selected && msg.conversation_id === selected.conversation_id) {
-          loadMessages(selected.conversation_id);
+        const activeSelected = selectedRef.current;
+
+        if (activeSelected && msg.conversation_id === activeSelected.conversation_id) {
+          setMessages((prev) => {
+            if (prev.some((existing) => existing._id === msg._id)) {
+              return prev;
+            }
+            return [...prev, msg];
+          });
         }
-        // otherwise refresh conversations list to update unread counts
+
         loadConversations();
       });
     } catch (e) {
       // ignore socket errors in environments without socket.io client
     }
   }, []);
+
+  useEffect(() => {
+    selectedRef.current = selected;
+  }, [selected]);
+
+  useEffect(() => {
+    adminIdRef.current = admin?.id;
+  }, [admin]);
 
   useEffect(() => {
     if (selected) loadMessages(selected.conversation_id);
@@ -84,8 +101,6 @@ export default function AdminChatPanel() {
 
       await sendMessage(recipientId, inputValue.trim());
       setInputValue('');
-      await loadMessages(selected.conversation_id);
-      await loadConversations();
     } catch (err) {
       setError(err.message || 'Failed to send message');
     } finally {
@@ -168,7 +183,7 @@ export default function AdminChatPanel() {
               <p className="meta">No messages yet.</p>
             ) : (
               messages.map((m) => {
-                const isSentByAdmin = String(m.sender_id?._id || m.sender_id) === String(admin.id);
+                const isSentByAdmin = String(m.sender_id?._id || m.sender_id) === String(adminIdRef.current);
                 return (
                   <div key={m._id} className={`chat-message ${isSentByAdmin ? 'sent' : 'received'}`}>
                     <div className="message-bubble">
