@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { sendMessage, getMessages, getAdminChat } from '../lib/chat';
-import { initSocket, getSocket } from '../lib/socket';
+import { initSocket, getSocket, joinSocketRoom, leaveSocketRoom } from '../lib/socket';
 
 export default function ChatWindow({ onClose, currentUser, initialProduct = null }) {
   const [messages, setMessages] = useState([]);
@@ -56,10 +56,9 @@ export default function ChatWindow({ onClose, currentUser, initialProduct = null
         try {
           initSocket();
           const s = getSocket();
-          s.off('new_message');
-          s.emit('join', conversation_id);
+          joinSocketRoom(conversation_id);
 
-          s.on('new_message', (msg) => {
+          const handleNewMessage = (msg) => {
             const activeConversationId = conversationIdRef.current;
             if (!activeConversationId || msg.conversation_id !== activeConversationId) {
               return;
@@ -74,19 +73,11 @@ export default function ChatWindow({ onClose, currentUser, initialProduct = null
 
             // notify other widgets (unread badge)
             window.dispatchEvent(new Event('anyprint:chat-updated'));
-          });
+          };
 
-          s.on('connect', () => {
-            console.log('Chat socket connected');
-          });
+          s.off('new_message', handleNewMessage);
+          s.on('new_message', handleNewMessage);
 
-          s.on('disconnect', () => {
-            console.log('Chat socket disconnected');
-          });
-
-          s.on('error', (err) => {
-            console.error('Socket error:', err);
-          });
         } catch (e) {
           console.warn('Socket.IO initialization failed:', e);
         }
@@ -108,6 +99,12 @@ export default function ChatWindow({ onClose, currentUser, initialProduct = null
     if (currentUser) {
       loadChat();
     }
+
+    return () => {
+      if (conversationIdRef.current) {
+        leaveSocketRoom(conversationIdRef.current);
+      }
+    };
   }, [currentUser, initialProduct, prefilled]);
 
   async function handleSendMessage(e) {
@@ -130,11 +127,8 @@ export default function ChatWindow({ onClose, currentUser, initialProduct = null
         // Ensure the room is still joined after sending.
       try {
         const s = getSocket();
-        if (!s.connected) {
-          initSocket();
-          } else if (conversationIdRef.current) {
-            s.emit('join', conversationIdRef.current);
-        }
+          if (!s.connected) initSocket();
+          if (conversationIdRef.current) joinSocketRoom(conversationIdRef.current);
       } catch (e) {
         console.warn('Socket reconnect failed:', e);
       }

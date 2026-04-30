@@ -1,6 +1,8 @@
 import { io as clientIo } from 'socket.io-client';
 
 let socket = null;
+let activeRoom = null;
+let connectHandlerAttached = false;
 
 export function initSocket(baseUrl) {
   if (socket && socket.connected) return socket;
@@ -17,6 +19,22 @@ export function initSocket(baseUrl) {
     reconnectionDelayMax: 5000,
     reconnectionAttempts: 10,
   });
+
+  if (!connectHandlerAttached) {
+    socket.on('connect', () => {
+      if (activeRoom) {
+        socket.emit('join', activeRoom);
+      }
+    });
+
+    socket.on('reconnect', () => {
+      if (activeRoom) {
+        socket.emit('join', activeRoom);
+      }
+    });
+
+    connectHandlerAttached = true;
+  }
   
   return socket;
 }
@@ -26,9 +44,31 @@ export function getSocket() {
   return socket;
 }
 
+export function joinSocketRoom(room) {
+  if (!room) return;
+  activeRoom = room;
+  const s = getSocket();
+  if (s.connected) {
+    s.emit('join', room);
+  }
+}
+
+export function leaveSocketRoom(room) {
+  if (!room) return;
+  const s = getSocket();
+  if (s.connected) {
+    s.emit('leave', room);
+  }
+  if (activeRoom === room) {
+    activeRoom = null;
+  }
+}
+
 export function closeSocket() {
   if (socket) {
     socket.disconnect();
     socket = null;
+    activeRoom = null;
+    connectHandlerAttached = false;
   }
 }

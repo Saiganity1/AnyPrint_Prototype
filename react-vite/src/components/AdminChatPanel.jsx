@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef } from 'react';
 import { getConversations, getMessages, sendMessage, deleteMessage } from '../lib/chat';
 import { getStoredUser } from '../lib/auth';
-import { getSocket, initSocket } from '../lib/socket';
+import { getSocket, initSocket, joinSocketRoom, leaveSocketRoom } from '../lib/socket';
 
 export default function AdminChatPanel() {
   const admin = getStoredUser();
@@ -22,8 +22,7 @@ export default function AdminChatPanel() {
     try {
       initSocket();
       const s = getSocket();
-      s.off('new_message');
-      s.on('new_message', (msg) => {
+      const handleNewMessage = (msg) => {
         const activeSelected = selectedRef.current;
 
         if (activeSelected && msg.conversation_id === activeSelected.conversation_id) {
@@ -36,7 +35,10 @@ export default function AdminChatPanel() {
         }
 
         loadConversations();
-      });
+      };
+
+      s.off('new_message', handleNewMessage);
+      s.on('new_message', handleNewMessage);
     } catch (e) {
       // ignore socket errors in environments without socket.io client
     }
@@ -76,8 +78,7 @@ export default function AdminChatPanel() {
       setMessages(msgs);
       // join socket room for real-time updates
       try {
-        const s = getSocket();
-        s.emit('join', conversationId);
+        joinSocketRoom(conversationId);
       } catch (e) {}
     } catch (err) {
       setError(err.message || 'Failed to load messages');
@@ -107,6 +108,14 @@ export default function AdminChatPanel() {
       setSending(false);
     }
   }
+
+  useEffect(() => {
+    return () => {
+      if (selectedRef.current?.conversation_id) {
+        leaveSocketRoom(selectedRef.current.conversation_id);
+      }
+    };
+  }, []);
 
   async function handleDelete(messageId) {
     try {
