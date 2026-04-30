@@ -11,9 +11,10 @@ export async function sendMessage(recipientId, content) {
 
   const body = await readJsonSafe(response);
   if (!response.ok) {
-    throw new Error(body.error || 'Failed to send message');
+    console.error('Send message failed:', response.status, body);
+    throw new Error(body.error || `Failed to send message (${response.status})`);
   }
-  return body.message;
+  return body.message || body;
 }
 
 export async function getConversations() {

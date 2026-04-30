@@ -99,12 +99,14 @@ export default function ChatWindow({ onClose, currentUser, initialProduct = null
       setSending(true);
       setError('');
       
-      const response = await sendMessage(adminInfo.id, inputValue);
+      console.log('Sending message to:', adminInfo.id);
+      const message = await sendMessage(adminInfo.id, inputValue);
+      console.log('Message sent successfully:', message);
       setInputValue('');
 
       // Add the new message to the UI immediately (real-time via socket will also update)
-      if (response.message) {
-        setMessages((prev) => [...prev, response.message]);
+      if (message) {
+        setMessages((prev) => [...prev, message]);
       }
 
       // Make sure socket.io is listening for new messages if not already
@@ -117,6 +119,7 @@ export default function ChatWindow({ onClose, currentUser, initialProduct = null
         console.warn('Socket reconnect failed:', e);
       }
     } catch (err) {
+      console.error('Send message error:', err);
       setError(err.message || 'Failed to send message');
     } finally {
       setSending(false);
