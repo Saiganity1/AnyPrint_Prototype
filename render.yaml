@@ -5,3 +5,7 @@ services:
   - type: static
     name: anyprint-frontend
     publish: public
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
