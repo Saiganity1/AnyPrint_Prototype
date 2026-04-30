@@ -29,6 +29,7 @@ export default function ChatWindow({ onClose, currentUser, initialProduct = null
         const { conversation_id, admin } = await getAdminChat();
         setConversationId(conversation_id);
         setAdminInfo(admin);
+          console.log('Admin info loaded:', admin);
 
         // Try to fetch existing messages, but don't fail if conversation doesn't exist yet
         try {
@@ -99,7 +100,10 @@ export default function ChatWindow({ onClose, currentUser, initialProduct = null
       setSending(true);
       setError('');
       
-      console.log('Sending message to:', adminInfo.id);
+        console.log('===== Sending Message =====');
+        console.log('adminInfo:', adminInfo);
+        console.log('adminInfo.id:', adminInfo?.id);
+        console.log('inputValue:', inputValue.substring(0, 50));
       const message = await sendMessage(adminInfo.id, inputValue);
       console.log('Message sent successfully:', message);
       setInputValue('');
