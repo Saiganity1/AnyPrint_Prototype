@@ -202,16 +202,36 @@ export default function AdminChatPanel() {
               messages.map((m) => {
                 const isSentByAdmin = String(m.sender_id?._id || m.sender_id) === String(adminIdRef.current);
                 return (
-                  <div key={m._id} className={`chat-message ${isSentByAdmin ? 'sent' : 'received'}`}>
+                  <div
+                    key={m._id}
+                    className={`chat-message ${isSentByAdmin ? 'sent' : 'received'}`}
+                    onMouseEnter={(e) => {
+                      const deleteBtn = e.currentTarget.querySelector('.message-delete-btn');
+                      if (deleteBtn) deleteBtn.style.opacity = '1';
+                    }}
+                    onMouseLeave={(e) => {
+                      const deleteBtn = e.currentTarget.querySelector('.message-delete-btn');
+                      if (deleteBtn) deleteBtn.style.opacity = '0';
+                    }}
+                  >
                     <div className="message-bubble">
                       <p className="message-content">{m.content}</p>
-                      <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-                        <small className="message-time">{new Date(m.createdAt).toLocaleString()}</small>
-                        {isSentByAdmin && (
-                          <button className="btn small" onClick={() => handleDelete(m._id)}>Delete</button>
-                        )}
-                      </div>
+                      <span className="message-time">
+                        {new Date(m.createdAt).toLocaleTimeString([], {
+                          hour: '2-digit',
+                          minute: '2-digit',
+                        })}
+                      </span>
                     </div>
+                    {isSentByAdmin && (
+                      <button
+                        className="message-delete-btn"
+                        onClick={() => handleDelete(m._id)}
+                        title="Delete message"
+                      >
+                        ✕
+                      </button>
+                    )}
                   </div>
                 );
               })
