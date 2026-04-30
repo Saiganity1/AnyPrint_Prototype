@@ -21,6 +21,10 @@ find public -mindepth 1 -maxdepth 1 \
 
 cp -R react-vite/dist/. public/
 
+# Keep a 404 fallback that serves the SPA shell on hosts that use 404.html for
+# unknown client routes.
+cp public/index.html public/404.html
+
 if [ ! -f "public/_redirects" ]; then
   cat > public/_redirects << 'EOF'
 /*    /index.html   200
