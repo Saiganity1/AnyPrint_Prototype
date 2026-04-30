@@ -1,4 +1,4 @@
-import { Navigate, useNavigate } from "react-router-dom";
+import { Navigate, useNavigate, useLocation } from "react-router-dom";
 import AdminChatPanel from "../components/AdminChatPanel";
 import ChatWindow from "../components/ChatWindow";
 import { getStoredUser, roleCanManage } from "../lib/auth";
@@ -6,6 +6,8 @@ import { getStoredUser, roleCanManage } from "../lib/auth";
 export default function MessagesPage() {
   const user = getStoredUser();
   const navigate = useNavigate();
+  const location = useLocation();
+  const productContext = location.state?.productId ? { id: location.state.productId, name: location.state.productName } : null;
 
   if (!user) {
     return <Navigate to="/login?next=%2Fmessages" replace />;
@@ -31,7 +33,7 @@ export default function MessagesPage() {
         </section>
       ) : (
         <section className="panel" style={{ marginBottom: "1rem" }}>
-          <ChatWindow currentUser={user} onClose={() => navigate("/account")} />
+          <ChatWindow currentUser={user} onClose={() => navigate("/account")} initialProduct={productContext} />
         </section>
       )}
     </section>

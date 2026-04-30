@@ -2,11 +2,12 @@ import { useEffect, useRef, useState } from 'react';
 import { sendMessage, getMessages, getAdminChat } from '../lib/chat';
 import { initSocket, getSocket } from '../lib/socket';
 
-export default function ChatWindow({ onClose, currentUser }) {
+export default function ChatWindow({ onClose, currentUser, initialProduct = null }) {
   const [messages, setMessages] = useState([]);
   const [adminInfo, setAdminInfo] = useState(null);
   const [conversationId, setConversationId] = useState(null);
   const [inputValue, setInputValue] = useState('');
+  const [prefilled, setPrefilled] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [sending, setSending] = useState(false);
@@ -43,6 +44,14 @@ export default function ChatWindow({ onClose, currentUser }) {
             }
           });
         } catch (e) {}
+
+        // If the page was opened with an initial product, prefill the input box
+        if (initialProduct && !prefilled) {
+          const name = initialProduct.name || '';
+          const id = initialProduct.id || '';
+          setInputValue(`Hi, I have a question about "${name}" (id: ${id}). `);
+          setPrefilled(true);
+        }
       } catch (err) {
         setError(err.message || 'Failed to load chat');
       } finally {
@@ -53,7 +62,7 @@ export default function ChatWindow({ onClose, currentUser }) {
     if (currentUser) {
       loadChat();
     }
-  }, [currentUser]);
+  }, [currentUser, initialProduct, prefilled]);
 
   async function handleSendMessage(e) {
     e.preventDefault();

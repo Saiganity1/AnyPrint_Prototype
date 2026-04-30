@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { Link, useSearchParams } from "react-router-dom";
+import { Link, useSearchParams, useNavigate } from "react-router-dom";
 import { apiRequest, readJsonSafe } from "../lib/api";
 import { formatPrice } from "../lib/format";
 import { normalizeProducts } from "../lib/normalize";
@@ -76,9 +76,15 @@ export default function ShopPage() {
     setSearchParams(nextParams);
   }
 
+  const navigate = useNavigate();
+
   function addToCart(product) {
     setSelectedProduct(product);
     setModalOpen(true);
+  }
+
+  function contactSeller(product) {
+    navigate('/messages', { state: { productId: product.id, productName: product.name } });
   }
 
   const summary = useMemo(() => {
@@ -153,9 +159,9 @@ export default function ShopPage() {
                     <button type="button" className="btn" onClick={() => addToCart(product)}>
                       Add to Cart
                     </button>
-                    <Link className="btn secondary" to={`/products/${encodeURIComponent(product.id)}`}>
-                      View
-                    </Link>
+                    <button type="button" className="btn secondary" onClick={() => contactSeller(product)}>
+                      Contact Seller
+                    </button>
                   </div>
                 </div>
               </article>
