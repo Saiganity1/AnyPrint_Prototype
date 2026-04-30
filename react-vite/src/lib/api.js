@@ -38,6 +38,10 @@ async function requestRaw(pathOrUrl, options = {}) {
     headers.set("Authorization", `Bearer ${accessToken}`);
   }
 
+  if (config.body && !headers.has("Content-Type")) {
+    headers.set("Content-Type", "application/json");
+  }
+
   if (!["GET", "HEAD", "OPTIONS", "TRACE"].includes(method)) {
     const csrfToken = getCookie("csrftoken");
     if (csrfToken && !headers.has("X-CSRFToken")) {
