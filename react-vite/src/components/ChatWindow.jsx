@@ -30,12 +30,24 @@ export default function ChatWindow({ onClose, currentUser, initialProduct = null
         setConversationId(conversation_id);
         setAdminInfo(admin);
 
-        const msgs = await getMessages(conversation_id);
-        setMessages(msgs);
+        // Try to fetch existing messages, but don't fail if conversation doesn't exist yet
+        try {
+          const msgs = await getMessages(conversation_id);
+          setMessages(msgs);
+        } catch (err) {
+          // No existing conversation yet - that's OK, user hasn't sent a message
+          if (!err.message?.includes('Conversation not found')) {
+            throw err;
+          }
+          setMessages([]);
+        }
+
+        // Initialize Socket.IO for real-time updates
         try {
           initSocket();
           const s = getSocket();
           s.emit('join', conversation_id);
+          
           s.on('new_message', (msg) => {
             if (msg.conversation_id === conversation_id) {
               setMessages((prev) => [...prev, msg]);
@@ -43,7 +55,21 @@ export default function ChatWindow({ onClose, currentUser, initialProduct = null
               window.dispatchEvent(new Event('anyprint:chat-updated'));
             }
           });
-        } catch (e) {}
+
+          s.on('connect', () => {
+            console.log('Chat socket connected');
+          });
+
+          s.on('disconnect', () => {
+            console.log('Chat socket disconnected');
+          });
+
+          s.on('error', (err) => {
+            console.error('Socket error:', err);
+          });
+        } catch (e) {
+          console.warn('Socket.IO initialization failed:', e);
+        }
 
         // If the page was opened with an initial product, prefill the input box
         if (initialProduct && !prefilled) {
@@ -71,12 +97,25 @@ export default function ChatWindow({ onClose, currentUser, initialProduct = null
 
     try {
       setSending(true);
-      await sendMessage(adminInfo.id, inputValue);
+      setError('');
+      
+      const response = await sendMessage(adminInfo.id, inputValue);
       setInputValue('');
 
-      // Reload messages
-      const msgs = await getMessages(conversationId);
-      setMessages(msgs);
+      // Add the new message to the UI immediately (real-time via socket will also update)
+      if (response.message) {
+        setMessages((prev) => [...prev, response.message]);
+      }
+
+      // Make sure socket.io is listening for new messages if not already
+      try {
+        const s = getSocket();
+        if (!s.connected) {
+          initSocket();
+        }
+      } catch (e) {
+        console.warn('Socket reconnect failed:', e);
+      }
     } catch (err) {
       setError(err.message || 'Failed to send message');
     } finally {
