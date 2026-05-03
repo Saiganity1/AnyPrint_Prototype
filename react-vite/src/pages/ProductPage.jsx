@@ -5,6 +5,9 @@ import { upsertCartItem } from "../lib/cart";
 import { formatPrice } from "../lib/format";
 import { normalizeProduct } from "../lib/normalize";
 import { addRecentlyViewed } from "../lib/recent";
+import Breadcrumb from "../components/Breadcrumb";
+import InventoryStatus from "../components/InventoryStatus";
+import { toggleWishlist, isInWishlist } from "../lib/wishlist";
 
 const SIZE_ORDER = ["S", "M", "L", "XL", "2XL", "3XL"];
 
@@ -19,6 +22,7 @@ export default function ProductPage() {
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [inWishlist, setInWishlist] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -39,6 +43,7 @@ export default function ProductPage() {
 
         if (!cancelled) {
           setProduct(payload);
+          setInWishlist(isInWishlist(payload.id));
           addRecentlyViewed(payload);
 
           setSelectedSize(payload?.sizes?.[0] || "M");
@@ -126,11 +131,25 @@ export default function ProductPage() {
     navigate('/messages', { state: { productId: product.id, productName: product.name } });
   }
 
+  function handleWishlistToggle() {
+    toggleWishlist(product);
+    setInWishlist(!inWishlist);
+  }
+
+  const breadcrumbs = [
+    { label: 'Home', href: '/' },
+    { label: 'Shop', href: '/shop' },
+    { label: product?.category || 'Product', href: null },
+    { label: product?.name || 'Detail', href: null },
+  ];
+
   return (
     <section className="product-page">
+      <Breadcrumb items={breadcrumbs} />
+      
       <div className="page-intro">
         <p className="page-kicker">Product Detail</p>
-        <h2 className="page-title">Product view</h2>
+        <h2 className="page-title">{product?.name || 'Product'}</h2>
         <p className="page-lead">
           Check shirt details, choose your size and color, then add to cart or proceed to checkout.
         </p>
@@ -145,7 +164,7 @@ export default function ProductPage() {
           <div className="product-media-panel">
             {activeImage ? (
               <div className="product-detail-media">
-                <img className="product-detail-image" src={activeImage} alt={product.name} />
+                <img className="product-detail-image" src={activeImage} alt={product.name} loading="lazy" />
               </div>
             ) : (
               <div className="product-detail-media image-fallback">No image</div>
@@ -160,7 +179,7 @@ export default function ProductPage() {
                     className={`image-thumb ${index === activeImageIndex ? "active" : ""}`}
                     onClick={() => setActiveImageIndex(index)}
                   >
-                    <img src={image} alt={`${product.name} preview ${index + 1}`} />
+                    <img src={image} alt={`${product.name} preview ${index + 1}`} loading="lazy" />
                   </button>
                 ))}
               </div>
@@ -171,11 +190,11 @@ export default function ProductPage() {
             <p className="kicker">{product.category || "Shirt"}</p>
             <h2>{product.name}</h2>
             <p className="price large">{formatPrice(product.price)}</p>
+            
+            <InventoryStatus stock={availableStock} />
+            
             <p className="lead">{product.description || "No description yet."}</p>
             <p className="meta">Print style: {product.print_style || "Standard"}</p>
-            <p className="meta">
-              {selectedVariant ? `Stock: ${availableStock}` : "Select a size and color to view stock."}
-            </p>
 
             {sizes.length ? (
               <div className="variant-grid">
@@ -264,6 +283,14 @@ export default function ProductPage() {
               <Link className="btn secondary" to="/checkout">
                 Go to Checkout
               </Link>
+              <button 
+                type="button" 
+                className={`btn ${inWishlist ? 'wishlist-active' : 'secondary'}`}
+                onClick={handleWishlistToggle}
+                aria-label={inWishlist ? 'Remove from wishlist' : 'Add to wishlist'}
+              >
+                {inWishlist ? '❤️ In Wishlist' : '🤍 Add to Wishlist'}
+              </button>
               <button type="button" className="btn secondary" onClick={contactSeller}>
                 Contact Seller
               </button>

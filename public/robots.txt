@@ -1,0 +1,22 @@
+User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /owner
+Disallow: /account/edit
+Disallow: /api/
+Allow: /api/products
+Allow: /api/products/
+
+Sitemap: https://anyprint.com/sitemap.xml
+Sitemap: https://anyprint.com/sitemap-products.xml
+
+# Google specific
+User-agent: Googlebot
+Allow: /
+
+# Bing specific
+User-agent: Bingbot
+Allow: /
+
+# Crawl delay for all bots
+Crawl-delay: 1

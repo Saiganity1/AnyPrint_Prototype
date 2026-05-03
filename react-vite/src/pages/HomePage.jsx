@@ -1,12 +1,13 @@
 import { Link } from "react-router-dom";
 import { loadRecentlyViewed } from "../lib/recent";
 import { formatPrice } from "../lib/format";
+import NewsletterSignup from "../components/NewsletterSignup";
 
 export default function HomePage() {
   const recentItems = loadRecentlyViewed().slice(0, 4);
 
   return (
-    <section className="old-home">
+    <section className="home-page">
       <div className="offer-banner">
         <p className="offer-text">
           🎉 <strong>Limited Time:</strong> Get ₱200 OFF your first order with code <strong>TSHIRTLOVE</strong>
@@ -101,6 +102,12 @@ export default function HomePage() {
               </Link>
             </div>
           )}
+        </div>
+      </section>
+
+      <section className="newsletter-section">
+        <div className="panel">
+          <NewsletterSignup />
         </div>
       </section>
     </section>

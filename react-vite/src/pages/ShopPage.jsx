@@ -4,6 +4,9 @@ import { apiRequest, readJsonSafe } from "../lib/api";
 import { formatPrice } from "../lib/format";
 import { normalizeProducts } from "../lib/normalize";
 import AddToCartModal from "../components/AddToCartModal";
+import SkeletonLoader from "../components/SkeletonLoader";
+import { filterProducts, sortProducts, getUniqueCategories, getPriceRange } from "../lib/filters";
+import { isInWishlist, toggleWishlist } from "../lib/wishlist";
 
 export default function ShopPage() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -12,9 +15,16 @@ export default function ShopPage() {
   const [error, setError] = useState("");
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
+  const [wishlistItems, setWishlistItems] = useState(new Set());
 
   const initialSearch = searchParams.get("search") || "";
   const [search, setSearch] = useState(initialSearch);
+  const [sortBy, setSortBy] = useState(searchParams.get("sort") || "newest");
+  const [categoryFilter, setCategoryFilter] = useState(searchParams.get("category") || "");
+  const [priceRange, setPriceRange] = useState({
+    min: parseInt(searchParams.get("minPrice") || "0"),
+    max: parseInt(searchParams.get("maxPrice") || "10000"),
+  });
 
   useEffect(() => {
     let cancelled = false;
@@ -23,7 +33,7 @@ export default function ShopPage() {
       setLoading(true);
       setError("");
       try {
-        const query = new URLSearchParams({ page_size: "60" });
+        const query = new URLSearchParams({ page_size: "100" });
         if (initialSearch.trim()) {
           query.set("search", initialSearch.trim());
         }
@@ -36,17 +46,10 @@ export default function ShopPage() {
         }
 
         const resultItems = normalizeProducts(body);
-        const filteredItems = initialSearch.trim()
-          ? resultItems.filter((product) => {
-              const needle = initialSearch.trim().toLowerCase();
-              return [product.name, product.description, product.category, product.print_style]
-                .map((value) => String(value || "").toLowerCase())
-                .join(" ")
-                .includes(needle);
-            })
-          : resultItems;
         if (!cancelled) {
-          setProducts(filteredItems);
+          setProducts(resultItems);
+          const wishlist = new Set(resultItems.filter(p => isInWishlist(p.id)).map(p => p.id));
+          setWishlistItems(wishlist);
         }
       } catch {
         if (!cancelled) {
@@ -76,6 +79,17 @@ export default function ShopPage() {
     setSearchParams(nextParams);
   }
 
+  function handleWishlistToggle(product) {
+    toggleWishlist(product);
+    const newWishlist = new Set(wishlistItems);
+    if (newWishlist.has(product.id)) {
+      newWishlist.delete(product.id);
+    } else {
+      newWishlist.add(product.id);
+    }
+    setWishlistItems(newWishlist);
+  }
+
   const navigate = useNavigate();
 
   function addToCart(product) {
@@ -87,12 +101,23 @@ export default function ShopPage() {
     navigate('/messages', { state: { productId: product.id, productName: product.name } });
   }
 
+  const filteredAndSorted = useMemo(() => {
+    const filtered = filterProducts(products, {
+      minPrice: priceRange.min,
+      maxPrice: priceRange.max,
+      category: categoryFilter,
+    });
+    return sortProducts(filtered, sortBy);
+  }, [products, priceRange, categoryFilter, sortBy]);
+
+  const categories = useMemo(() => getUniqueCategories(products), [products]);
+
   const summary = useMemo(() => {
     if (loading) return "Loading products...";
     if (error) return error;
-    if (!products.length) return "No shirts found for this filter.";
-    return `Showing ${products.length} shirts.`;
-  }, [loading, error, products]);
+    if (!filteredAndSorted.length) return "No shirts found for this filter.";
+    return `Showing ${filteredAndSorted.length} of ${products.length} shirts.`;
+  }, [loading, error, filteredAndSorted, products]);
 
   return (
     <section className="shop-page">
@@ -109,7 +134,7 @@ export default function ShopPage() {
           </article>
           <article className="shop-highlight-card">
             <h3>Easy filtering</h3>
-            <p className="meta">Search by shirt name, category, or style.</p>
+            <p className="meta">Filter by category, price, and more.</p>
           </article>
           <article className="shop-highlight-card">
             <h3>Fast checkout</h3>
@@ -134,26 +159,73 @@ export default function ShopPage() {
           </form>
         </div>
 
+        <div className="shop-filters">
+          {categories.length > 0 && (
+            <div className="filter-group">
+              <label htmlFor="category-filter">Category:</label>
+              <select 
+                id="category-filter"
+                value={categoryFilter} 
+                onChange={(e) => setCategoryFilter(e.target.value)}
+              >
+                <option value="">All Categories</option>
+                {categories.map(cat => (
+                  <option key={cat} value={cat}>{cat}</option>
+                ))}
+              </select>
+            </div>
+          )}
+
+          <div className="filter-group">
+            <label htmlFor="sort-by">Sort by:</label>
+            <select 
+              id="sort-by"
+              value={sortBy} 
+              onChange={(e) => setSortBy(e.target.value)}
+            >
+              <option value="newest">Newest</option>
+              <option value="popularity">Popularity</option>
+              <option value="price-low">Price: Low to High</option>
+              <option value="price-high">Price: High to Low</option>
+              <option value="name">Name: A to Z</option>
+            </select>
+          </div>
+        </div>
+
         <p className="status-text shop-summary">{summary}</p>
 
-        {loading ? <div className="panel">Loading...</div> : null}
+        {loading ? (
+          <div className="product-grid">
+            <SkeletonLoader type="card" count={12} />
+          </div>
+        ) : null}
 
         {!loading && !error ? (
-          <div className="product-grid old-product-grid">
-            {products.map((product) => (
+          <div className="product-grid">
+            {filteredAndSorted.map((product) => (
               <article className="product-card premium-card" key={product.id}>
-                <Link to={`/products/${encodeURIComponent(product.id)}`} className="product-image-link">
-                  <div className="product-card-media">
+                <div className="product-card-media">
+                  <Link to={`/products/${encodeURIComponent(product.id)}`} className="product-image-link">
                     {product.image_url ? (
                       <img src={product.image_url} alt={product.name} loading="lazy" />
                     ) : (
                       <div className="image-fallback">No image</div>
                     )}
-                  </div>
-                </Link>
+                  </Link>
+                  <button
+                    type="button"
+                    className={`wishlist-btn ${wishlistItems.has(product.id) ? 'active' : ''}`}
+                    onClick={() => handleWishlistToggle(product)}
+                    aria-label={wishlistItems.has(product.id) ? 'Remove from wishlist' : 'Add to wishlist'}
+                  >
+                    {wishlistItems.has(product.id) ? '❤️' : '🤍'}
+                  </button>
+                </div>
                 <div className="card-body">
                   <p className="meta small">{product.category || "Uncategorized"}</p>
-                  <h3>{product.name}</h3>
+                  <h3>
+                    <Link to={`/products/${encodeURIComponent(product.id)}`}>{product.name}</Link>
+                  </h3>
                   <p className="price">{formatPrice(product.price)}</p>
                   <div className="row-actions compact">
                     <button type="button" className="btn" onClick={() => addToCart(product)}>
@@ -168,6 +240,12 @@ export default function ShopPage() {
             ))}
           </div>
         ) : null}
+
+        {!loading && error && (
+          <div className="error-message">
+            <p>{error}</p>
+          </div>
+        )}
       </section>
 
       <AddToCartModal
