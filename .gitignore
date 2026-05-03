@@ -11,6 +11,7 @@
 *.css
 !public/*.css
 !public/assets/*.css
+!react-vite/src/**/*.css
 
 # Node modules
 node_modules/

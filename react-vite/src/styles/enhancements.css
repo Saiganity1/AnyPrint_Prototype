@@ -1,0 +1,452 @@
+/* Enhanced UI Components and Features */
+
+/* ==================== Theme Toggle ==================== */
+.theme-toggle-btn {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-size: 20px;
+  padding: 8px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s;
+}
+
+.theme-toggle-btn:hover {
+  background: rgba(0, 0, 0, 0.1);
+}
+
+:root[data-theme="dark"] .theme-toggle-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+/* ==================== Skeleton Loaders ==================== */
+.skeleton {
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: loading 1.5s infinite;
+}
+
+@keyframes loading {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+.skeleton-card {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px;
+  border: 1px solid #eee;
+  border-radius: 8px;
+}
+
+.skeleton-image {
+  height: 200px;
+  border-radius: 4px;
+}
+
+.skeleton-text {
+  height: 16px;
+  border-radius: 4px;
+}
+
+.skeleton-text.short {
+  width: 70%;
+}
+
+.skeleton-large {
+  height: 400px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+}
+
+.skeleton-details {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* ==================== Breadcrumbs ==================== */
+.breadcrumb {
+  margin-bottom: 24px;
+}
+
+.breadcrumb-list {
+  display: flex;
+  flex-wrap: wrap;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  gap: 4px;
+}
+
+.breadcrumb-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.breadcrumb-link {
+  color: #0066cc;
+  text-decoration: none;
+  padding: 4px 8px;
+  border-radius: 4px;
+}
+
+.breadcrumb-link:hover {
+  background-color: #f0f0f0;
+  text-decoration: underline;
+}
+
+.breadcrumb-link:focus-visible {
+  outline: 2px solid #0066cc;
+  outline-offset: 2px;
+}
+
+.breadcrumb-current {
+  padding: 4px 8px;
+  color: #666;
+  font-weight: 600;
+}
+
+.breadcrumb-separator {
+  color: #999;
+}
+
+/* ==================== Inventory Status ==================== */
+.inventory-status {
+  padding: 8px 12px;
+  border-radius: 4px;
+  font-size: 14px;
+  font-weight: 500;
+  margin: 12px 0;
+  display: inline-block;
+}
+
+.inventory-status.in-stock {
+  background-color: #d4edda;
+  color: #155724;
+  border: 1px solid #c3e6cb;
+}
+
+.inventory-status.low-stock {
+  background-color: #fff3cd;
+  color: #856404;
+  border: 1px solid #ffeaa7;
+}
+
+.inventory-status.out-of-stock {
+  background-color: #f8d7da;
+  color: #721c24;
+  border: 1px solid #f5c6cb;
+}
+
+/* ==================== Product Filters ==================== */
+.shop-filters {
+  display: flex;
+  gap: 16px;
+  margin: 16px 0;
+  padding: 16px;
+  background: #f9f9f9;
+  border-radius: 8px;
+  flex-wrap: wrap;
+}
+
+.filter-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.filter-group label {
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.filter-group select {
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+  min-width: 150px;
+}
+
+/* ==================== Checkout Progress ==================== */
+.checkout-progress {
+  margin: 24px 0;
+}
+
+.progress-steps {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.progress-step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+}
+
+.step-number {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  background: #e9ecef;
+  color: #666;
+  border: 2px solid #ddd;
+}
+
+.progress-step.active .step-number {
+  background: #0066cc;
+  color: white;
+  border-color: #0066cc;
+}
+
+.progress-step.completed .step-number {
+  background: #28a745;
+  color: white;
+  border-color: #28a745;
+}
+
+.step-label {
+  font-size: 14px;
+  font-weight: 500;
+  text-align: center;
+}
+
+.progress-bar {
+  height: 4px;
+  background: #e9ecef;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background: #0066cc;
+  transition: width 0.3s ease;
+}
+
+/* ==================== Newsletter Signup ==================== */
+.newsletter-signup {
+  text-align: center;
+  padding: 24px;
+}
+
+.newsletter-signup h3 {
+  margin: 0 0 12px 0;
+  font-size: 24px;
+}
+
+.newsletter-signup p {
+  color: #666;
+  margin: 0 0 16px 0;
+}
+
+.newsletter-form {
+  display: flex;
+  gap: 8px;
+  max-width: 400px;
+  margin: 16px auto;
+}
+
+.newsletter-form input {
+  flex: 1;
+  padding: 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+.newsletter-form button {
+  padding: 12px 24px;
+  white-space: nowrap;
+}
+
+.newsletter-message {
+  margin-top: 12px;
+  padding: 8px 12px;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+.newsletter-message.success {
+  background: #d4edda;
+  color: #155724;
+  border: 1px solid #c3e6cb;
+}
+
+.newsletter-message.error {
+  background: #f8d7da;
+  color: #721c24;
+  border: 1px solid #f5c6cb;
+}
+
+/* ==================== Wishlist Button ==================== */
+.wishlist-btn {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: white;
+  border: 1px solid #ddd;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  transition: all 0.2s;
+  z-index: 10;
+}
+
+.wishlist-btn:hover {
+  background: #f9f9f9;
+  border-color: #bbb;
+}
+
+.wishlist-btn.active {
+  background: #ffe0e0;
+  border-color: #ff6b6b;
+}
+
+.product-card-media {
+  position: relative;
+}
+
+/* ==================== Dark Mode ==================== */
+:root[data-theme="dark"] {
+  --bg-primary: #1a1a1a;
+  --bg-secondary: #2d2d2d;
+  --text-primary: #ffffff;
+  --text-secondary: #cccccc;
+  --border-color: #444444;
+  --skeleton-light: #333333;
+  --skeleton-dark: #444444;
+}
+
+:root[data-theme="dark"] .skeleton {
+  background: linear-gradient(90deg, #333333 25%, #444444 50%, #333333 75%);
+}
+
+:root[data-theme="dark"] body {
+  background: var(--bg-primary);
+  color: var(--text-primary);
+}
+
+:root[data-theme="dark"] .panel {
+  background: var(--bg-secondary);
+  border-color: var(--border-color);
+}
+
+:root[data-theme="dark"] .shop-filters {
+  background: var(--bg-secondary);
+}
+
+:root[data-theme="dark"] input,
+:root[data-theme="dark"] select,
+:root[data-theme="dark"] textarea {
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  border-color: var(--border-color);
+}
+
+/* ==================== Accessibility Focus ==================== */
+*:focus-visible {
+  outline: 3px solid #0066cc;
+  outline-offset: 2px;
+}
+
+button, a, input, select, textarea {
+  min-height: 44px; /* Touch target size */
+  min-width: 44px;
+}
+
+/* ==================== Product Detail Enhancements ==================== */
+.product-card-media {
+  position: relative;
+  overflow: hidden;
+  border-radius: 8px;
+}
+
+.product-card-media img {
+  transition: transform 0.3s ease;
+}
+
+.product-card-media:hover img {
+  transform: scale(1.05);
+}
+
+/* ==================== Not Found Page ==================== */
+.page-error-code {
+  font-size: 96px;
+  font-weight: bold;
+  color: #0066cc;
+  margin-bottom: 16px;
+  opacity: 0.1;
+}
+
+.not-found-actions {
+  margin-top: 32px;
+}
+
+.not-found-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 20px;
+}
+
+.not-found-card {
+  padding: 24px;
+  border: 1px solid #eee;
+  border-radius: 8px;
+  text-align: center;
+}
+
+.not-found-card h3 {
+  margin-top: 0;
+}
+
+.not-found-card a {
+  display: inline-block;
+  margin-top: 12px;
+}
+
+/* ==================== Responsive Adjustments ==================== */
+@media (max-width: 768px) {
+  .shop-filters {
+    flex-direction: column;
+  }
+
+  .filter-group select {
+    min-width: auto;
+    width: 100%;
+  }
+
+  .progress-steps {
+    flex-direction: column;
+  }
+
+  .newsletter-form {
+    flex-direction: column;
+  }
+
+  .breadcrumb-list {
+    font-size: 14px;
+  }
+}
