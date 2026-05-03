@@ -26,6 +26,25 @@ export default function HomePage() {
               </a>
             </div>
             <p className="hero-meta">✓ Free shipping on orders over ₱2,500 • ✓ 30-day returns</p>
+            
+            <div className="hero-trust-badges">
+              <div className="trust-badge">
+                <span className="trust-icon">✓</span>
+                <span className="trust-label">Premium Quality</span>
+              </div>
+              <div className="trust-badge">
+                <span className="trust-icon">📏</span>
+                <span className="trust-label">All Sizes Available</span>
+              </div>
+              <div className="trust-badge">
+                <span className="trust-icon">🚚</span>
+                <span className="trust-label">Fast Nationwide Delivery</span>
+              </div>
+              <div className="trust-badge">
+                <span className="trust-icon">↩</span>
+                <span className="trust-label">30-Day Returns</span>
+              </div>
+            </div>
           </div>
           <div className="hero-visual-placeholder" aria-hidden="true">
             <div className="hero-image-mock">

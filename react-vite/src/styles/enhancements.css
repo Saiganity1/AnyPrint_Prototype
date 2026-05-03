@@ -929,6 +929,18 @@ button, a, input, select, textarea {
   color: #dc2626;
 }
 
+:root[data-theme="dark"] .hero-meta {
+  color: var(--text-secondary);
+}
+
+:root[data-theme="dark"] .hero-trust-badges {
+  border-top-color: var(--border-color);
+}
+
+:root[data-theme="dark"] .trust-badge {
+  color: var(--text-secondary);
+}
+
 :root[data-theme="dark"] .feature-card {
   background: var(--bg-secondary);
   border-color: var(--border-color);

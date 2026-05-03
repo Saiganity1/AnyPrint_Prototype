@@ -2289,6 +2289,28 @@ body {
   max-width: 400px;
 }
 
+.hero-trust-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+  margin-top: 1.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid #e5e7eb;
+}
+
+.trust-badge {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-size: 0.85rem;
+  color: #374151;
+}
+
+.trust-icon {
+  font-size: 1.1rem;
+  display: inline-block;
+}
+
 .hero-visual-placeholder {
   position: relative;
   aspect-ratio: 1 / 1;
