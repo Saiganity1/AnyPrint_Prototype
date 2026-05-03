@@ -221,9 +221,6 @@ export default function ShopPage() {
                   </div>
                   <div className="card-body">
                     <p className="meta small">{product.category || "Uncategorized"}</p>
-                    <h3>
-                      <Link to={`/products/${encodeURIComponent(product.id)}`}>{product.name}</Link>
-                    </h3>
                     <p className="price">{formatPrice(product.price)}</p>
                     <div className="row-actions compact">
                       <button type="button" className="btn" onClick={() => addToCart(product)}>
@@ -233,6 +230,9 @@ export default function ShopPage() {
                         Buy
                       </button>
                     </div>
+                    <h3 className="product-name-below-buttons">
+                      <Link to={`/products/${encodeURIComponent(product.id)}`}>{product.name}</Link>
+                    </h3>
                   </div>
                 </article>
               ))}

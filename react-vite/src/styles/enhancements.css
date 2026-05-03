@@ -148,6 +148,31 @@
   border: 1px solid #f5c6cb;
 }
 
+/* ==================== Product Name Below Buttons ==================== */
+.product-name-below-buttons {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid #eee;
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.product-name-below-buttons a {
+  color: #0066cc;
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.product-name-below-buttons a:hover {
+  color: #0052a3;
+  text-decoration: underline;
+}
+
+.product-name-below-buttons a:focus-visible {
+  outline: 2px solid #0066cc;
+  outline-offset: 2px;
+}
+
 /* ==================== Product Filters ==================== */
 .shop-filters {
   display: flex;
@@ -413,6 +438,19 @@
   background-color: rgba(229, 57, 53, 0.15);
   color: var(--error-light);
   border: 1px solid rgba(229, 57, 53, 0.3);
+}
+
+/* Product Name Below Buttons */
+:root[data-theme="dark"] .product-name-below-buttons {
+  border-top-color: var(--border-light);
+}
+
+:root[data-theme="dark"] .product-name-below-buttons a {
+  color: var(--accent-light);
+}
+
+:root[data-theme="dark"] .product-name-below-buttons a:hover {
+  color: #9ec5ff;
 }
 
 /* Checkout Progress */
