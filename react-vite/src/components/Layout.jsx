@@ -3,6 +3,7 @@ import { Link, NavLink, useNavigate } from "react-router-dom";
 import { clearStoredSession, getStoredUser, roleCanManage } from "../lib/auth";
 import { cartCount, loadCart } from "../lib/cart";
 import { toggleDarkMode, isDarkMode } from "../lib/theme";
+import Footer from "./Footer";
 
 function navClass({ isActive }) {
   return isActive ? "nav-link active" : "nav-link";
@@ -141,6 +142,7 @@ export default function Layout({ children }) {
         </div>
       </header>
       <main className="container page-content">{children}</main>
+      <Footer />
     </div>
   );
 }

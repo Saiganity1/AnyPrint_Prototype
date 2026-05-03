@@ -985,3 +985,69 @@ button, a, input, select, textarea {
 :root[data-theme="dark"] .home-product-card:hover {
   border-color: rgba(220, 38, 38, 0.5);
 }
+
+/* Dark mode: Footer */
+:root[data-theme="dark"] .site-footer {
+  background: #1a1a1a;
+  border-top-color: #333333;
+}
+
+:root[data-theme="dark"] .footer-content {
+  border-bottom-color: #333333;
+}
+
+:root[data-theme="dark"] .footer-logo h3 {
+  color: #ffffff;
+}
+
+:root[data-theme="dark"] .footer-tagline {
+  color: #d1d5db;
+}
+
+:root[data-theme="dark"] .footer-title {
+  color: #ffffff;
+}
+
+:root[data-theme="dark"] .footer-links li a {
+  color: #d1d5db;
+}
+
+:root[data-theme="dark"] .footer-links li a:hover {
+  color: #dc2626;
+}
+
+:root[data-theme="dark"] .footer-newsletter-desc {
+  color: #d1d5db;
+}
+
+:root[data-theme="dark"] .newsletter-input {
+  border-color: #444444;
+  background: #2a2a2a;
+  color: #ffffff;
+}
+
+:root[data-theme="dark"] .newsletter-input::placeholder {
+  color: #9ca3af;
+}
+
+:root[data-theme="dark"] .newsletter-input:focus {
+  border-color: #dc2626;
+  background: #333333;
+}
+
+:root[data-theme="dark"] .newsletter-btn {
+  background: #dc2626;
+  color: #ffffff;
+}
+
+:root[data-theme="dark"] .newsletter-btn:hover {
+  background: #b91c1c;
+}
+
+:root[data-theme="dark"] .payment-label {
+  color: #9ca3af;
+}
+
+:root[data-theme="dark"] .footer-bottom {
+  color: #9ca3af;
+}
