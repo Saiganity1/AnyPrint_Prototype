@@ -1385,6 +1385,8 @@ td {
     flex-direction: column;
 }
 
+}
+
 /* Messenger-style Chat */
 .chat-window {
   display: flex;
