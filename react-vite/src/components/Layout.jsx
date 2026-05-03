@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Link, NavLink, useNavigate } from "react-router-dom";
 import { clearStoredSession, getStoredUser, roleCanManage } from "../lib/auth";
 import { cartCount, loadCart } from "../lib/cart";
-import { toggleDarkMode, isDarkMode } from "../lib/theme";
+// dark mode removed — theme is light-only
 import Footer from "./Footer";
 
 function navClass({ isActive }) {
@@ -13,7 +13,6 @@ export default function Layout({ children }) {
   const navigate = useNavigate();
   const currentUser = getStoredUser();
   const [count, setCount] = useState(() => cartCount(loadCart()));
-  const [isDark, setIsDark] = useState(isDarkMode);
   const isOwner = currentUser && String(currentUser.role || "").toUpperCase() === "OWNER";
   const canManage = currentUser && roleCanManage(currentUser.role);
 
@@ -22,16 +21,10 @@ export default function Layout({ children }) {
       setCount(cartCount(loadCart()));
     }
 
-    function handleThemeChange() {
-      setIsDark(isDarkMode());
-    }
-
     syncCount();
     window.addEventListener("anyprint:cart-updated", syncCount);
-    window.addEventListener("anyprint:theme-changed", handleThemeChange);
     return () => {
       window.removeEventListener("anyprint:cart-updated", syncCount);
-      window.removeEventListener("anyprint:theme-changed", handleThemeChange);
     };
   }, []);
 
@@ -40,10 +33,7 @@ export default function Layout({ children }) {
     navigate("/login", { replace: true });
   }
 
-  function handleThemeToggle() {
-    toggleDarkMode();
-    setIsDark(!isDark);
-  }
+  // theme toggle removed
 
   return (
     <div className="site-shell">
@@ -112,15 +102,7 @@ export default function Layout({ children }) {
             ) : null}
           </nav>
           <div className="top-actions">
-            <button 
-              type="button" 
-              className="theme-toggle-btn" 
-              onClick={handleThemeToggle}
-              aria-label={isDark ? "Switch to light mode" : "Switch to dark mode"}
-              title={isDark ? "Light mode" : "Dark mode"}
-            >
-              {isDark ? "☀️" : "🌙"}
-            </button>
+            {/* theme toggle removed */}
             {currentUser ? (
               <button type="button" className="auth-btn secondary" onClick={logout}>
                 Logout

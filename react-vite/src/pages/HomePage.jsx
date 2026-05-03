@@ -25,7 +25,6 @@ export default function HomePage() {
                 EXPLORE COLLECTION
               </a>
             </div>
-            <p className="hero-meta">✓ Free shipping on orders over ₱2,500 • ✓ 30-day returns</p>
             
             <div className="hero-trust-badges">
               <div className="trust-badge">
@@ -45,6 +44,7 @@ export default function HomePage() {
                 <span className="trust-label">30-Day Returns</span>
               </div>
             </div>
+            <p className="hero-meta">✓ Free shipping on orders over ₱2,500 • ✓ 30-day returns</p>
           </div>
           <div className="hero-visual-placeholder" aria-hidden="true">
             <div className="hero-image-mock">

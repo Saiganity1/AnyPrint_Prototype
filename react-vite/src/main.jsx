@@ -7,12 +7,9 @@ import "./styles/enhancements.css";
 import "./styles/image-gallery.css";
 import "./styles/form-input.css";
 import "./styles/pagination.css";
-import { initDarkMode } from "./lib/theme";
 import { setupFocusIndicators, improveColorContrast } from "./lib/accessibility";
 
-// Initialize dark mode
-initDarkMode();
-
+// Dark mode removed — UI will remain light-only.
 // Initialize accessibility features
 setupFocusIndicators();
 improveColorContrast();

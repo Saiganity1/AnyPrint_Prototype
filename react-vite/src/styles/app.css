@@ -2180,25 +2180,26 @@ body {
 
 .hero-modern {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 2rem;
+  grid-template-columns: minmax(320px, 1fr) 520px;
+  gap: 2.5rem;
   align-items: center;
-  padding: 2rem;
+  padding: 2.5rem 1.5rem;
   background: #ffffff;
-  border-radius: 0;
-  margin-bottom: 3rem;
+  border-radius: 8px;
+  margin-bottom: 3.25rem;
 }
 
 .hero-content {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 2rem;
+  grid-template-columns: 1fr;
+  gap: 1.5rem;
   align-items: center;
   width: 100%;
 }
 
 .hero-copy {
-  max-width: 520px;
+  max-width: 480px;
+  align-self: center;
 }
 
 .eyebrow {
@@ -2229,11 +2230,10 @@ body {
 }
 
 .hero-sub {
-  margin: 1rem 0;
-  font-size: 1.05rem;
-  line-height: 1.6;
+  margin: 0.9rem 0 1.1rem;
+  font-size: 1.02rem;
+  line-height: 1.55;
   color: #4b5563;
-  max-width: 480px;
 }
 
 .hero-cta-row {
@@ -2283,10 +2283,9 @@ body {
 }
 
 .hero-meta {
-  margin-top: 1.2rem;
-  font-size: 0.9rem;
+  margin-top: 1rem;
+  font-size: 0.88rem;
   color: #6b7280;
-  max-width: 400px;
 }
 
 .hero-trust-badges {
@@ -2313,8 +2312,8 @@ body {
 
 .hero-visual-placeholder {
   position: relative;
-  aspect-ratio: 1 / 1;
-  background: linear-gradient(135deg, #f0f0f0 0%, #e5e5e5 100%);
+  min-height: 420px;
+  background: linear-gradient(135deg, #f8f8f9 0%, #f1f1f2 100%);
   border-radius: 12px;
   overflow: hidden;
   display: grid;
