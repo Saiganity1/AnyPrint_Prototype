@@ -7,6 +7,7 @@ import { normalizeProduct } from "../lib/normalize";
 import { addRecentlyViewed } from "../lib/recent";
 import Breadcrumb from "../components/Breadcrumb";
 import InventoryStatus from "../components/InventoryStatus";
+import ImageGallery from "../components/ImageGallery";
 import { toggleWishlist, isInWishlist } from "../lib/wishlist";
 
 const SIZE_ORDER = ["S", "M", "L", "XL", "2XL", "3XL"];
@@ -15,11 +16,11 @@ export default function ProductPage() {
   const { slug } = useParams();
   const navigate = useNavigate();
   const [product, setProduct] = useState(null);
-  const [activeImageIndex, setActiveImageIndex] = useState(0);
   const [selectedSize, setSelectedSize] = useState("M");
   const [selectedColor, setSelectedColor] = useState("Black");
   const [selectedQuantity, setSelectedQuantity] = useState(1);
   const [message, setMessage] = useState("");
+  const [messageType, setMessageType] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [inWishlist, setInWishlist] = useState(false);
@@ -48,7 +49,6 @@ export default function ProductPage() {
 
           setSelectedSize(payload?.sizes?.[0] || "M");
           setSelectedColor(payload?.colors?.[0] || "Black");
-          setActiveImageIndex(0);
         }
       } catch {
         if (!cancelled) {
@@ -89,7 +89,6 @@ export default function ProductPage() {
   const sizes = product.sizes?.length ? product.sizes : ["M", "L", "XL"];
   const colors = product.colors?.length ? product.colors : ["Black", "White"];
   const images = product.images?.length ? product.images : product.image_url ? [product.image_url] : [];
-  const activeImage = images[activeImageIndex] || product.image_url || "";
   const selectedVariant =
     product.variants?.find((variant) => variant.size === selectedSize && variant.color === selectedColor) || null;
   const availableStock = selectedVariant?.stock ?? null;
@@ -97,16 +96,19 @@ export default function ProductPage() {
   function addToCart() {
     if (!selectedVariant) {
       setMessage("Please choose a valid size and color combination first.");
+      setMessageType("error");
       return;
     }
 
     if (selectedQuantity < 1) {
       setMessage("Please select a valid quantity.");
+      setMessageType("error");
       return;
     }
 
     if (availableStock !== null && selectedQuantity > availableStock) {
       setMessage(`Cannot add more than ${availableStock} items available.`);
+      setMessageType("error");
       return;
     }
 
@@ -123,7 +125,9 @@ export default function ProductPage() {
       unit_price: product.price,
       image_url: product.image_url || "",
     });
-    setMessage(`Added ${selectedQuantity} item(s) to cart.`);
+    setMessage(`✓ Added ${selectedQuantity} item(s) to cart.`);
+    setMessageType("success");
+    setTimeout(() => setMessage(""), 3000);
     setSelectedQuantity(1);
   }
 
@@ -162,28 +166,7 @@ export default function ProductPage() {
       <section className="panel product-detail-shell">
         <div className="product-detail-grid">
           <div className="product-media-panel">
-            {activeImage ? (
-              <div className="product-detail-media">
-                <img className="product-detail-image" src={activeImage} alt={product.name} loading="lazy" />
-              </div>
-            ) : (
-              <div className="product-detail-media image-fallback">No image</div>
-            )}
-
-            {images.length > 1 ? (
-              <div className="image-rail">
-                {images.map((image, index) => (
-                  <button
-                    type="button"
-                    key={`${image}-${index}`}
-                    className={`image-thumb ${index === activeImageIndex ? "active" : ""}`}
-                    onClick={() => setActiveImageIndex(index)}
-                  >
-                    <img src={image} alt={`${product.name} preview ${index + 1}`} loading="lazy" />
-                  </button>
-                ))}
-              </div>
-            ) : null}
+            <ImageGallery images={images} productName={product.name} />
           </div>
 
           <div>
@@ -308,7 +291,11 @@ export default function ProductPage() {
                 </div>
               </div>
             ) : null}
-            {message ? <p className="status-text">{message}</p> : null}
+            {message && (
+              <div className={`status-message ${messageType}`} role="alert">
+                {message}
+              </div>
+            )}
           </div>
         </div>
       </section>

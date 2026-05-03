@@ -634,4 +634,104 @@ button, a, input, select, textarea {
   .breadcrumb-list {
     font-size: 14px;
   }
+
+  button,
+  a,
+  input,
+  select,
+  textarea {
+    min-height: 48px;
+    min-width: 48px;
+  }
+
+  .wishlist-btn {
+    width: 48px;
+    height: 48px;
+    font-size: 20px;
+  }
+
+  .product-grid {
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)) !important;
+    gap: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .product-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 8px;
+  }
+
+  .shop-filters {
+    gap: 12px;
+  }
+
+  .filter-group select {
+    font-size: 16px;
+  }
+
+  .breadcrumb-list {
+    gap: 2px;
+    font-size: 12px;
+  }
+}
+
+/* ==================== Status Messages ==================== */
+.status-message {
+  padding: 12px 16px;
+  border-radius: 4px;
+  margin: 16px 0;
+  font-size: 14px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  animation: slideDown 0.2s ease;
+}
+
+.status-message.success {
+  background: rgba(67, 160, 71, 0.1);
+  color: #43a047;
+  border: 1px solid rgba(67, 160, 71, 0.3);
+}
+
+.status-message.error {
+  background: rgba(229, 57, 53, 0.1);
+  color: #e53935;
+  border: 1px solid rgba(229, 57, 53, 0.3);
+}
+
+.status-message.info {
+  background: rgba(0, 102, 204, 0.1);
+  color: #0066cc;
+  border: 1px solid rgba(0, 102, 204, 0.3);
+}
+
+:root[data-theme="dark"] .status-message.success {
+  background: rgba(67, 160, 71, 0.15);
+  color: var(--success-light);
+  border: 1px solid rgba(67, 160, 71, 0.3);
+}
+
+:root[data-theme="dark"] .status-message.error {
+  background: rgba(229, 57, 53, 0.15);
+  color: var(--error-light);
+  border: 1px solid rgba(229, 57, 53, 0.3);
+}
+
+:root[data-theme="dark"] .status-message.info {
+  background: rgba(91, 157, 239, 0.15);
+  color: var(--accent-light);
+  border: 1px solid rgba(91, 157, 239, 0.3);
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }

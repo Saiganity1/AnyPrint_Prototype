@@ -5,8 +5,11 @@ import { formatPrice } from "../lib/format";
 import { normalizeProducts } from "../lib/normalize";
 import AddToCartModal from "../components/AddToCartModal";
 import SkeletonLoader from "../components/SkeletonLoader";
+import Pagination from "../components/Pagination";
 import { filterProducts, sortProducts, getUniqueCategories, getPriceRange } from "../lib/filters";
 import { isInWishlist, toggleWishlist } from "../lib/wishlist";
+
+const ITEMS_PER_PAGE = 12;
 
 export default function ShopPage() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -16,6 +19,7 @@ export default function ShopPage() {
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [wishlistItems, setWishlistItems] = useState(new Set());
+  const [currentPage, setCurrentPage] = useState(parseInt(searchParams.get("page") || "1"));
 
   const initialSearch = searchParams.get("search") || "";
   const [search, setSearch] = useState(initialSearch);
@@ -110,14 +114,28 @@ export default function ShopPage() {
     return sortProducts(filtered, sortBy);
   }, [products, priceRange, categoryFilter, sortBy]);
 
+  const totalPages = Math.ceil(filteredAndSorted.length / ITEMS_PER_PAGE);
+  const paginatedProducts = useMemo(() => {
+    const start = (currentPage - 1) * ITEMS_PER_PAGE;
+    const end = start + ITEMS_PER_PAGE;
+    return filteredAndSorted.slice(start, end);
+  }, [filteredAndSorted, currentPage]);
+
   const categories = useMemo(() => getUniqueCategories(products), [products]);
 
   const summary = useMemo(() => {
     if (loading) return "Loading products...";
     if (error) return error;
     if (!filteredAndSorted.length) return "No shirts found for this filter.";
-    return `Showing ${filteredAndSorted.length} of ${products.length} shirts.`;
-  }, [loading, error, filteredAndSorted, products]);
+    const start = (currentPage - 1) * ITEMS_PER_PAGE + 1;
+    const end = Math.min(currentPage * ITEMS_PER_PAGE, filteredAndSorted.length);
+    return `Showing ${start}–${end} of ${filteredAndSorted.length} shirts.`;
+  }, [loading, error, filteredAndSorted, currentPage]);
+
+  const handlePageChange = (newPage) => {
+    setCurrentPage(newPage);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
 
   return (
     <section className="shop-page">
@@ -201,44 +219,55 @@ export default function ShopPage() {
         ) : null}
 
         {!loading && !error ? (
-          <div className="product-grid">
-            {filteredAndSorted.map((product) => (
-              <article className="product-card premium-card" key={product.id}>
-                <div className="product-card-media">
-                  <Link to={`/products/${encodeURIComponent(product.id)}`} className="product-image-link">
-                    {product.image_url ? (
-                      <img src={product.image_url} alt={product.name} loading="lazy" />
-                    ) : (
-                      <div className="image-fallback">No image</div>
-                    )}
-                  </Link>
-                  <button
-                    type="button"
-                    className={`wishlist-btn ${wishlistItems.has(product.id) ? 'active' : ''}`}
-                    onClick={() => handleWishlistToggle(product)}
-                    aria-label={wishlistItems.has(product.id) ? 'Remove from wishlist' : 'Add to wishlist'}
-                  >
-                    {wishlistItems.has(product.id) ? '❤️' : '🤍'}
-                  </button>
-                </div>
-                <div className="card-body">
-                  <p className="meta small">{product.category || "Uncategorized"}</p>
-                  <h3>
-                    <Link to={`/products/${encodeURIComponent(product.id)}`}>{product.name}</Link>
-                  </h3>
-                  <p className="price">{formatPrice(product.price)}</p>
-                  <div className="row-actions compact">
-                    <button type="button" className="btn" onClick={() => addToCart(product)}>
-                      Add to Cart
-                    </button>
-                    <button type="button" className="btn secondary" onClick={() => contactSeller(product)}>
-                      Contact Seller
+          <>
+            <div className="product-grid">
+              {paginatedProducts.map((product) => (
+                <article className="product-card premium-card" key={product.id}>
+                  <div className="product-card-media">
+                    <Link to={`/products/${encodeURIComponent(product.id)}`} className="product-image-link">
+                      {product.image_url ? (
+                        <img src={product.image_url} alt={product.name} loading="lazy" />
+                      ) : (
+                        <div className="image-fallback">No image</div>
+                      )}
+                    </Link>
+                    <button
+                      type="button"
+                      className={`wishlist-btn ${wishlistItems.has(product.id) ? 'active' : ''}`}
+                      onClick={() => handleWishlistToggle(product)}
+                      aria-label={wishlistItems.has(product.id) ? 'Remove from wishlist' : 'Add to wishlist'}
+                    >
+                      {wishlistItems.has(product.id) ? '❤️' : '🤍'}
                     </button>
                   </div>
-                </div>
-              </article>
-            ))}
-          </div>
+                  <div className="card-body">
+                    <p className="meta small">{product.category || "Uncategorized"}</p>
+                    <h3>
+                      <Link to={`/products/${encodeURIComponent(product.id)}`}>{product.name}</Link>
+                    </h3>
+                    <p className="price">{formatPrice(product.price)}</p>
+                    <div className="row-actions compact">
+                      <button type="button" className="btn" onClick={() => addToCart(product)}>
+                        Add to Cart
+                      </button>
+                      <button type="button" className="btn secondary" onClick={() => contactSeller(product)}>
+                        Contact Seller
+                      </button>
+                    </div>
+                  </div>
+                </article>
+              ))}
+            </div>
+            {totalPages > 1 && (
+              <Pagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                onPageChange={handlePageChange}
+                itemsPerPage={ITEMS_PER_PAGE}
+                totalItems={filteredAndSorted.length}
+              />
+            )}
+          </>
         ) : null}
 
         {!loading && error && (
