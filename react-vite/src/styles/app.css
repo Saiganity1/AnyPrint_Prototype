@@ -1381,14 +1381,15 @@ td {
   .row-actions,
   .inline-form.wrap {
     flex-wrap: wrap;
-  }
+    display: flex;
+    flex-direction: column;
 }
 
 /* Messenger-style Chat */
 .chat-window {
   display: flex;
   flex-direction: column;
-  height: 100%;
+    height: auto;
   min-height: 500px;
   max-height: 70vh;
   background: #ffffff;
