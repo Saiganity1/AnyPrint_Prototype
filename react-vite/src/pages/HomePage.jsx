@@ -76,6 +76,11 @@ export default function HomePage() {
             <span className="category-label">Oversized Tees</span>
             <span className="category-link">Shop Now →</span>
           </button>
+          <button className="category-card" type="button">
+            <span className="category-icon">👶</span>
+            <span className="category-label">Kids</span>
+            <span className="category-link">Shop Now →</span>
+          </button>
         </nav>
       </section>
 
