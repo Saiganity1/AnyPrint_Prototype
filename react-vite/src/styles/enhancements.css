@@ -331,39 +331,224 @@
 
 /* ==================== Dark Mode ==================== */
 :root[data-theme="dark"] {
-  --bg-primary: #1a1a1a;
-  --bg-secondary: #2d2d2d;
-  --text-primary: #ffffff;
-  --text-secondary: #cccccc;
-  --border-color: #444444;
-  --skeleton-light: #333333;
-  --skeleton-dark: #444444;
+  --bg-primary: #0f1419;
+  --bg-secondary: #1a1f2e;
+  --bg-tertiary: #252d3d;
+  --text-primary: #e8eaed;
+  --text-secondary: #b0b3b8;
+  --text-tertiary: #7a7d82;
+  --border-color: #353d4d;
+  --border-light: #454d5d;
+  --accent-dark: #5b9def;
+  --accent-light: #7db4f7;
+  --success-dark: #43a047;
+  --success-light: #66bb6a;
+  --warning-dark: #f57c00;
+  --warning-light: #ff8a50;
+  --error-dark: #e53935;
+  --error-light: #ef5350;
+  --skeleton-light: #2a3241;
+  --skeleton-dark: #353d4d;
 }
 
-:root[data-theme="dark"] .skeleton {
-  background: linear-gradient(90deg, #333333 25%, #444444 50%, #333333 75%);
-}
-
+/* Overall backgrounds and text */
 :root[data-theme="dark"] body {
   background: var(--bg-primary);
   color: var(--text-primary);
 }
 
-:root[data-theme="dark"] .panel {
+:root[data-theme="dark"] html {
+  background: var(--bg-primary);
+}
+
+/* Skeleton animations */
+:root[data-theme="dark"] .skeleton {
+  background: linear-gradient(90deg, #2a3241 25%, #353d4d 50%, #2a3241 75%);
+  animation: loading 1.5s infinite;
+}
+
+/* Common elements */
+:root[data-theme="dark"] .panel,
+:root[data-theme="dark"] .card {
   background: var(--bg-secondary);
   border-color: var(--border-color);
 }
 
 :root[data-theme="dark"] .shop-filters {
   background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+}
+
+:root[data-theme="dark"] .filter-group select {
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+  border: 1px solid var(--border-light);
+}
+
+:root[data-theme="dark"] .filter-group select:hover,
+:root[data-theme="dark"] .filter-group select:focus {
+  border-color: var(--accent-dark);
 }
 
 :root[data-theme="dark"] input,
 :root[data-theme="dark"] select,
 :root[data-theme="dark"] textarea {
-  background: var(--bg-secondary);
+  background: var(--bg-tertiary);
   color: var(--text-primary);
-  border-color: var(--border-color);
+  border: 1px solid var(--border-light);
+  transition: all 0.2s ease;
+}
+
+:root[data-theme="dark"] input:focus,
+:root[data-theme="dark"] select:focus,
+:root[data-theme="dark"] textarea:focus {
+  border-color: var(--accent-dark);
+  box-shadow: 0 0 0 3px rgba(91, 157, 239, 0.1);
+}
+
+/* Breadcrumbs */
+:root[data-theme="dark"] .breadcrumb-link {
+  color: var(--accent-light);
+  transition: all 0.2s ease;
+}
+
+:root[data-theme="dark"] .breadcrumb-link:hover {
+  background-color: var(--bg-tertiary);
+  color: var(--accent-light);
+}
+
+:root[data-theme="dark"] .breadcrumb-current {
+  color: var(--text-secondary);
+}
+
+:root[data-theme="dark"] .breadcrumb-separator {
+  color: var(--text-tertiary);
+}
+
+/* Inventory Status */
+:root[data-theme="dark"] .inventory-status.in-stock {
+  background-color: rgba(67, 160, 71, 0.15);
+  color: var(--success-light);
+  border: 1px solid rgba(67, 160, 71, 0.3);
+}
+
+:root[data-theme="dark"] .inventory-status.low-stock {
+  background-color: rgba(245, 124, 0, 0.15);
+  color: var(--warning-light);
+  border: 1px solid rgba(245, 124, 0, 0.3);
+}
+
+:root[data-theme="dark"] .inventory-status.out-of-stock {
+  background-color: rgba(229, 57, 53, 0.15);
+  color: var(--error-light);
+  border: 1px solid rgba(229, 57, 53, 0.3);
+}
+
+/* Checkout Progress */
+:root[data-theme="dark"] .progress-bar {
+  background: var(--bg-tertiary);
+}
+
+:root[data-theme="dark"] .progress-fill {
+  background: var(--accent-dark);
+}
+
+:root[data-theme="dark"] .step-number {
+  background: var(--bg-tertiary);
+  color: var(--text-secondary);
+  border: 2px solid var(--border-light);
+}
+
+:root[data-theme="dark"] .progress-step.active .step-number {
+  background: var(--accent-dark);
+  color: white;
+  border-color: var(--accent-dark);
+  box-shadow: 0 0 0 4px rgba(91, 157, 239, 0.2);
+}
+
+:root[data-theme="dark"] .progress-step.completed .step-number {
+  background: var(--success-dark);
+  color: white;
+  border-color: var(--success-dark);
+}
+
+/* Newsletter */
+:root[data-theme="dark"] .newsletter-signup {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+}
+
+:root[data-theme="dark"] .newsletter-signup p {
+  color: var(--text-secondary);
+}
+
+:root[data-theme="dark"] .newsletter-form input {
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-light);
+}
+
+:root[data-theme="dark"] .newsletter-message.success {
+  background: rgba(67, 160, 71, 0.15);
+  color: var(--success-light);
+  border: 1px solid rgba(67, 160, 71, 0.3);
+}
+
+:root[data-theme="dark"] .newsletter-message.error {
+  background: rgba(229, 57, 53, 0.15);
+  color: var(--error-light);
+  border: 1px solid rgba(229, 57, 53, 0.3);
+}
+
+/* Wishlist Button */
+:root[data-theme="dark"] .wishlist-btn {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-light);
+  color: var(--text-secondary);
+  transition: all 0.2s ease;
+}
+
+:root[data-theme="dark"] .wishlist-btn:hover {
+  background: var(--bg-tertiary);
+  border-color: var(--accent-light);
+  color: var(--accent-light);
+}
+
+:root[data-theme="dark"] .wishlist-btn.active {
+  background: rgba(229, 57, 53, 0.15);
+  border-color: var(--error-light);
+  color: var(--error-light);
+}
+
+/* Skeleton Card */
+:root[data-theme="dark"] .skeleton-card {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+}
+
+/* Not Found Page */
+:root[data-theme="dark"] .page-error-code {
+  color: var(--accent-dark);
+}
+
+:root[data-theme="dark"] .not-found-card {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  transition: all 0.2s ease;
+}
+
+:root[data-theme="dark"] .not-found-card:hover {
+  border-color: var(--accent-dark);
+  background: var(--bg-tertiary);
+}
+
+/* Theme toggle button active state */
+:root[data-theme="dark"] .theme-toggle-btn {
+  color: var(--accent-light);
+}
+
+:root[data-theme="dark"] .theme-toggle-btn:hover {
+  background: var(--bg-secondary);
 }
 
 /* ==================== Accessibility Focus ==================== */
