@@ -744,3 +744,232 @@ button, a, input, select, textarea {
     transform: translateY(0);
   }
 }
+
+/* ==================== Brand Redesign Dark Mode ==================== */
+:root[data-theme="dark"] body {
+  background:
+    radial-gradient(circle at 20% 0%, rgba(239, 43, 45, 0.15), transparent 34%),
+    radial-gradient(circle at 100% 0%, rgba(255, 255, 255, 0.05), transparent 26%),
+    var(--bg-primary);
+}
+
+:root[data-theme="dark"] .site-header,
+:root[data-theme="dark"] .panel,
+:root[data-theme="dark"] .page-intro,
+:root[data-theme="dark"] .feature-card,
+:root[data-theme="dark"] .category-card,
+:root[data-theme="dark"] .product-card,
+:root[data-theme="dark"] .shop-highlight-card,
+:root[data-theme="dark"] .recent-card,
+:root[data-theme="dark"] .tracking-stage-card,
+:root[data-theme="dark"] .tracking-summary-cell,
+:root[data-theme="dark"] .tracking-micro-cell,
+:root[data-theme="dark"] .tracking-item-row,
+:root[data-theme="dark"] .empty-panel,
+:root[data-theme="dark"] .chat-window,
+:root[data-theme="dark"] .admin-chat-sidebar,
+:root[data-theme="dark"] .admin-chat-thread,
+:root[data-theme="dark"] .checkout-stepper,
+:root[data-theme="dark"] .tab-row,
+:root[data-theme="dark"] .shop-filters {
+  background: var(--bg-secondary);
+  border-color: var(--border-color);
+}
+
+:root[data-theme="dark"] .topbar {
+  background: #050505;
+}
+
+:root[data-theme="dark"] .brand,
+:root[data-theme="dark"] .page-title,
+:root[data-theme="dark"] .section-title,
+:root[data-theme="dark"] .display-heading,
+:root[data-theme="dark"] .shop-title,
+:root[data-theme="dark"] .feature-card h3,
+:root[data-theme="dark"] .tracking-stage-label,
+:root[data-theme="dark"] .tracking-order-header h3,
+:root[data-theme="dark"] .admin-chat-sidebar-header h4,
+:root[data-theme="dark"] .admin-chat-thread-header h4 {
+  color: var(--text-primary);
+}
+
+:root[data-theme="dark"] .nav-link:hover,
+:root[data-theme="dark"] .nav-link.active,
+:root[data-theme="dark"] .category-card:hover,
+:root[data-theme="dark"] .product-card:hover,
+:root[data-theme="dark"] .feature-card:hover,
+:root[data-theme="dark"] .shop-highlight-card:hover,
+:root[data-theme="dark"] .recent-card:hover {
+  border-color: rgba(239, 43, 45, 0.35);
+}
+
+:root[data-theme="dark"] .hero-visual,
+:root[data-theme="dark"] .product-image-link,
+:root[data-theme="dark"] .recent-thumb,
+:root[data-theme="dark"] .home-product-image {
+  background: linear-gradient(180deg, #191b24, #111216);
+}
+
+:root[data-theme="dark"] .category-thumb.category-plain {
+  background: linear-gradient(180deg, #74634a, #af9471);
+}
+
+:root[data-theme="dark"] .category-thumb.category-custom {
+  background: linear-gradient(180deg, #2b2d34, #434652);
+}
+
+:root[data-theme="dark"] .category-thumb.category-oversized,
+:root[data-theme="dark"] .category-thumb.category-graphic,
+:root[data-theme="dark"] .shirt-black {
+  background: linear-gradient(180deg, #1b1b1b, #050505);
+}
+
+:root[data-theme="dark"] .shirt-white {
+  background: linear-gradient(180deg, #f4f4f4, #cfcfcf);
+}
+
+:root[data-theme="dark"] .shirt-art {
+  border-color: rgba(255, 255, 255, 0.5);
+}
+
+:root[data-theme="dark"] .shirt-art.dark {
+  color: #0f1115;
+  border-color: rgba(15, 17, 21, 0.3);
+}
+
+:root[data-theme="dark"] .btn.secondary {
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  border-color: var(--border-light);
+}
+
+:root[data-theme="dark"] .loading-spinner-ring {
+  border-color: currentColor;
+  border-top-color: transparent;
+}
+
+:root[data-theme="dark"] .message-bubble,
+:root[data-theme="dark"] .tracking-status-pill,
+:root[data-theme="dark"] .chat-send-btn,
+:root[data-theme="dark"] .chat-header {
+  background: linear-gradient(135deg, #111111 0%, #252525 100%);
+}
+
+:root[data-theme="dark"] .profile-sidebar,
+:root[data-theme="dark"] .profile-summary-card,
+:root[data-theme="dark"] .profile-order-card,
+:root[data-theme="dark"] .profile-modal,
+:root[data-theme="dark"] .checkout-summary-card,
+:root[data-theme="dark"] .messages-shell,
+:root[data-theme="dark"] .checkout-section,
+:root[data-theme="dark"] .tracking-order-card,
+:root[data-theme="dark"] .tracking-stage-card,
+:root[data-theme="dark"] .tracking-summary-cell,
+:root[data-theme="dark"] .tracking-micro-cell,
+:root[data-theme="dark"] .tracking-amount-box,
+:root[data-theme="dark"] .tracking-item-row,
+:root[data-theme="dark"] .product-card,
+:root[data-theme="dark"] .shop-filters,
+:root[data-theme="dark"] .shop-highlight-card,
+:root[data-theme="dark"] .recent-card {
+  background: var(--bg-secondary);
+  border-color: var(--border-color);
+}
+
+:root[data-theme="dark"] .profile-label,
+:root[data-theme="dark"] .profile-summary-card strong,
+:root[data-theme="dark"] .profile-order-card h4,
+:root[data-theme="dark"] .checkout-summary-card h3,
+:root[data-theme="dark"] .tracking-order-header h3,
+:root[data-theme="dark"] .tracking-stage-label,
+:root[data-theme="dark"] .tracking-status-pill {
+  color: var(--text-primary);
+}
+
+:root[data-theme="dark"] .tracking-stage-card.is-active,
+:root[data-theme="dark"] .profile-summary-card,
+:root[data-theme="dark"] .profile-order-card,
+:root[data-theme="dark"] .checkout-summary-card,
+:root[data-theme="dark"] .messages-shell,
+:root[data-theme="dark"] .tracking-order-card {
+  box-shadow: 0 14px 30px rgba(0, 0, 0, 0.22);
+}
+
+:root[data-theme="dark"] .message-bubble {
+  background: #e7e7e7;
+  color: #111111;
+}
+
+:root[data-theme="dark"] .chat-message.sent .message-bubble {
+  background: var(--brand);
+  color: #ffffff;
+}
+
+:root[data-theme="dark"] .chat-header,
+:root[data-theme="dark"] .chat-input-form {
+  background: var(--bg-secondary);
+  border-color: var(--border-color);
+}
+
+:root[data-theme="dark"] .tracking-stage-card.is-active {
+  background: rgba(239, 43, 45, 0.12);
+  border-color: rgba(239, 43, 45, 0.28);
+}
+
+/* Dark mode: Homepage components */
+:root[data-theme="dark"] .hero-modern {
+  background: var(--bg-secondary);
+}
+
+:root[data-theme="dark"] .display-heading {
+  color: var(--text-primary);
+}
+
+:root[data-theme="dark"] .hero-accent {
+  color: #dc2626;
+}
+
+:root[data-theme="dark"] .feature-card {
+  background: var(--bg-secondary);
+  border-color: var(--border-color);
+}
+
+:root[data-theme="dark"] .feature-card:hover {
+  border-color: rgba(220, 38, 38, 0.5);
+  box-shadow: 0 12px 30px rgba(220, 38, 38, 0.08);
+}
+
+:root[data-theme="dark"] .feature-card h3 {
+  color: var(--text-primary);
+}
+
+:root[data-theme="dark"] .feature-card p {
+  color: var(--text-secondary);
+}
+
+:root[data-theme="dark"] .stats-section {
+  background: #1a1a1a;
+}
+
+:root[data-theme="dark"] .stat-number,
+:root[data-theme="dark"] .stat-label {
+  color: inherit;
+}
+
+:root[data-theme="dark"] .category-card {
+  background: var(--bg-secondary);
+  border-color: var(--border-color);
+}
+
+:root[data-theme="dark"] .category-card:hover {
+  border-color: rgba(220, 38, 38, 0.5);
+}
+
+:root[data-theme="dark"] .home-product-card {
+  background: var(--bg-secondary);
+  border-color: var(--border-color);
+}
+
+:root[data-theme="dark"] .home-product-card:hover {
+  border-color: rgba(220, 38, 38, 0.5);
+}

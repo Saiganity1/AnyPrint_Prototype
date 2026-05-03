@@ -16,7 +16,7 @@ export default function MessagesPage() {
   const canManage = roleCanManage(user.role);
 
   return (
-    <section className="dashboard-page">
+    <section className="messages-page">
       <div className="page-intro">
         <p className="page-kicker">Messages</p>
         <h2 className="page-title">Customer Support</h2>
@@ -28,11 +28,11 @@ export default function MessagesPage() {
       </div>
 
       {canManage ? (
-        <section className="panel" style={{ marginBottom: "1rem" }}>
+        <section className="panel messages-shell">
           <AdminChatPanel />
         </section>
       ) : (
-        <section className="panel" style={{ marginBottom: "1rem" }}>
+        <section className="panel messages-shell">
           <ChatWindow currentUser={user} onClose={() => navigate("/account")} initialProduct={productContext} />
         </section>
       )}

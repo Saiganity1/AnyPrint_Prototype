@@ -5,19 +5,18 @@ import { getStoredUser, roleCanManage } from "../lib/auth";
 import { formatPrice } from "../lib/format";
 import { normalizeOrders } from "../lib/normalize";
 
-// Shopee-style stepper config
 const ORDER_STEPS = [
   { key: "placed", label: "Order Placed" },
-  { key: "to_ship", label: "To Ship" },
-  { key: "to_receive", label: "To Receive" },
-  { key: "to_rate", label: "To Rate" },
+  { key: "processing", label: "Processing" },
+  { key: "shipped", label: "Shipped" },
+  { key: "delivered", label: "Delivered" },
 ];
 
 const TAB_CONFIG = {
-  to_pay: { label: "Pending", statuses: ["PENDING"] },
-  to_ship: { label: "Paid", statuses: ["PAID"] },
+  to_pay: { label: "Placed", statuses: ["PENDING"] },
+  to_ship: { label: "Processing", statuses: ["PAID"] },
   to_receive: { label: "Shipped", statuses: ["SHIPPED"] },
-  to_rate: { label: "Completed", statuses: ["COMPLETED"] },
+  to_rate: { label: "Delivered", statuses: ["COMPLETED"] },
 };
 
 function orderTab(order) {
@@ -33,6 +32,14 @@ function statusLabel(status) {
     .toLowerCase()
     .replaceAll("_", " ")
     .replace(/\b\w/g, (s) => s.toUpperCase());
+}
+
+function orderStatusLabel(status) {
+  const normalized = String(status || "").toUpperCase();
+  if (normalized === "COMPLETED") return "Delivered";
+  if (normalized === "SHIPPED") return "Shipped";
+  if (normalized === "PAID") return "Processing";
+  return "Order Placed";
 }
 
 function formatDateTime(value) {
@@ -175,7 +182,7 @@ export default function TrackingPage() {
                     <h3>Order #{order.id}</h3>
                     <p className="meta">Placed {formatDateTime(order.created_at)} · {order.tracking_number || "No tracking yet"}</p>
                   </div>
-                  <span className="tracking-status-pill">{statusLabel(order.status)}</span>
+                  <span className="tracking-status-pill">{orderStatusLabel(order.status)}</span>
                 </header>
 
                 <section className="tracking-summary-grid">
@@ -230,7 +237,7 @@ export default function TrackingPage() {
                       </div>
                       <div className="tracking-micro-cell">
                         <span className="meta">Status</span>
-                        <strong>{statusLabel(order.status)}</strong>
+                        <strong>{orderStatusLabel(order.status)}</strong>
                       </div>
                     </div>
 
@@ -286,7 +293,7 @@ export default function TrackingPage() {
                             <div className="timeline-row" key={`${order.id}-event-${index}`}>
                               <span className="tracking-event-dot" aria-hidden="true" />
                               <div>
-                                <strong>{statusLabel(event.status)}</strong>
+                                <strong>{orderStatusLabel(event.status)}</strong>
                                 <p className="meta">{event.note || "Order status updated."}</p>
                                 <p className="meta">{formatDateTime(event.created_at)}</p>
                               </div>

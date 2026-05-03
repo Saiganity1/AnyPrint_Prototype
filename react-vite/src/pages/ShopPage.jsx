@@ -4,6 +4,7 @@ import { apiRequest, readJsonSafe } from "../lib/api";
 import { formatPrice } from "../lib/format";
 import { normalizeProducts } from "../lib/normalize";
 import AddToCartModal from "../components/AddToCartModal";
+import LoadingSpinner from "../components/LoadingSpinner";
 import SkeletonLoader from "../components/SkeletonLoader";
 import Pagination from "../components/Pagination";
 import { filterProducts, sortProducts, getUniqueCategories, getPriceRange } from "../lib/filters";
@@ -200,43 +201,78 @@ export default function ShopPage() {
         <p className="status-text shop-summary">{summary}</p>
 
         {loading ? (
-          <div className="product-grid">
-            <SkeletonLoader type="card" count={12} />
+          <div className="loading-state panel">
+            <LoadingSpinner label="Loading products" />
+            <p className="status-text">Loading products...</p>
+            <div className="product-grid">
+              <SkeletonLoader type="card" count={8} />
+            </div>
           </div>
         ) : null}
 
         {!loading && !error ? (
           <>
-            <div className="product-grid">
-              {paginatedProducts.map((product) => (
-                <article className="product-card premium-card" key={product.id}>
-                  <div className="product-card-media">
-                    <Link to={`/products/${encodeURIComponent(product.id)}`} className="product-image-link">
-                      {product.image_url ? (
-                        <img src={product.image_url} alt={product.name} loading="lazy" />
-                      ) : (
-                        <div className="image-fallback">No image</div>
-                      )}
-                    </Link>
-                  </div>
-                  <div className="card-body">
-                    <p className="meta small">{product.category || "Uncategorized"}</p>
-                    <p className="price">{formatPrice(product.price)}</p>
-                    <div className="row-actions compact">
-                      <button type="button" className="btn" onClick={() => addToCart(product)}>
-                        Add to Cart
-                      </button>
-                      <button type="button" className="btn secondary" onClick={() => buyNow(product)}>
-                        Buy
-                      </button>
+            {paginatedProducts.length ? (
+              <div className="product-grid">
+                {paginatedProducts.map((product) => (
+                  <article className="product-card premium-card" key={product.id}>
+                    <div className="product-card-media">
+                      <Link to={`/products/${encodeURIComponent(product.id)}`} className="product-image-link">
+                        {product.image_url ? (
+                          <img src={product.image_url} alt={product.name} loading="lazy" />
+                        ) : (
+                          <div className="image-fallback">No image</div>
+                        )}
+                      </Link>
                     </div>
-                    <h3 className="product-name-below-buttons">
-                      <Link to={`/products/${encodeURIComponent(product.id)}`}>{product.name}</Link>
-                    </h3>
-                  </div>
-                </article>
-              ))}
-            </div>
+                    <div className="card-body">
+                      <p className="meta small">{product.category || "Uncategorized"}</p>
+                      <h3 className="product-name-below-buttons">
+                        <Link to={`/products/${encodeURIComponent(product.id)}`}>{product.name}</Link>
+                      </h3>
+                      <p className="price">{formatPrice(product.price)}</p>
+                      <div className="row-actions compact">
+                        <button type="button" className="btn" onClick={() => addToCart(product)}>
+                          Add to Cart
+                        </button>
+                        <button type="button" className="btn secondary" onClick={() => buyNow(product)}>
+                          Buy
+                        </button>
+                      </div>
+                    </div>
+                  </article>
+                ))}
+              </div>
+            ) : (
+              <div className="empty-panel premium-empty">
+                <h3>{products.length ? "No products match your current filters." : "No products available yet."}</h3>
+                <p className="meta">
+                  {products.length
+                    ? "Clear one filter or try a different search term."
+                    : "Check back soon or browse the homepage for featured styles."}
+                </p>
+                <div className="row-actions">
+                  {products.length ? (
+                    <button
+                      type="button"
+                      className="btn secondary"
+                      onClick={() => {
+                        setCategoryFilter("");
+                        setSortBy("newest");
+                        setPriceRange({ min: 0, max: 10000 });
+                        setSearch("");
+                        setSearchParams(new URLSearchParams());
+                      }}
+                    >
+                      Reset filters
+                    </button>
+                  ) : null}
+                  <Link className="btn" to="/">
+                    Back to home
+                  </Link>
+                </div>
+              </div>
+            )}
             {totalPages > 1 && (
               <Pagination
                 currentPage={currentPage}

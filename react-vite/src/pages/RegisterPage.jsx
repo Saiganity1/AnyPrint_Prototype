@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { apiRequest, normalizeApiError, readJsonSafe } from "../lib/api";
 import { setStoredSession } from "../lib/auth";
+import LoadingSpinner from "../components/LoadingSpinner";
 
 export default function RegisterPage() {
   const navigate = useNavigate();
@@ -111,7 +112,14 @@ export default function RegisterPage() {
 
         <div className="row-actions">
           <button className="btn" type="submit" disabled={submitting}>
-            {submitting ? "Creating..." : "Create Account"}
+            {submitting ? (
+              <>
+                <LoadingSpinner className="loading-spinner-inline" label="Creating account" />
+                Creating...
+              </>
+            ) : (
+              "Create Account"
+            )}
           </button>
           <Link className="btn secondary" to="/login">
             I already have an account

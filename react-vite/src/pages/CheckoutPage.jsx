@@ -4,6 +4,7 @@ import { apiRequest, normalizeApiError, readJsonSafe } from "../lib/api";
 import { getStoredUser } from "../lib/auth";
 import { cartCount, loadCart, removeCartItem, saveCart } from "../lib/cart";
 import { formatPrice } from "../lib/format";
+import LoadingSpinner from "../components/LoadingSpinner";
 
 const steps = ["Cart", "Address", "Payment", "Review"];
 
@@ -110,7 +111,7 @@ export default function CheckoutPage() {
   }
 
   return (
-    <section className="checkout-page">
+    <section className="checkout-page checkout-clean">
       <div className="page-intro">
         <p className="page-kicker">Secure Checkout</p>
         <h2 className="page-title">Checkout</h2>
@@ -125,8 +126,10 @@ export default function CheckoutPage() {
         ))}
       </div>
 
+      <div className="checkout-layout">
+        <div className="checkout-main">
       {step === 1 ? (
-        <section className="panel">
+        <section className="panel checkout-section">
           <h3>Cart Review</h3>
           {!cart.length ? (
             <div className="empty-panel">
@@ -162,7 +165,7 @@ export default function CheckoutPage() {
       ) : null}
 
       {step === 2 ? (
-        <section className="panel">
+        <section className="panel checkout-section">
           <h3>Address</h3>
           <div className="form-grid" style={{ marginTop: "0.6rem" }}>
             <label htmlFor="full_name">Full Name</label>
@@ -195,7 +198,7 @@ export default function CheckoutPage() {
       ) : null}
 
       {step === 3 ? (
-        <section className="panel">
+        <section className="panel checkout-section">
           <h3>Payment Method</h3>
           <div className="form-grid">
             <label htmlFor="promo_code">Promo code</label>
@@ -232,7 +235,7 @@ export default function CheckoutPage() {
       ) : null}
 
       {step === 4 ? (
-        <section className="panel">
+        <section className="panel checkout-section">
           <h3>Review and Place Order</h3>
           <div className="checkout-review">
             <p>
@@ -265,21 +268,40 @@ export default function CheckoutPage() {
               Back
             </button>
             <button className="btn" type="button" onClick={placeOrder} disabled={placing}>
-              {placing ? "Placing Order..." : "Place Order"}
+              {placing ? (
+                <>
+                  <LoadingSpinner className="loading-spinner-inline" label="Placing order" />
+                  Placing Order...
+                </>
+              ) : (
+                "Place Order"
+              )}
             </button>
           </div>
         </section>
       ) : null}
 
       {message ? <p className="status-text">{message}</p> : null}
+        </div>
 
-      <aside className="panel" style={{ marginTop: "1rem" }}>
-        <h3>Order Total</h3>
-        <p className="meta">Shipping and payment collection can be finalized by staff after order placement.</p>
-        <p>
-          <strong>Total:</strong> {formatPrice(subtotal)}
-        </p>
-      </aside>
+        <aside className="panel checkout-summary-card">
+          <p className="page-kicker">Order Total</p>
+          <h3>{formatPrice(subtotal)}</h3>
+          <p className="meta">Shipping and payment collection can be finalized by staff after order placement.</p>
+          <div className="checkout-summary-row">
+            <span>Subtotal</span>
+            <strong>{formatPrice(subtotal)}</strong>
+          </div>
+          <div className="checkout-summary-row">
+            <span>Delivery</span>
+            <strong>Calculated by staff</strong>
+          </div>
+          <div className="checkout-summary-row total">
+            <span>Total</span>
+            <strong>{formatPrice(subtotal)}</strong>
+          </div>
+        </aside>
+      </div>
     </section>
   );
 }

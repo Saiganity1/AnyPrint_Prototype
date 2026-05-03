@@ -4,109 +4,156 @@ import { formatPrice } from "../lib/format";
 import NewsletterSignup from "../components/NewsletterSignup";
 
 export default function HomePage() {
-  const recentItems = loadRecentlyViewed().slice(0, 4);
+  const recentItems = loadRecentlyViewed().slice(0, 6);
 
   return (
     <section className="home-page">
-      <div className="offer-banner">
-        <p className="offer-text">
-          🎉 <strong>Limited Time:</strong> Get ₱200 OFF your first order with code <strong>TSHIRTLOVE</strong>
-        </p>
-      </div>
-
-      <section className="hero premium-hero" id="why-choose-us">
-        <div className="hero-copy">
-          <p className="eyebrow">⭐ 5,000+ Happy Customers | Premium Quality Tees</p>
-          <h1 className="display-heading">Express Yourself With Premium Tees</h1>
-          <p className="hero-sub">
-            High-quality, comfortable t-shirts for everyday wear. From minimalist to bold graphic designs-find your style today.
-          </p>
-          <div className="hero-cta-row">
-            <Link to="/shop" className="btn main-cta">
-              Shop Now
-            </Link>
-            <a className="btn secondary secondary-cta" href="#how-it-works">
-              See How It Works
-            </a>
-            <span className="meta">✓ Free shipping on orders over ₱2,500 • ✓ 30-day returns</span>
+      <section className="hero hero-modern" id="why-choose-us">
+        <div className="hero-content">
+          <div className="hero-copy">
+            <p className="eyebrow">NEW COLLECTION 2024</p>
+            <h1 className="display-heading">EXPRESS YOUR<br />STYLE</h1>
+            <p className="hero-accent">With AnyPrint</p>
+            <p className="hero-sub">
+              Premium quality t-shirts for everyday wear. From minimalist to bold graphic designs—find your style today.
+            </p>
+            <div className="hero-cta-row">
+              <Link to="/shop" className="btn main-cta">
+                SHOP NOW
+              </Link>
+              <a className="btn secondary secondary-cta" href="#collections">
+                EXPLORE COLLECTION
+              </a>
+            </div>
+            <p className="hero-meta">✓ Free shipping on orders over ₱2,500 • ✓ 30-day returns</p>
           </div>
-          <div className="trust-badges">
-            <span>✓ Premium Quality</span>
-            <span>✓ All Sizes Available</span>
-            <span>✓ Fast Nationwide Delivery</span>
+          <div className="hero-visual-placeholder" aria-hidden="true">
+            <div className="hero-image-mock">
+              <span className="hero-placeholder-text">Premium Product Photography</span>
+            </div>
           </div>
         </div>
       </section>
 
-      <nav className="category-rail" id="how-it-works">
-        <button className="category-card" type="button">
-          <span className="cat-icon minimal" />
-          <span>Minimal</span>
-        </button>
-        <button className="category-card" type="button">
-          <span className="cat-icon graphic" />
-          <span>Graphic</span>
-        </button>
-        <button className="category-card" type="button">
-          <span className="cat-icon street" />
-          <span>Street</span>
-        </button>
-        <button className="category-card" type="button">
-          <span className="cat-icon kids" />
-          <span>Kids</span>
-        </button>
-      </nav>
-
-      <section className="stats-section">
-        <div className="stat-item">
-          <h3 className="stat-number">50,000+</h3>
-          <p className="stat-label">Tees Sold</p>
-        </div>
-        <div className="stat-item">
-          <h3 className="stat-number">98%</h3>
-          <p className="stat-label">Satisfaction</p>
-        </div>
-        <div className="stat-item">
-          <h3 className="stat-number">24hrs</h3>
-          <p className="stat-label">Processing</p>
-        </div>
-        <div className="stat-item">
-          <h3 className="stat-number">100+</h3>
-          <p className="stat-label">Designs</p>
-        </div>
+      <section className="category-section" id="collections">
+        <nav className="category-rail">
+          <button className="category-card" type="button">
+            <span className="category-icon">👕</span>
+            <span className="category-label">Graphic Tees</span>
+            <span className="category-link">Shop Now →</span>
+          </button>
+          <button className="category-card" type="button">
+            <span className="category-icon">⚪</span>
+            <span className="category-label">Plain Tees</span>
+            <span className="category-link">Shop Now →</span>
+          </button>
+          <button className="category-card" type="button">
+            <span className="category-icon">🎨</span>
+            <span className="category-label">Custom Prints</span>
+            <span className="category-link">Shop Now →</span>
+          </button>
+          <button className="category-card" type="button">
+            <span className="category-icon">📏</span>
+            <span className="category-label">Oversized Tees</span>
+            <span className="category-link">Shop Now →</span>
+          </button>
+        </nav>
       </section>
 
-      <section className="trust-strip" id="contact">
-        <div className="trust-item">🚚 Free Shipping Over ₱2,500</div>
-        <div className="trust-item">🔒 100% Secure Checkout</div>
-        <div className="trust-item">↩️ 30-Day Money Back</div>
-      </section>
+      <section className="trending-section">
+        <div className="section-header">
+          <div>
+            <p className="eyebrow">TRENDING T-SHIRTS</p>
+            <h2 className="section-title">New Collection</h2>
+          </div>
+          <Link className="view-all-link" to="/shop">
+            View All →
+          </Link>
+        </div>
 
-      <section className="recently-viewed-row">
-        <h2>Recently Viewed</h2>
-        <div className="recently-viewed-list">
+        <div className="product-grid home-product-grid">
           {recentItems.length ? (
             recentItems.map((item) => (
-              <article className="recent-card" key={item.identifier || item.slug || item.id}>
-                <Link to={`/products/${encodeURIComponent(item.slug || item.identifier || "")}`} className="recent-thumb" />
-                <h4>{item.name || "Shirt Item"}</h4>
-                <p className="meta">{item.category || item.print_style || "T-Shirt"}</p>
-                <p className="price">{formatPrice(item.price || 0)}</p>
+              <article className="product-card home-product-card" key={item.identifier || item.slug || item.id}>
+                <div className="product-image-wrapper">
+                  <Link to={`/products/${encodeURIComponent(item.slug || item.identifier || "")}`} className="product-image-link">
+                    <div className="product-image-placeholder">
+                      <div className="product-badge">NEW</div>
+                    </div>
+                  </Link>
+                  <button className="wishlist-btn" title="Add to wishlist">♡</button>
+                </div>
+                <div className="card-body">
+                  <p className="product-category">{item.category || item.print_style || "T-Shirt"}</p>
+                  <h3 className="product-name">{item.name || "Shirt Item"}</h3>
+                  <p className="product-price">{formatPrice(item.price || 0)}</p>
+                  <button className="add-to-cart-btn">Add to Cart</button>
+                </div>
               </article>
             ))
           ) : (
-            <div className="panel empty-panel">
-              <p>No recently viewed items yet.</p>
-              <Link className="btn" to="/shop">
-                Browse shirts
+            <div className="empty-state">
+              <p>No items to display.</p>
+              <Link className="btn secondary" to="/shop">
+                Browse Shop
               </Link>
             </div>
           )}
         </div>
       </section>
 
+      <section className="why-choose-section" id="contact">
+        <div className="section-heading-row">
+          <div>
+            <p className="eyebrow muted">Why choose us?</p>
+            <h2 className="section-title">Simple features, clean presentation, premium feel.</h2>
+          </div>
+        </div>
+        <div className="feature-strip">
+          <article className="feature-card">
+            <span className="feature-icon">⚪</span>
+            <h3>Premium Fabric</h3>
+            <p>Soft, comfortable, and durable for everyday wear.</p>
+          </article>
+          <article className="feature-card">
+            <span className="feature-icon">◉</span>
+            <h3>Vibrant Prints</h3>
+            <p>High quality printing with sharp color and detail.</p>
+          </article>
+          <article className="feature-card">
+            <span className="feature-icon">$</span>
+            <h3>Affordable Prices</h3>
+            <p>Best value pricing without losing the premium look.</p>
+          </article>
+          <article className="feature-card">
+            <span className="feature-icon">★</span>
+            <h3>Unique Designs</h3>
+            <p>Styles that stand out without feeling overdesigned.</p>
+          </article>
+        </div>
+      </section>
+
+      <section className="stats-section">
+        <div className="stat-item">
+          <h3 className="stat-number">50,000+</h3>
+          <p className="stat-label">Happy Customers</p>
+        </div>
+        <div className="stat-item">
+          <h3 className="stat-number">98%</h3>
+          <p className="stat-label">Satisfaction Rate</p>
+        </div>
+        <div className="stat-item">
+          <h3 className="stat-number">24hrs</h3>
+          <p className="stat-label">Processing Time</p>
+        </div>
+        <div className="stat-item">
+          <h3 className="stat-number">100+</h3>
+          <p className="stat-label">Unique Designs</p>
+        </div>
+      </section>
+
       <section className="newsletter-section">
-        <div className="panel">
+        <div className="panel newsletter-panel">
           <NewsletterSignup />
         </div>
       </section>

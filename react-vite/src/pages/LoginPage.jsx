@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { useLocation, useNavigate } from "react-router-dom";
 import { apiRequest, normalizeApiError, readJsonSafe } from "../lib/api";
 import { clearStoredSession, getStoredUser, setStoredSession } from "../lib/auth";
+import LoadingSpinner from "../components/LoadingSpinner";
 
 function useNextPath() {
   const { search } = useLocation();
@@ -149,7 +150,14 @@ export default function LoginPage() {
 
         <div className="row-actions">
           <button type="submit" className="btn" disabled={submitting}>
-            {submitting ? "Signing in..." : "Login"}
+            {submitting ? (
+              <>
+                <LoadingSpinner className="loading-spinner-inline" label="Signing in" />
+                Signing in...
+              </>
+            ) : (
+              "Login"
+            )}
           </button>
           <Link className="btn secondary" to="/register">
             Create Account
