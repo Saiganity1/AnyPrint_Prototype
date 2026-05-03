@@ -8,7 +8,6 @@ import { addRecentlyViewed } from "../lib/recent";
 import Breadcrumb from "../components/Breadcrumb";
 import InventoryStatus from "../components/InventoryStatus";
 import ImageGallery from "../components/ImageGallery";
-import { toggleWishlist, isInWishlist } from "../lib/wishlist";
 
 const SIZE_ORDER = ["S", "M", "L", "XL", "2XL", "3XL"];
 
@@ -23,7 +22,6 @@ export default function ProductPage() {
   const [messageType, setMessageType] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [inWishlist, setInWishlist] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -44,7 +42,6 @@ export default function ProductPage() {
 
         if (!cancelled) {
           setProduct(payload);
-          setInWishlist(isInWishlist(payload.id));
           addRecentlyViewed(payload);
 
           setSelectedSize(payload?.sizes?.[0] || "M");
@@ -133,11 +130,6 @@ export default function ProductPage() {
 
   function contactSeller() {
     navigate('/messages', { state: { productId: product.id, productName: product.name } });
-  }
-
-  function handleWishlistToggle() {
-    toggleWishlist(product);
-    setInWishlist(!inWishlist);
   }
 
   const breadcrumbs = [
@@ -266,14 +258,6 @@ export default function ProductPage() {
               <Link className="btn secondary" to="/checkout">
                 Go to Checkout
               </Link>
-              <button 
-                type="button" 
-                className={`btn ${inWishlist ? 'wishlist-active' : 'secondary'}`}
-                onClick={handleWishlistToggle}
-                aria-label={inWishlist ? 'Remove from wishlist' : 'Add to wishlist'}
-              >
-                {inWishlist ? '❤️ In Wishlist' : '🤍 Add to Wishlist'}
-              </button>
               <button type="button" className="btn secondary" onClick={contactSeller}>
                 Contact Seller
               </button>

@@ -7,7 +7,6 @@ import AddToCartModal from "../components/AddToCartModal";
 import SkeletonLoader from "../components/SkeletonLoader";
 import Pagination from "../components/Pagination";
 import { filterProducts, sortProducts, getUniqueCategories, getPriceRange } from "../lib/filters";
-import { isInWishlist, toggleWishlist } from "../lib/wishlist";
 
 const ITEMS_PER_PAGE = 12;
 
@@ -18,7 +17,6 @@ export default function ShopPage() {
   const [error, setError] = useState("");
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
-  const [wishlistItems, setWishlistItems] = useState(new Set());
   const [currentPage, setCurrentPage] = useState(parseInt(searchParams.get("page") || "1"));
 
   const initialSearch = searchParams.get("search") || "";
@@ -52,8 +50,6 @@ export default function ShopPage() {
         const resultItems = normalizeProducts(body);
         if (!cancelled) {
           setProducts(resultItems);
-          const wishlist = new Set(resultItems.filter(p => isInWishlist(p.id)).map(p => p.id));
-          setWishlistItems(wishlist);
         }
       } catch {
         if (!cancelled) {
@@ -83,17 +79,6 @@ export default function ShopPage() {
     setSearchParams(nextParams);
   }
 
-  function handleWishlistToggle(product) {
-    toggleWishlist(product);
-    const newWishlist = new Set(wishlistItems);
-    if (newWishlist.has(product.id)) {
-      newWishlist.delete(product.id);
-    } else {
-      newWishlist.add(product.id);
-    }
-    setWishlistItems(newWishlist);
-  }
-
   const navigate = useNavigate();
 
   function addToCart(product) {
@@ -101,8 +86,10 @@ export default function ShopPage() {
     setModalOpen(true);
   }
 
-  function contactSeller(product) {
-    navigate('/messages', { state: { productId: product.id, productName: product.name } });
+  function buyNow(product) {
+    setSelectedProduct(product);
+    setModalOpen(true);
+    setTimeout(() => navigate('/checkout'), 500);
   }
 
   const filteredAndSorted = useMemo(() => {
@@ -231,14 +218,6 @@ export default function ShopPage() {
                         <div className="image-fallback">No image</div>
                       )}
                     </Link>
-                    <button
-                      type="button"
-                      className={`wishlist-btn ${wishlistItems.has(product.id) ? 'active' : ''}`}
-                      onClick={() => handleWishlistToggle(product)}
-                      aria-label={wishlistItems.has(product.id) ? 'Remove from wishlist' : 'Add to wishlist'}
-                    >
-                      {wishlistItems.has(product.id) ? '❤️' : '🤍'}
-                    </button>
                   </div>
                   <div className="card-body">
                     <p className="meta small">{product.category || "Uncategorized"}</p>
@@ -250,8 +229,8 @@ export default function ShopPage() {
                       <button type="button" className="btn" onClick={() => addToCart(product)}>
                         Add to Cart
                       </button>
-                      <button type="button" className="btn secondary" onClick={() => contactSeller(product)}>
-                        Contact Seller
+                      <button type="button" className="btn secondary" onClick={() => buyNow(product)}>
+                        Buy
                       </button>
                     </div>
                   </div>
