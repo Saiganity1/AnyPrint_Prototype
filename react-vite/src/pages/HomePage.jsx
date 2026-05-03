@@ -2,9 +2,26 @@ import { Link } from "react-router-dom";
 import { loadRecentlyViewed } from "../lib/recent";
 import { formatPrice } from "../lib/format";
 import NewsletterSignup from "../components/NewsletterSignup";
+import OwnerHomepageEditor from "../components/OwnerHomepageEditor";
+import { getStoredUser } from "../lib/auth";
 
 export default function HomePage() {
   const recentItems = loadRecentlyViewed().slice(0, 6);
+  const user = getStoredUser();
+  const isOwner = user && String(user.role || "").toUpperCase() === "OWNER";
+
+  // load featured lists from localStorage
+  function loadFeatured() {
+    try {
+      return JSON.parse(localStorage.getItem("anyprint:homepage:featured") || "{}");
+    } catch {
+      return {};
+    }
+  }
+
+  const featured = loadFeatured();
+  const featuredTrending = featured.trending || [];
+  const featuredBest = featured.bestSelling || [];
 
   return (
     <section className="home-page">
@@ -96,35 +113,65 @@ export default function HomePage() {
         </div>
 
         <div className="product-grid home-product-grid">
-          {recentItems.length ? (
-            recentItems.map((item) => (
-              <article className="product-card home-product-card" key={item.identifier || item.slug || item.id}>
+          {(featuredTrending.length ? featuredTrending : recentItems).map((item) => (
+            <article className="product-card home-product-card" key={item.id || item.slug || item.identifier}>
+              <div className="product-image-wrapper">
+                <Link to={`/products/${encodeURIComponent(item.slug || item.identifier || "")}`} className="product-image-link">
+                  <div className="product-image-placeholder">
+                    {item.image ? <img src={item.image} alt={item.name} /> : <div className="product-badge">NEW</div>}
+                  </div>
+                </Link>
+                <button className="wishlist-btn" title="Add to wishlist">♡</button>
+              </div>
+              <div className="card-body">
+                <p className="product-category">{item.category || item.print_style || "T-Shirt"}</p>
+                <h3 className="product-name">{item.name || "Shirt Item"}</h3>
+                <p className="product-price">{item.price ? `₱${item.price}` : formatPrice(item.price || 0)}</p>
+                <button className="add-to-cart-btn">Add to Cart</button>
+              </div>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <section className="best-selling-section">
+        <div className="section-header">
+          <div>
+            <p className="eyebrow">BEST SELLING</p>
+            <h2 className="section-title">Popular Right Now</h2>
+          </div>
+          <Link className="view-all-link" to="/shop">
+            View All →
+          </Link>
+        </div>
+        <div className="product-grid home-product-grid">
+          {featuredBest.length ? (
+            featuredBest.map((item) => (
+              <article className="product-card home-product-card" key={item.id || item.slug}>
                 <div className="product-image-wrapper">
-                  <Link to={`/products/${encodeURIComponent(item.slug || item.identifier || "")}`} className="product-image-link">
+                  <Link to={`/products/${encodeURIComponent(item.slug || "")}`} className="product-image-link">
                     <div className="product-image-placeholder">
-                      <div className="product-badge">NEW</div>
+                      {item.image ? <img src={item.image} alt={item.name} /> : null}
                     </div>
                   </Link>
-                  <button className="wishlist-btn" title="Add to wishlist">♡</button>
                 </div>
                 <div className="card-body">
-                  <p className="product-category">{item.category || item.print_style || "T-Shirt"}</p>
-                  <h3 className="product-name">{item.name || "Shirt Item"}</h3>
-                  <p className="product-price">{formatPrice(item.price || 0)}</p>
+                  <p className="product-category">{item.category}</p>
+                  <h3 className="product-name">{item.name}</h3>
+                  <p className="product-price">{item.price ? `₱${item.price}` : ""}</p>
                   <button className="add-to-cart-btn">Add to Cart</button>
                 </div>
               </article>
             ))
           ) : (
             <div className="empty-state">
-              <p>No items to display.</p>
-              <Link className="btn secondary" to="/shop">
-                Browse Shop
-              </Link>
+              <p>No best selling items configured.</p>
             </div>
           )}
         </div>
       </section>
+
+      {isOwner ? <OwnerHomepageEditor onChange={() => window.location.reload()} /> : null}
 
       <section className="why-choose-section" id="contact">
         <div className="section-heading-row">
