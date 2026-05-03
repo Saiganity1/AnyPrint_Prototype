@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { getStoredUser } from "../lib/auth";
 
 const STORAGE_KEY = "anyprint:homepage:featured";
@@ -25,10 +25,17 @@ export default function OwnerHomepageEditor({ onChange }) {
       bestSelling: saved.bestSelling || [],
     };
   });
+  const mountedRef = useRef(false);
 
   useEffect(() => {
+    // Persist to storage every time state changes.
     writeStorage(state);
-    if (typeof onChange === "function") onChange(state);
+    // Only notify parent after the first render to avoid initial reload loops.
+    if (mountedRef.current) {
+      if (typeof onChange === "function") onChange(state);
+    } else {
+      mountedRef.current = true;
+    }
   }, [state, onChange]);
 
   if (!isOwner) return null;
