@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { Link } from "react-router-dom";
-import { useLocation, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { apiRequest, normalizeApiError, readJsonSafe } from "../lib/api";
 import { clearStoredSession, getStoredUser, setStoredSession } from "../lib/auth";
 import LoadingSpinner from "../components/LoadingSpinner";
@@ -104,70 +103,86 @@ export default function LoginPage() {
   }
 
   return (
-    <section className="auth-page">
-      <div className="page-intro">
-        <p className="page-kicker">Welcome Back</p>
-        <h2 className="page-title">Login</h2>
-        <p className="page-lead">Sign in with your AnyPrint account.</p>
+    <section className="auth-page auth-redesign">
+      <div className="auth-shell">
+        <aside className="auth-aside" aria-label="Account benefits">
+          <p className="page-kicker">AnyPrint Account</p>
+          <h2>Welcome back</h2>
+          <p>
+            Sign in to continue checkout, review order status, and keep your messages with support in one place.
+          </p>
+          <div className="auth-benefits">
+            <span>Fast checkout</span>
+            <span>Order tracking</span>
+            <span>Support messages</span>
+          </div>
+        </aside>
+
+        <section className="panel auth-panel">
+          <div className="auth-panel-header">
+            <p className="page-kicker">Login</p>
+            <h1>Sign in</h1>
+            <p className="meta">Use the email and password connected to your AnyPrint account.</p>
+          </div>
+
+          <form className="auth-form" onSubmit={onSubmit}>
+            <div className="auth-field">
+              <label htmlFor="email">Email address</label>
+              <input
+                id="email"
+                name="email"
+                type="email"
+                autoComplete="email"
+                value={form.email}
+                onChange={onChange}
+                placeholder="name@example.com"
+                required
+              />
+            </div>
+
+            <div className="auth-field">
+              <div className="auth-label-row">
+                <label htmlFor="password">Password</label>
+                <button className="text-button" type="button" onClick={() => setShowPassword((value) => !value)}>
+                  {showPassword ? "Hide" : "Show"}
+                </button>
+              </div>
+              <input
+                id="password"
+                name="password"
+                type={showPassword ? "text" : "password"}
+                autoComplete="current-password"
+                value={form.password}
+                onChange={onChange}
+                placeholder="Enter your password"
+                required
+              />
+            </div>
+
+            {error ? <p className="auth-message error-text">{error}</p> : null}
+            {status ? <p className="auth-message status-text">{status}</p> : null}
+
+            <button type="submit" className="btn auth-submit" disabled={submitting}>
+              {submitting ? (
+                <>
+                  <LoadingSpinner className="loading-spinner-inline" label="Signing in" />
+                  Signing in...
+                </>
+              ) : (
+                "Login"
+              )}
+            </button>
+
+            <div className="auth-secondary-actions">
+              <span>New to AnyPrint?</span>
+              <Link to="/register">Create an account</Link>
+            </div>
+            <button type="button" className="text-button danger" onClick={onLogout}>
+              Clear saved session
+            </button>
+          </form>
+        </section>
       </div>
-
-      <section className="panel auth-panel">
-
-      <form className="form-grid" onSubmit={onSubmit}>
-        <label htmlFor="email">Email</label>
-        <input
-          id="email"
-          name="email"
-          type="email"
-          autoComplete="email"
-          value={form.email}
-          onChange={onChange}
-          required
-        />
-
-        <label htmlFor="password">Password</label>
-        <input
-          id="password"
-          name="password"
-          type={showPassword ? "text" : "password"}
-          autoComplete="current-password"
-          value={form.password}
-          onChange={onChange}
-          required
-        />
-
-        <label className="password-toggle">
-          <input
-            type="checkbox"
-            checked={showPassword}
-            onChange={(event) => setShowPassword(event.target.checked)}
-          />
-          Show password
-        </label>
-
-        {error ? <p className="error-text">{error}</p> : null}
-        {status ? <p className="status-text">{status}</p> : null}
-
-        <div className="row-actions">
-          <button type="submit" className="btn" disabled={submitting}>
-            {submitting ? (
-              <>
-                <LoadingSpinner className="loading-spinner-inline" label="Signing in" />
-                Signing in...
-              </>
-            ) : (
-              "Login"
-            )}
-          </button>
-          <Link className="btn secondary" to="/register">
-            Create Account
-          </Link>
-          <button type="button" className="btn secondary" onClick={onLogout}>
-            Logout
-          </button>
-        </div>
-      </form>
-      </section>
     </section>
   );
 }
