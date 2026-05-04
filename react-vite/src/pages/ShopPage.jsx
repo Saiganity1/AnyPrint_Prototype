@@ -7,7 +7,7 @@ import AddToCartModal from "../components/AddToCartModal";
 import LoadingSpinner from "../components/LoadingSpinner";
 import SkeletonLoader from "../components/SkeletonLoader";
 import Pagination from "../components/Pagination";
-import { filterProducts, sortProducts, getUniqueCategories, getPriceRange } from "../lib/filters";
+import { filterProducts, sortProducts, getUniqueCategories } from "../lib/filters";
 
 const ITEMS_PER_PAGE = 12;
 

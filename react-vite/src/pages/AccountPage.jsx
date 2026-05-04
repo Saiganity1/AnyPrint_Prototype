@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, Navigate, useSearchParams } from "react-router-dom";
 import { apiRequest, normalizeApiError, readJsonSafe } from "../lib/api";
-import { getStoredUser, roleCanManage } from "../lib/auth";
+import { getStoredUser } from "../lib/auth";
 import { formatPrice } from "../lib/format";
 import { normalizeOrders } from "../lib/normalize";
 
