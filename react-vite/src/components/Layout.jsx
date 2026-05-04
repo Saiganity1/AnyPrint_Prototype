@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import { Link, NavLink, useNavigate } from "react-router-dom";
 import { clearStoredSession, getStoredUser, roleCanManage } from "../lib/auth";
 import { cartCount, loadCart } from "../lib/cart";
-// dark mode removed — theme is light-only
 import Footer from "./Footer";
 
 function navClass({ isActive }) {
@@ -23,9 +22,7 @@ export default function Layout({ children }) {
 
     syncCount();
     window.addEventListener("anyprint:cart-updated", syncCount);
-    return () => {
-      window.removeEventListener("anyprint:cart-updated", syncCount);
-    };
+    return () => window.removeEventListener("anyprint:cart-updated", syncCount);
   }, []);
 
   function logout() {
@@ -33,92 +30,60 @@ export default function Layout({ children }) {
     navigate("/login", { replace: true });
   }
 
-  // theme toggle removed
-
   return (
     <div className="site-shell">
       <header className="site-header">
         <div className="topbar">
           <div className="container topbar-inner">
-            <div className="topbar-left">
-              <span className="topbar-item">T-shirt store • Metro Manila → Nationwide delivery</span>
-            </div>
+            <span className="topbar-item">
+              <span className="topbar-truck" aria-hidden="true" /> Free shipping on orders over ₱2,500
+            </span>
             <div className="topbar-right">
-              <a className="topbar-link" href="#how-it-works">
-                How it works
-              </a>
-              <a className="topbar-link" href="#why-choose-us">
-                Why choose us
-              </a>
-              <a className="topbar-link" href="#contact">
-                Contact
-              </a>
+              <a className="topbar-link" href="#how-it-works">How it works</a>
+              <a className="topbar-link" href="#why-choose-us">Why choose us</a>
+              <a className="topbar-link" href="#contact">Contact</a>
+              <a className="social-link" href="https://instagram.com" aria-label="Instagram">IG</a>
+              <a className="social-link" href="https://facebook.com" aria-label="Facebook">f</a>
+              <a className="social-link" href="https://twitter.com" aria-label="Twitter">t</a>
             </div>
           </div>
         </div>
         <div className="container nav-wrap">
           <div className="brand-block">
             <Link className="brand" to="/">
-              AnyPrint
+              Any<span>Print</span>
             </Link>
-            <p className="brand-tag">T-shirt Store</p>
+            <p className="brand-tag">T-Shirt Store</p>
           </div>
           <nav className="site-nav" aria-label="Primary">
-            <NavLink to="/" className={navClass} end>
-              Home
-            </NavLink>
+            <NavLink to="/" className={navClass} end>Home</NavLink>
             <NavLink to="/shop" className={navClass}>
-              All Products
+              All Products <span className="nav-caret" aria-hidden="true">⌄</span>
             </NavLink>
-            {currentUser && !canManage ? (
-              <NavLink to="/tracking" className={navClass}>
-                Track Order
-              </NavLink>
-            ) : null}
-            {currentUser ? (
-              <NavLink to="/messages" className={navClass}>
-                Messages
-              </NavLink>
-            ) : null}
-            {isOwner ? (
-              <NavLink to="/owner" className={navClass}>
-                Owner
-              </NavLink>
-            ) : null}
-            {canManage ? (
-              <NavLink to="/admin" className={navClass}>
-                Admin
-              </NavLink>
-            ) : null}
-            {canManage ? (
-              <NavLink to="/admin/tracking" className={navClass}>
-                Tracking
-              </NavLink>
-            ) : null}
-            {canManage ? (
-              <NavLink to="/analytics" className={navClass}>
-                Analytics
-              </NavLink>
-            ) : null}
+            {currentUser && !canManage ? <NavLink to="/tracking" className={navClass}>Track Order</NavLink> : null}
+            {currentUser ? <NavLink to="/messages" className={navClass}>Messages</NavLink> : null}
+            {isOwner ? <NavLink to="/owner" className={navClass}>Owner</NavLink> : null}
+            {canManage ? <NavLink to="/admin" className={navClass}>Admin</NavLink> : null}
+            {canManage ? <NavLink to="/admin/tracking" className={navClass}>Tracking</NavLink> : null}
+            {canManage ? <NavLink to="/analytics" className={navClass}>Analytics</NavLink> : null}
           </nav>
           <div className="top-actions">
-            {/* theme toggle removed */}
+            <span className="moon-icon" aria-hidden="true" />
             {currentUser ? (
-              <button type="button" className="auth-btn secondary" onClick={logout}>
-                Logout
-              </button>
+              <button type="button" className="auth-btn secondary" onClick={logout}>Logout</button>
             ) : (
-              <NavLink to="/login" className="auth-btn">
-                Login
-              </NavLink>
+              <NavLink to="/login" className="auth-btn">Login</NavLink>
             )}
             <NavLink to="/checkout" className="cart-btn">
-              Cart ({count})
+              <span className="cart-icon" aria-hidden="true" /> Cart ({count})
             </NavLink>
             {currentUser ? (
-              <NavLink to="/account" className="user-chip">
-                {currentUser.name || currentUser.username || "User"}
-              </NavLink>
+              <>
+                <NavLink to="/account" className="user-chip">
+                  {currentUser.name || currentUser.username || "User"}
+                </NavLink>
+                <span className="user-avatar" aria-hidden="true">M</span>
+              </>
             ) : null}
           </div>
         </div>

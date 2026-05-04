@@ -2,21 +2,20 @@ import { Link } from "react-router-dom";
 
 export default function Footer() {
   return (
-    <footer className="site-footer">
+    <footer className="site-footer" id="contact">
       <div className="footer-content">
         <div className="footer-section footer-brand">
-          <div className="footer-logo">
-            <h3>AnyPrint</h3>
-          </div>
+          <Link className="footer-logo" to="/">
+            Any<span>Print</span>
+          </Link>
           <p className="footer-tagline">
-            More than just a brand.<br />
-            It's a statement. Wear your attitude, express your style.
+            More than just a brand, it's a statement. Wear your attitude, express your style.
           </p>
           <div className="footer-socials">
-            <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" aria-label="Instagram">📷</a>
+            <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" aria-label="Instagram">IG</a>
             <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" aria-label="Facebook">f</a>
-            <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" aria-label="Twitter">𝕏</a>
-            <a href="https://tiktok.com" target="_blank" rel="noopener noreferrer" aria-label="TikTok">🎵</a>
+            <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" aria-label="Twitter">t</a>
+            <a href="https://tiktok.com" target="_blank" rel="noopener noreferrer" aria-label="TikTok">♪</a>
           </div>
         </div>
 
@@ -55,33 +54,22 @@ export default function Footer() {
 
         <div className="footer-section footer-newsletter">
           <h4 className="footer-title">SUBSCRIBE TO OUR NEWSLETTER</h4>
-          <p className="footer-newsletter-desc">
-            Get updates on new collections and exclusive offers.
-          </p>
+          <p className="footer-newsletter-desc">Get updates on new collections and exclusive offers.</p>
           <form className="newsletter-form" onSubmit={(e) => e.preventDefault()}>
-            <input 
-              type="email" 
-              placeholder="Enter your email" 
-              className="newsletter-input"
-              required
-            />
+            <input type="email" placeholder="Enter your email" className="newsletter-input" required />
             <button type="submit" className="btn newsletter-btn">SUBSCRIBE</button>
           </form>
-          <div className="payment-methods">
-            <span className="payment-label">We accept:</span>
-            <div className="payment-icons">
-              <span title="Visa">💳</span>
-              <span title="Mastercard">💳</span>
-              <span title="PayPal">🅿️</span>
-              <span title="GCash">₱</span>
-              <span title="Apple Pay">🍎</span>
-            </div>
+          <div className="payment-icons" aria-label="Payment methods">
+            <strong>VISA</strong>
+            <span>Mastercard</span>
+            <span>PayPal</span>
+            <span>GCash</span>
+            <span>Pay</span>
           </div>
         </div>
       </div>
-
       <div className="footer-bottom">
-        <p>&copy; 2024 AnyPrint. All rights reserved.</p>
+        <p>© 2024 AnyPrint. All rights reserved.</p>
       </div>
     </footer>
   );
